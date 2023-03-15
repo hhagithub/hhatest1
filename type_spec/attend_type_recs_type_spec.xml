@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="379044ee7b1453dcb479a306663008a066a6c668" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleTypeSpec objectName="ATTEND_TYPE_RECS" objectType="TYPE_SPEC" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE TYPE "HHA_PROD"."ATTEND_TYPE_RECS" as table of attend_type
+/]]></n0:source>
+		</n0:createOracleTypeSpec>
+	</changeSet>
+</databaseChangeLog>

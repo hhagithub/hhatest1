@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="0c50503c68b7087d393e0b3fb0b03c0124d006ec" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="VHSGETSERVICEORDERBYID" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."VHSGETSERVICEORDERBYID" RETURN VARCHAR2 AS
+  l_envelope CLOB;
+  l_xml      XMLTYPE;
+  l_result   VARCHAR2(32767);
+  
+  l_result1 varchar2(4000);
+
+  l_clob VARCHAR2(32767);
+  l_char VARCHAR2(32767);
+BEGIN
+
+  -- Build a SOAP document appropriate for the web service.
+  l_envelope := '<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+               xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+               xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <GetServiceOrderByID xmlns="http://www.wsautovhc.co.uk">
+      <request>
+        <CurrencyCode xmlns="http://autovhc.co.uk/">GBP</CurrencyCode>
+        <Locale xmlns="http://autovhc.co.uk/">en-GB</Locale>
+        <Username xmlns="http://autovhc.co.uk/">SBS</Username>
+        <Password xmlns="http://autovhc.co.uk/">Welcome18!</Password>
+        <Sitecode xmlns="http://autovhc.co.uk/">909888</Sitecode>
+        <JobCardNumber xmlns="http://autovhc.co.uk/">jc99999</JobCardNumber>
+        <IncludeParts xmlns="http://autovhc.co.uk/">true</IncludeParts>
+        <IncludeItemImageUrls xmlns="http://autovhc.co.uk/">true</IncludeItemImageUrls>
+        <IncludeItemVideoUrls xmlns="http://autovhc.co.uk/">true</IncludeItemVideoUrls>
+        <IncludeVhcUrl xmlns="http://autovhc.co.uk/">true</IncludeVhcUrl>
+        <IncludeCustomerInfo xmlns="http://autovhc.co.uk/">true</IncludeCustomerInfo>
+        <IntegrationId xmlns="http://autovhc.co.uk/">ebe9dc2d-d031-48ed-98ef-27d6b789bc95</IntegrationId>
+      </request>
+    </GetServiceOrderByID>
+  </soap:Body>
+</soap:Envelope>';
+
+  -- Get the XML response from the web service.
+  l_xml := APEX_WEB_SERVICE.make_request(p_url      => 'http://integrationfacade.autovhc.net/integrationlayerproxyapi.asmx',
+                                         p_action   => 'http://www.wsautovhc.co.uk/GetServiceOrderByID',
+                                         p_envelope => l_envelope);
+/*
+  -- Display the whole SOAP document returned.
+  DBMS_OUTPUT.put_line('l_xml=' || l_xml.getClobVal());
+
+  l_clob := l_xml.getClobVal();
+  
+  select DBMS_LOB.substr(l_clob, 32767) into l_char from dual;
+  
+  insert into VHS(CLOV_VAL,VAR_VAL) values (l_clob, l_char);
+  commit;
+*/
+  -- Pull out the specific value of interest.
+  l_result := APEX_WEB_SERVICE.parse_xml(p_xml   => l_xml,
+                                         p_xpath => '//ServiceOrderItems/ServiceOrderItemTransferObject',
+                                         --p_ns    => 'xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"'
+                                         p_ns => 'xmlns="http://www.wsautovhc.co.uk"');
+
+
+
+
+  DBMS_OUTPUT.put_line('l_result=' || substr(l_result,1,200));
+  
+  l_result1 := substr(l_result,1,200);
+
+  RETURN l_result;
+END;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

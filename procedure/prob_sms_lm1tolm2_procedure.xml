@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="6dd65f10628624492a1b2d6c3ced18e753ffef0a" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleProcedure objectName="PROB_SMS_LM1TOLM2" objectType="PROCEDURE" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "HHA_PROD"."PROB_SMS_LM1TOLM2" (SMS_TEXT VARCHAR2, LANG VARCHAR2 DEFAULT 'E') IS
+emp_name    VARCHAR2(200);
+emp_job     VARCHAR2(200);
+emp_mgr VARCHAR2(20);
+emp_mgr_name  VARCHAR2(200);
+emp_mgr_email VARCHAR2(200);
+join_date   varchar2(200);
+emp_loc     varchar2(200);
+email_subject varchar2(2000);
+EMPNO_ NUMBER;
+BEGIN
+
+SELECT DISTINCT EMPNO INTO EMPNO_
+FROM 
+(
+SELECT B.PA_EMP_NO AS EMPNO , PROB_EVAL_NO
+FROM HCM_PROB_APPROVAL B
+WHERE --B.PA_EMP_NO = '181179' AND
+B.PA_APP_REQ_BY_DESC = 'LM2' AND B.APPROVED_REJECTED IS NULL
+  and EXISTS(
+  SELECT 1--T.PA_EMP_NO EMPNO
+  FROM HCM_PROB_APPROVAL T
+  WHERE T.PA_APP_REQ_BY_DESC = 'LM1' AND T.APPROVED_REJECTED = 'A' AND TRUNC(APP_REJ_DATE) < TRUNC(SYSDATE) AND T.PA_EMP_NO = B.PA_EMP_NO AND T.PROB_EVAL_NO= B.PROB_EVAL_NO
+  )
+  and NOT EXISTS(
+  SELECT 1--T.PA_EMP_NO EMPNO
+  FROM HCM_PROB_APPROVAL D
+  WHERE D.PA_APP_REQ_BY_DESC = 'HRR' AND D.APPROVED_REJECTED IS NOT NULL AND D.PA_EMP_NO = B.PA_EMP_NO AND D.PROB_EVAL_NO= B.PROB_EVAL_NO
+  )
+) ABC , pastatic P
+WHERE ABC.EMPNO = P.ST_EMPCD
+AND NVL(PROB_CHNGD_REG,'N') = 'N'
+AND TRUNC(NVL(PROB_END_FIN_DATE2,PROB_END_FIN_DATE)) >= TRUNC(SYSDATE)
+AND ST_STATUS <= '15';
+
+select ltrim(rtrim(st_ename)),st_gdoj, get_branch_codedesc(ST_brcd), job_name,direct_manager_number, direct_manager_name
+  into emp_name, join_date, emp_loc, emp_job, emp_mgr, emp_mgr_name
+  from pastatic
+  where st_empcd = EMPNO_;
+  
+select emp_email into emp_mgr_email from pastatic where st_empcd = 
+(  
+select DISTINCT DIRECT_MANAGER_NUMBER 
+FROM PASTATIC 
+WHERE ST_EMPCD = (select DIRECT_MANAGER_NUMBER FROM PASTATIC WHERE ST_EMPCD = EMPNO_)
+);
+
+email_subject:= 'Probation Evaluation'||'-'||emp_name||'/'||emp_job||'/'||emp_loc||'/'||join_date;
+
+/*
+IF LANG = 'E' THEN
+
+MSG :='
+Dear Manager ' || emp_mgr_name ||
+'
+You are requested to take an immediate action of evaluation regarding the probation period of (' || emp_name || '/' || emp_job || '/' || c.EMPNO ||'). to avoid any legal violation to his employment status according to labor law and your lack of action will delegate us to make it on behalf.
+
+Human Resource Management
+Haji Husein Alireza Co. Ltd.
+';
+
+ELSE
+  
+
+MSG :='
+عزيزي المدير '|| emp_mgr_name ||
+'
+
+يُطلب منك اتخاذ إجراء فوري للتقييم فيما يتعلق بفترة التجربة  ' || emp_name || '/' || emp_job || '/' || c.EMPNO || '  لتجنب أي انتهاك قانوني لوضعه الوظيفي و وفقًا لقانون العمل ، وعدم اتخاذك لأي إجراء سيفوضنا للقيام بذلك نيابةً عنك.
+
+
+ادارة الموارد البشرية
+شركة الحاج حسين علي رضا المحدودة
+';
+
+END IF;
+*/
+---send_mail2(p_sender =>'hr@hha.com.sa' ,p_recipient => emp_mgr_email,p_subject => email_subject,p_message => MSG);
+--for send sms
+insert into sms_live(template_id, mobile, invdate, UDF10)
+values('MANS', '0509490486', to_char(sysdate,'dd\mm\yyyy hh24:mi'),SMS_TEXT);
+commit;
+
+EXCEPTION 
+  WHEN NO_DATA_FOUND THEN
+  NULL;
+  WHEN OTHERS THEN
+  NULL;
+
+END;
+/]]></n0:source>
+		</n0:createOracleProcedure>
+	</changeSet>
+</databaseChangeLog>

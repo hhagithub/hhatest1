@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="3746b44bfd8abe6ef3aa462b07b4caca280c5caa" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleProcedure objectName="EMAIL_ZATCA_ONLINE_INVOICE" objectType="PROCEDURE" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "HHA_PROD"."EMAIL_ZATCA_ONLINE_INVOICE" (INV_NO1 in number) as
+FINAL_INVOICE_NO_ number;
+email_  varchar2(100);
+INV_NO_ number;
+CUST_NAME_ENG_ varchar2(200);
+CUST_NAME_ARB_ varchar2(200);
+
+begin
+ 
+select INV_NO,FINAL_INVOICE_NO,CUST_EMAIL,CUST_NAME_ARB,CUST_NAME_ENG into INV_NO_,FINAL_INVOICE_NO_,email_,CUST_NAME_ARB_,CUST_NAME_ENG_
+ from vw_inv_mst where INV_NO= INV_NO1;
+
+-- if FINAL_INVOICE_NO_ is not null then
+
+ declare
+  l_report blob;
+  hash_ varchar2(200);
+l_workspace_id      number; 
+begin  
+l_workspace_id := apex_util.find_security_group_id (p_workspace => 'hha');
+    apex_util.set_security_group_id (p_security_group_id => l_workspace_id); 
+    INSERT INTO ZARCA_TRANNO(TRAN_NO)VALUES(INV_NO_);
+     
+  l_report := apex_util.get_print_document (
+    p_application_id      => '130',
+    p_report_query_name   => 'VW_INVOICE',
+    p_report_layout_name  => 'VW_INVOICE',
+    p_report_layout_type  => 'rtf',
+    p_document_format     => 'pdf'
+  );
+ 
+  -- delete if already exists
+--   Delete from emp_payslips where empno = V('P3_EMPNO');
+  insert into vw_online_payment_receipt_print (
+
+   INV_TRANNO ,
+   filename,
+   mimetype,
+   report,
+   created_date,
+   created_by,
+   hash_val
+
+  ) values (
+
+  INV_NO_ ,
+   'REQ_FORM_'||INV_NO_ ||'.PDF',
+   'application/pdf',
+   l_report,
+   sysdate,
+   2554,
+   lower(SYS_GUID())
+  );
+  /*
+EXCEPTION
+WHEN OTHERS THEN
+ dbms_output.put_line(sqlerrm);
+ dbms_output.put_line(sqlcode);
+ */
+/* HANDLE ERROR HERE IF ANY */
+end;
+
+
+
+
+DECLARE
+    l_url varchar2(2000);
+    file_ varchar2(500);
+    from_url_ varchar2(500);
+    l_app number := 130;
+    l_session number;-- := v('APP_SESSION');
+    hash_ varchar2(500);
+      --v_pay_method number;
+BEGIN
+
+
+SELECT HASH_VAL into hash_ FROM vw_online_payment_receipt_print WHERE INV_TRANNO=INV_NO_;
+
+
+from_url_:='https://adfapps.hha.com.sa/ords/hha/files_display/receipt?inv_tran='||INV_NO_||'&hash_='||hash_;
+
+  send_email_html('it@hha.com.sa',email_,'Tax Invoice','
+                            Dear '||initcap(nvl(CUST_NAME_ARB_,CUST_NAME_ENG_))||','
+                            ||'<br>We have successfully generated your Tax Invoice</br>
+                            <br><b>Please find your Tax Invoice details By Clicking below link:</b>
+                            <br></br><span style="padding-left:20px !important;"><a href='||from_url_||' type="button" style="padding-left:20px !important; background-color:green; color:white; font-size:22px; padding:30px 50px; text-align:center; text-decoration:none;" >&nbsp;&nbsp;&nbsp; View Tax Invoice &nbsp;&nbsp;&nbsp;</a></span><p>&nbsp;</p>'
+                            ||'<p></p>'||--'<img src="C:\HHA\icons\hhalogo_wp.bmp" alt="HTML5 Icon" width="100" height="80">'
+                            'Thanks,'||'<p></p>'||'
+                            Haji Husein Alireza Co. Ltd.'
+                            );
+
+--email_VSS_REFUND_mazda(:P290_ID,:P290_RECEIPT_NO_,'Approved',l_url,file_,null,null,from_url_);
+
+end;
+
+-- end if;
+exception when no_data_found then
+null;
+
+end;
+/]]></n0:source>
+		</n0:createOracleProcedure>
+	</changeSet>
+</databaseChangeLog>

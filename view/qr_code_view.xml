@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="908100bc767117a8b7a940c8d579308cafd23cc7" author="(HHA_PROD)-Generated"     >
+		<n0:createSxmlObject objectName="QR_CODE" objectType="VIEW" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  <VIEW xmlns="http://xmlns.oracle.com/ku" version="1.0">
+   <SCHEMA>HHA_PROD</SCHEMA>
+   <NAME>QR_CODE</NAME>
+   <COL_LIST>
+      <COL_LIST_ITEM>
+         <NAME>INVOICE_NUMBER</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>PIC</NAME>
+      </COL_LIST_ITEM>
+   </COL_LIST>
+   <SUBQUERY>SELECT
+ INVOICE_NUMBER,
+ ZT_QR.F_QR_AS_BMP(
+
+            p_data => '
+
+شركة :-  الحاج حسين علي رضا وشركاه المحدودة
+الرقم الضريبي :-
+رقم الفاتورة :-' ||  INVOICE_NUMBER ||'
+تاريخ الفاتورة :-' || tO_CHAR(INV_TIME,'DD/MM/RRRR') ||'
+المبلغ بدون ضريبة :- ' || TOTAL_AMOUNT ||'
+المبلغ ضريبة :- ' || TOTAL_AMOUNT_VAT ||'
+مبلغ شامل الضريبة :- ' || (TOTAL_AMOUNT + TOTAL_AMOUNT_VAT)
+
+
+
+,
+ 
+            p_error_correction => 'M') AS PIC
+
+
+     from invoice_header
+    where  to_char(DATE_CREATED,'mmrrrr') = '102021'
+</SUBQUERY>
+</VIEW>]]></n0:source>
+		</n0:createSxmlObject>
+	</changeSet>
+</databaseChangeLog>

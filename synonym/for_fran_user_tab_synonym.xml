@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="4059e96ec2c718124d0784159d35a2dbcf7ea173" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleSynonym objectName="FOR_FRAN_USER_TAB" objectType="SYNONYM" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE SYNONYM "HHA_PROD"."FOR_FRAN_USER_TAB" FOR "HHA"."FOR_FRAN_USER_TAB"@"TO_APPI.HHA.LOCAL";]]></n0:source>
+		</n0:createOracleSynonym>
+	</changeSet>
+</databaseChangeLog>

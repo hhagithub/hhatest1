@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="9cbc886c3ef63bd0c0aacaa1b7d0b6f652817381" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="JNB_DAMAGE_REMARKS_FUNC" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."JNB_DAMAGE_REMARKS_FUNC" (sTOCK_ IN NUMBER ) RETURN VARCHAR IS
+
+STOCK_1  varchar2(2000) := '' ;
+DESC_ varchar2(2000) := '';
+cursor abc is
+select 
+       remarks 
+
+         from JNB_STOCK_DAMAGE_CONCRENS m where   stock_no= sTOCK_;
+
+
+begin
+
+open abc;
+loop
+fetch abc into STOCK_1 ;
+
+exit when abc%notfound;
+ DESC_:= (DESC_||','||STOCK_1);
+
+
+end loop;
+RETURN SUBSTR( DESC_,2)  ;
+
+EXCEPTION WHEN NO_DATA_FOUND THEN
+RETURN NULL;
+
+close abc;
+--commit;
+end;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

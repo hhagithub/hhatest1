@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="443da96286e48afe84ae0af2a287d7481da5892b" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleTrigger objectName="BI_PAYFORT_PAYMENT_RESPONSE" objectType="TRIGGER" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE TRIGGER "HHA_PROD"."BI_PAYFORT_PAYMENT_RESPONSE" 
+  before insert on  PAYFORT_PAYMENT_RESPONSE
+  for each row
+begin
+  if :NEW.ID is null then
+    select NVL(MAX(ID),0)+1 into :NEW.ID from PAYFORT_PAYMENT_RESPONSE;
+  end if;
+end;
+
+/
+/
+ALTER TRIGGER "HHA_PROD"."BI_PAYFORT_PAYMENT_RESPONSE" ENABLE;]]></n0:source>
+		</n0:createOracleTrigger>
+	</changeSet>
+</databaseChangeLog>

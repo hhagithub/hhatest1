@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="7e74d8b2476fd1a5f81e24469b3cc5c4a7275ddd" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleSynonym objectName="VSS_CREDIT_APPROVAL_MOBILE" objectType="SYNONYM" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE SYNONYM "HHA_PROD"."VSS_CREDIT_APPROVAL_MOBILE" FOR "HHA"."VSS_CREDIT_APPROVAL_MOBILE"@"TO_APPI.HHA.LOCAL";]]></n0:source>
+		</n0:createOracleSynonym>
+	</changeSet>
+</databaseChangeLog>

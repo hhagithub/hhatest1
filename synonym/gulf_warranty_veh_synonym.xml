@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="98f69ed58129e0047d9ab6b18214b878bb5eb37f" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleSynonym objectName="GULF_WARRANTY_VEH" objectType="SYNONYM" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE SYNONYM "HHA_PROD"."GULF_WARRANTY_VEH" FOR "HHA"."GULF_WARRANTY_VEH"@"TO_APPI.HHA.LOCAL";]]></n0:source>
+		</n0:createOracleSynonym>
+	</changeSet>
+</databaseChangeLog>

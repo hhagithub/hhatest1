@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="dcc2a5d9fbe5227a038db87e4ab995c3e348c324" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleProcedure objectName="PROC_ASTON_MARTIN_INCENTIVE_TECHNICIAN" objectType="PROCEDURE" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "HHA_PROD"."PROC_ASTON_MARTIN_INCENTIVE_TECHNICIAN" (P_PERIOD VARCHAR2)
+IS
+  V_PS_ASTON_TECH_ACHIEVED NUMBER;
+  V_DED_PER NUMBER;
+  V_WI_INC_AMOUNT NUMBER;
+  V_WI_INC_BEF_DED NUMBER;
+
+  --V_TL_PS_ALL_SOLD NUMBER;
+  --V_TL_PS_ASTON_TARGET_60 NUMBER;
+  V_TL_PS_ASTON_TECH_ACHIEVED NUMBER;
+  V_TL_DED_PER NUMBER := 0;
+  V_TL_WI_INC_AMOUNT NUMBER;
+  V_TL_WI_INC_BEF_DED NUMBER;
+
+  V_WB_PERCENTAGE NUMBER;
+  V_TL_WB_PERCENTAGE NUMBER;
+
+  V_BASIC NUMBER;
+  V_NARRATION VARCHAR2(2000);
+
+BEGIN
+   FOR LOC IN (Select  distinct WT_LOCATION from work_team_details d where  ASTON_MARTIN_FLAG = 'Y') LOOP
+
+     --DELETE FROM work_emp_incentives WHERE  WI_LOCATION = LOC.WT_LOCATION AND WI_PERIOD = P_PERIOD ;
+
+     -- FOR TECHINCIAN
+     FOR EP IN (SELECT WT_EMP_NO,WT_SECTION From work_team_details WHERE WT_SECTION in ('01','02') AND WT_EMP_STATUS = 'A' and WT_LOCATION = LOC.WT_LOCATION   and ASTON_MARTIN_FLAG = 'Y') LOOP
+
+        V_PS_ASTON_TECH_ACHIEVED := 0;
+        V_WB_PERCENTAGE := 0;
+        V_DED_PER := 0;
+        V_WI_INC_BEF_DED := 0;
+        V_WI_INC_AMOUNT :=0 ;
+        V_BASIC := 0;
+
+        V_NARRATION := NULL;
+
+        V_NARRATION := V_NARRATION || ' ( ASTON MARTIN TECHINICIAN)';
+       V_NARRATION := V_NARRATION || ' (WT_LOCATION:= '||LOC.WT_LOCATION || ')';
+       V_NARRATION := V_NARRATION || ' (WT_EMP_NO:= '||EP.WT_EMP_NO || ')';  
+       V_NARRATION := V_NARRATION || ' (WT_SECTION:= '||EP.WT_SECTION || ')';  
+
+       BEGIN
+        SELECT PS_ASTON_TECH_ACHIEVED  INTO V_PS_ASTON_TECH_ACHIEVED  --GET ACHIEVED % OF EMP
+        FROM work_prod_summery
+        WHERE PS_LOCATION = LOC.WT_LOCATION
+        AND PS_MONTH_YEAR = (SELECT SUBSTR(P_PERIOD,5,2)||SUBSTR(P_PERIOD,1,4)  FROM DUAL)  --CONVERT 202201 TO 012022
+        AND PS_EMP_NO = EP.WT_EMP_NO ;
+
+         
+        EXCEPTION WHEN NO_DATA_FOUND THEN
+            NULL;
+       END ;
+        
+        BEGIN
+            SELECT (WB_PERCENTAGE) INTO V_WB_PERCENTAGE -- Total Busdget Amount -- A
+            FROM work_budget_amounts
+            WHERE WB_PERIOD = P_PERIOD  --'202104'
+            and WB_LOCATION = LOC.WT_LOCATION
+            and nvl(franchise,'99')  = '07';
+            
+            
+        EXCEPTION WHEN NO_DATA_FOUND THEN
+            NULL;
+        END ;
+
+        --IF V_PS_ASTON_TECH_ACHIEVED >= 60  AND V_WB_PERCENTAGE >=60 THEN   --ACHIEVED % >= 60
+
+                --REVIEW POINTS....EACH FIELD HAS 10 POINT IF 'N'
+            BEGIN
+
+                SELECT DECODE(AI_TECH_REPAIR_PROC,'N',10,0)+ DECODE(AI_TECH_ATTENDANCE,'N',10,0)+ DECODE(AI_TECH_REPEAT_REP,'N',10,0)+ DECODE(AI_TECH_TRAINNG,'N',10,0)
+                INTO V_DED_PER
+                From ASTON_INCEN_CRITERIA
+                where AI_PERIOD = P_PERIOD
+                AND AI_LOCATION = LOC.WT_LOCATION
+                AND AI_SECTION = EP.WT_SECTION
+                AND AI_EMP_NO =     EP.WT_EMP_NO;
+
+            EXCEPTION WHEN NO_DATA_FOUND THEN
+                NULL;
+            END;
+
+            V_WI_INC_BEF_DED := round  ( (1500 * V_PS_ASTON_TECH_ACHIEVED / 100) * V_WB_PERCENTAGE /100) ;
+            V_WI_INC_AMOUNT := round(V_WI_INC_BEF_DED - nvl((V_WI_INC_BEF_DED * V_DED_PER / 100),0)) ; ---AMOUNT AFTER REVIEW POINT
+            
+            BEGIN
+                SELECT ((ST_BASIC*33)/100) INTO V_BASIC FROM PASTATIC 
+                WHERE ST_EMPCD = EP.WT_EMP_NO;
+            EXCEPTION WHEN NO_DATA_FOUND THEN
+                NULL;
+            END;
+                
+             IF V_WI_INC_AMOUNT > V_BASIC THEN
+                V_WI_INC_AMOUNT := V_BASIC;
+             END IF;
+
+             IF V_WB_PERCENTAGE > 120 THEN
+               V_WI_INC_AMOUNT := V_WI_INC_AMOUNT *1.2;
+             END IF;
+             
+             IF V_PS_ASTON_TECH_ACHIEVED < 60  OR V_WB_PERCENTAGE < 60 THEN
+              V_WI_INC_BEF_DED := 0;
+              V_WI_INC_AMOUNT := 0;
+             END IF;
+
+            V_NARRATION := V_NARRATION || ' (PS_ASTON_TECH_ACHIEVED:= '||V_PS_ASTON_TECH_ACHIEVED || ')';            
+            V_NARRATION := V_NARRATION || ' (WB_PERCENTAGE:= '||V_WB_PERCENTAGE || ')';
+            V_NARRATION := V_NARRATION || ' (V_DED_PER:= '||V_DED_PER || ')';
+            V_NARRATION := V_NARRATION || ' (V_WI_INC_BEF_DED:= '||V_WI_INC_BEF_DED || ')';
+            V_NARRATION := V_NARRATION || ' (V_WI_INC_AMOUNT:= '||V_WI_INC_AMOUNT || ')';
+            V_NARRATION := V_NARRATION || ' (V_BASIC33:= '||V_BASIC || ')';
+                   
+
+            INSERT INTO work_emp_incentives(WI_EMP_NO,WI_LOCATION, WI_PERIOD,WI_EMP_SEC,WI_INC_AMOUNT,WI_NON_MECH,WI_CLASS,WI_INC_BEF_DED,FRANCHISE,NARRATION)
+            VALUES( EP.WT_EMP_NO,LOC.WT_LOCATION, P_PERIOD, EP.WT_SECTION,V_WI_INC_AMOUNT,1,NULL,V_WI_INC_BEF_DED,'07',V_NARRATION);
+
+       -- END IF;
+
+          --dbms_output.put_line(V_NARRATION);
+     END LOOP;
+
+     COMMIT;
+
+     --FOR TEAM LEADER
+     FOR  TL IN ( select distinct WT_TEAM_LEADER,WT_SECTION from work_team_details where  ASTON_MARTIN_FLAG = 'Y' AND WT_LOCATION = LOC.WT_LOCATION AND WT_SECTION in ('01','02') and WT_TEAM_LEADER is not null ) LOOP
+        V_TL_PS_ASTON_TECH_ACHIEVED := 0;
+        V_TL_DED_PER := 0;
+        V_TL_WI_INC_BEF_DED := 0;
+        V_TL_WI_INC_AMOUNT := 0;
+        V_TL_WB_PERCENTAGE := 0;
+        V_BASIC := 0;
+        V_NARRATION := NULL;
+
+         V_NARRATION := V_NARRATION || ' (WT_LOCATION:= '||LOC.WT_LOCATION || ')';
+         V_NARRATION := V_NARRATION || ' (WT_TEAM_LEADER:= '||TL.WT_TEAM_LEADER || ')';  
+         V_NARRATION := V_NARRATION || ' (WT_SECTION:= '||TL.WT_SECTION || ')';  
+
+
+        SELECT /*SUM(PS_ALL_SOLD),SUM(PS_ASTON_TARGET_60),*/
+        AVG(PS_ASTON_TECH_ACHIEVED)
+        INTO /*V_TL_PS_ALL_SOLD,V_TL_PS_ASTON_TARGET_60,*/
+        V_TL_PS_ASTON_TECH_ACHIEVED
+        From work_prod_summery
+        Where PS_MONTH_YEAR = (SELECT SUBSTR(P_PERIOD,5,2)||SUBSTR(P_PERIOD,1,4)  FROM DUAL)  --012022
+        and PS_LOCATION = LOC.WT_LOCATION  --271
+        AND PS_EMP_NO IN  ( SELECT WT_EMP_NO FROM work_team_details WHERE WT_TEAM_LEADER = TL.WT_TEAM_LEADER);
+       
+         
+       BEGIN
+                SELECT   DECODE(AI_TECH_REPAIR_PROC,'N',10,0)+ DECODE(AI_TECH_ATTENDANCE,'N',10,0)+ DECODE(AI_TECH_REPEAT_REP,'N',10,0)+ DECODE(AI_TECH_TRAINNG,'N',10,0)
+                INTO V_TL_DED_PER
+                From ASTON_INCEN_CRITERIA
+                where AI_PERIOD = P_PERIOD
+                AND AI_LOCATION = LOC.WT_LOCATION
+                AND AI_SECTION = TL.WT_SECTION
+                AND AI_EMP_NO  = TL.WT_TEAM_LEADER;
+/*
+                IF V_PS_ASTON_TECH_ACHIEVED = 0 THEN
+                  V_PS_ASTON_TECH_ACHIEVED := 1;
+                END IF;
+*/
+      
+        EXCEPTION WHEN NO_DATA_FOUND THEN
+                NULL;
+        END;
+
+        BEGIN
+            SELECT (WB_PERCENTAGE) INTO V_TL_WB_PERCENTAGE -- Total Busdget Amount -- A
+            FROM work_budget_amounts
+            WHERE WB_PERIOD = P_PERIOD  --'202104'
+            and WB_LOCATION = LOC.WT_LOCATION
+            and nvl(franchise,'99')  = '07';
+ 
+        EXCEPTION WHEN NO_DATA_FOUND THEN
+            NULL;
+        END ;
+
+  --  IF V_TL_PS_ASTON_TECH_ACHIEVED >= 60  AND V_TL_WB_PERCENTAGE >= 60 THEN
+        V_TL_WI_INC_BEF_DED := round((2000 * V_TL_PS_ASTON_TECH_ACHIEVED / 100)*V_TL_WB_PERCENTAGE/100); --2000 * V_TL_PS_ASTON_TARGET_60 / 100;
+        V_TL_WI_INC_AMOUNT :=  round(V_TL_WI_INC_BEF_DED - NVL((V_TL_WI_INC_BEF_DED *  V_TL_DED_PER / 100),0)) ;  ---AMOUNT AFTER REVIEW POINT ;
+
+            BEGIN
+                SELECT ((ST_BASIC*33)/100) INTO V_BASIC FROM PASTATIC 
+                WHERE ST_EMPCD = TL.WT_TEAM_LEADER;
+            EXCEPTION WHEN NO_DATA_FOUND THEN
+                NULL;
+            END;
+                
+             IF V_TL_WI_INC_AMOUNT > V_BASIC THEN
+                V_TL_WI_INC_AMOUNT := V_BASIC;
+             END IF;
+                  
+           IF V_TL_WB_PERCENTAGE > 120 THEN
+               V_WI_INC_AMOUNT := V_WI_INC_AMOUNT *1.2;
+             END IF;
+
+            IF V_TL_PS_ASTON_TECH_ACHIEVED < 60  OR  V_TL_WB_PERCENTAGE < 60 or V_TL_WI_INC_AMOUNT < 0 THEN
+              V_TL_WI_INC_BEF_DED := 0;
+              V_TL_WI_INC_AMOUNT := 0;
+             END IF;
+       
+        V_NARRATION := V_NARRATION || ' (V_TL_PS_ASTON_TECH_ACHIEVED:= '||V_TL_PS_ASTON_TECH_ACHIEVED || ')'; 
+        V_NARRATION := V_NARRATION || ' (V_TL_DED_PER:= '||V_TL_DED_PER || ')'; 
+        V_NARRATION := V_NARRATION || ' (V_TL_WB_PERCENTAGE:= '||V_TL_WB_PERCENTAGE || ')';           
+        V_NARRATION := V_NARRATION || ' (V_TL_WI_INC_BEF_DED:= '||V_TL_WI_INC_BEF_DED || ')';  
+        V_NARRATION := V_NARRATION || ' (V_TL_WI_INC_AMOUNT:= '||V_TL_WI_INC_AMOUNT || ')';  
+        V_NARRATION := V_NARRATION || ' (V_BASIC33:= '||V_BASIC || ')'; 
+
+         INSERT INTO work_emp_incentives(WI_EMP_NO,WI_LOCATION, WI_PERIOD,WI_EMP_SEC,WI_INC_AMOUNT,WI_NON_MECH,WI_CLASS,WI_INC_BEF_DED,FRANCHISE,NARRATION)
+                                 VALUES( TL.WT_TEAM_LEADER,LOC.WT_LOCATION, P_PERIOD, TL.WT_SECTION, V_TL_WI_INC_AMOUNT,1,NULL,V_TL_WI_INC_BEF_DED,'07',V_NARRATION );
+  --  END IF;
+
+      -- dbms_output.put_line(V_NARRATION);
+     END LOOP;
+
+  
+
+   END LOOP;
+
+    commit;
+
+   
+    dbms_output.put_line(' Procedure Successful ');
+EXCEPTION
+     WHEN others THEN
+  dbms_output.put_line(' SQL Error Msg='||SQLERRM);
+
+END;
+/]]></n0:source>
+		</n0:createOracleProcedure>
+	</changeSet>
+</databaseChangeLog>

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="4e9f10a15fc558f043fd50e4f9f138e876538265" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleProcedure objectName="GET_RENTION_DATES_SERVICE" objectType="PROCEDURE" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "HHA_PROD"."GET_RENTION_DATES_SERVICE" (rt_yr in varchar2,
+rt_qt in varchar2,
+rt_yn in number,
+wdate1 out date,
+wdate2 out date,
+sdate1 out date,
+sdate2 out date) is
+rt_yr_min1 varchar2(4) := to_number(rt_yr) - 2;
+rt_yr_min2 varchar2(4) := to_number(rt_yr) - rt_yn;
+begin
+if rt_qt = 'Q1' then
+wdate2 := to_date('31-mar-' || rt_yr, 'dd-mon-yyyy');
+wdate1 := to_date('01-apr-' || rt_yr_min1, 'dd-mon-yyyy');
+
+
+
+elsif rt_qt = 'Q2' then
+wdate2 := to_date('30-jun-' || rt_yr, 'dd-mon-yyyy');
+wdate1 := to_date('01-jul-' || rt_yr_min1, 'dd-mon-yyyy');
+
+
+
+elsif rt_qt = 'Q3' then
+wdate2 := to_date('30-sep-' || rt_yr, 'dd-mon-yyyy');
+wdate1 := to_date('01-oct-' || rt_yr_min1, 'dd-mon-yyyy');
+
+
+
+elsif rt_qt = 'Q4' then
+wdate2 := to_date('31-dec-' || rt_yr, 'dd-mon-yyyy');
+wdate1 := to_date('01-jan-' || rt_yr, 'dd-mon-yyyy');
+
+
+
+end if;
+
+
+
+if rt_yn >= 7 then
+
+
+
+sdate1 := to_date( to_char(wdate1,'dd-mon-')||(to_number(to_char(wdate1,'rrrr'))-rt_yn) ,'dd-mon-rrrr');
+sdate2 := to_date( to_char(wdate2,'dd-mon-')||(to_number(to_char(wdate2,'rrrr'))-1) ,'dd-mon-rrrr');
+else
+
+
+
+sdate1 := to_date( to_char(wdate1,'dd-mon-')||(to_number(to_char(wdate1,'rrrr'))-rt_yn) ,'dd-mon-rrrr');
+sdate2 := to_date( to_char(wdate2,'dd-mon-')||(to_number(to_char(wdate2,'rrrr'))-rt_yn) ,'dd-mon-rrrr');
+end if;
+
+
+
+
+end;
+/]]></n0:source>
+		</n0:createOracleProcedure>
+	</changeSet>
+</databaseChangeLog>

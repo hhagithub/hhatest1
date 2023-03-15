@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="96182e8191e978a6ca9291ef3f132e87063afdcf" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="ZATCA_UBLEXTENSIONS" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."ZATCA_UBLEXTENSIONS" (AP_INVOICE_HASH_ varchar2,AP_SIGNED_PROPERTIES_HASH_ varchar2,AP_DIGITAL_SIGNATURE_ varchar2,AP_SIGNINGTIME_ varchar2) RETURN CLOB IS
+  l_clob         CLOB;
+BEGIN
+if AP_INVOICE_HASH_ is null then
+  return null;
+else
+l_clob := 
+'<ext:UBLExtensions>
+    <ext:UBLExtension>
+        <ext:ExtensionURI>urn:oasis:names:specification:ubl:dsig:enveloped:xades</ext:ExtensionURI>
+        <ext:ExtensionContent>
+            <sig:UBLDocumentSignatures xmlns:sig="urn:oasis:names:specification:ubl:schema:xsd:CommonSignatureComponents-2" xmlns:sac="urn:oasis:names:specification:ubl:schema:xsd:SignatureAggregateComponents-2" xmlns:sbc="urn:oasis:names:specification:ubl:schema:xsd:SignatureBasicComponents-2">
+                <sac:SignatureInformation>
+                    <cbc:ID>urn:oasis:names:specification:ubl:signature:1</cbc:ID>
+                    <sbc:ReferencedSignatureID>urn:oasis:names:specification:ubl:signature:Invoice</sbc:ReferencedSignatureID>
+                    <ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#" Id="signature">
+                        <ds:SignedInfo>
+                            <ds:CanonicalizationMethod Algorithm="http://www.w3.org/2006/12/xml-c14n11"/>
+                            <ds:SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha256"/>
+                            <ds:Reference Id="invoiceSignedData" URI="">
+                                <ds:Transforms>
+                                    <ds:Transform Algorithm="http://www.w3.org/TR/1999/REC-xpath-19991116">
+                                        <ds:XPath>not(//ancestor-or-self::ext:UBLExtensions)</ds:XPath>
+                                    </ds:Transform>
+                                    <ds:Transform Algorithm="http://www.w3.org/TR/1999/REC-xpath-19991116">
+                                        <ds:XPath>not(//ancestor-or-self::cac:Signature)</ds:XPath>
+                                    </ds:Transform>
+                                    <ds:Transform Algorithm="http://www.w3.org/TR/1999/REC-xpath-19991116">
+                                        <ds:XPath>not(//ancestor-or-self::cac:AdditionalDocumentReference[cbc:ID=''QR''])</ds:XPath>
+                                    </ds:Transform>
+                                    <ds:Transform Algorithm="http://www.w3.org/2006/12/xml-c14n11"/>
+                                </ds:Transforms>
+                                <ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
+                                <ds:DigestValue>'||AP_INVOICE_HASH_||'</ds:DigestValue>
+                            </ds:Reference>
+                            <ds:Reference Type="http://www.w3.org/2000/09/xmldsig#SignatureProperties" URI="#xadesSignedProperties">
+                                <ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
+                                <ds:DigestValue>'||AP_SIGNED_PROPERTIES_HASH_||'</ds:DigestValue>
+                            </ds:Reference>
+                        </ds:SignedInfo>
+                        <ds:SignatureValue>'||AP_DIGITAL_SIGNATURE_||'</ds:SignatureValue>
+                        <ds:KeyInfo>
+                            <ds:X509Data>
+                                <ds:X509Certificate>MIID6zCCA5CgAwIBAgITbwAAgLTUs0JsZqZVAQABAACAtDAKBggqhkjOPQQDAjBjMRUwEwYKCZImiZPyLGQBGRYFbG9jYWwxEzARBgoJkiaJk/IsZAEZFgNnb3YxFzAVBgoJkiaJk/IsZAEZFgdleHRnYXp0MRwwGgYDVQQDExNUU1pFSU5WT0lDRS1TdWJDQS0xMB4XDTIyMTAwNjEyNTcyNloXDTI0MTAwNTEyNTcyNlowTjELMAkGA1UEBhMCU0ExEzARBgNVBAoTCjM5OTk5OTk5OTkxDDAKBgNVBAsTA1RTVDEcMBoGA1UEAxMTVFNULTM5OTk5OTk5OTkwMDAwMzBWMBAGByqGSM49AgEGBSuBBAAKA0IABGGDDKDmhWAITDv7LXqLX2cmr6+qddUkpcLCvWs5rC2O29W/hS4ajAK4Qdnahym6MaijX75Cg3j4aao7ouYXJ9GjggI5MIICNTCBmgYDVR0RBIGSMIGPpIGMMIGJMTswOQYDVQQEDDIxLVRTVHwyLVRTVHwzLTA3MzBlZThlLTA4OWQtNDQ1OS1hMzg3LWIxMTg5NGJmMTQyOTEfMB0GCgmSJomT8ixkAQEMDzM5OTk5OTk5OTkwMDAwMzENMAsGA1UEDAwEMTEwMDEMMAoGA1UEGgwDVFNUMQwwCgYDVQQPDANUU1QwHQYDVR0OBBYEFDuWYlOzWpFN3no1WtyNktQdrA8JMB8GA1UdIwQYMBaAFHZgjPsGoKxnVzWdz5qspyuZNbUvME4GA1UdHwRHMEUwQ6BBoD+GPWh0dHA6Ly90c3RjcmwuemF0Y2EuZ292LnNhL0NlcnRFbnJvbGwvVFNaRUlOVk9JQ0UtU3ViQ0EtMS5jcmwwga0GCCsGAQUFBwEBBIGgMIGdMG4GCCsGAQUFBzABhmJodHRwOi8vdHN0Y3JsLnphdGNhLmdvdi5zYS9DZXJ0RW5yb2xsL1RTWkVpbnZvaWNlU0NBMS5leHRnYXp0Lmdvdi5sb2NhbF9UU1pFSU5WT0lDRS1TdWJDQS0xKDEpLmNydDArBggrBgEFBQcwAYYfaHR0cDovL3RzdGNybC56YXRjYS5nb3Yuc2Evb2NzcDAOBgNVHQ8BAf8EBAMCB4AwHQYDVR0lBBYwFAYIKwYBBQUHAwIGCCsGAQUFBwMDMCcGCSsGAQQBgjcVCgQaMBgwCgYIKwYBBQUHAwIwCgYIKwYBBQUHAwMwCgYIKoZIzj0EAwIDSQAwRgIhAOZ8oJnliPhdWvCiokPmStz2niL+1Rbw6y9asAh229z7AiEA0r6l1qnq6vzRjVvr9Hnbtq/9Aki0R4rF64EFNY4XACM=</ds:X509Certificate>
+                            </ds:X509Data>
+                        </ds:KeyInfo>
+                        <ds:Object>
+                            <xades:QualifyingProperties xmlns:xades="http://uri.etsi.org/01903/v1.3.2#" Target="signature">
+                                <xades:SignedProperties Id="xadesSignedProperties">
+                                    <xades:SignedSignatureProperties>
+                                        <xades:SigningTime>'||AP_SIGNINGTIME_||'</xades:SigningTime>
+                                        <xades:SigningCertificate>
+                                            <xades:Cert>
+                                                <xades:CertDigest>
+                                                    <ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"></ds:DigestMethod>
+                                                    <ds:DigestValue>ZGQ1MmU4MzM4YzIxZTU3MjJkYWM1MzZkNTU3NTIwNWMzMDY3MzM4ODU4YWQwYmEyYTYwMTI5MzI3YjEyOTczNQ==</ds:DigestValue>
+                                                </xades:CertDigest>
+                                                <xades:IssuerSerial>
+                                                    <ds:X509IssuerName>CN=TSZEINVOICE-SubCA-1, DC=extgazt, DC=gov, DC=local</ds:X509IssuerName>
+                                                    <ds:X509SerialNumber>2475382888117010136950089026926167642744062132</ds:X509SerialNumber>
+                                                </xades:IssuerSerial>
+                                            </xades:Cert>
+                                        </xades:SigningCertificate>
+                                    </xades:SignedSignatureProperties>
+                                </xades:SignedProperties>
+                            </xades:QualifyingProperties>
+                        </ds:Object>
+                    </ds:Signature>
+                </sac:SignatureInformation>
+            </sig:UBLDocumentSignatures>
+        </ext:ExtensionContent>
+    </ext:UBLExtension>
+</ext:UBLExtensions>';  
+  RETURN l_clob;
+
+End if;
+END;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

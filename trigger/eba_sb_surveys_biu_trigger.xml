@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="3f14ebd10c6500d5e307b70c673d9f65dae65fa4" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleTrigger objectName="EBA_SB_SURVEYS_BIU" objectType="TRIGGER" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE TRIGGER "HHA_PROD"."EBA_SB_SURVEYS_BIU" 
+    before update or insert on eba_sb_surveys
+    for each row
+begin
+    if :new.tags is not null then
+        :new.tags := eba_sb_fw.tags_cleaner(:new.tags);
+    end if;
+    if inserting then
+        if :new.id is null then
+            :new.id := eba_sb.gen_id();
+        end if;
+        if :new.row_key is null then
+            :new.row_key := eba_sb_fw.compress_int(eba_sb_seq.nextval);
+        end if;
+        :new.created_by := nvl(v('APP_USER'),user);
+        :new.created := current_timestamp;
+        :new.row_version_number := 1;
+        if :new.state is null then
+            :new.state := 'DESIGN';
+        end if;
+    elsif updating then
+        :new.row_version_number := nvl(:old.row_version_number,1) + 1;
+        -- valid state transitions
+        -- DESIGN > TEST | ACTIVE
+        -- TEST > DESIGN | ACTIVE
+        -- ACTIVE > COMPLETE
+        if not (:old.state = :new.state or
+                :old.state = 'DESIGN' and (:new.state = 'TEST' or :new.state = 'ACTIVE') or
+                :old.state = 'TEST' and(:new.state = 'DESIGN' or :new.state = 'ACTIVE') or
+                :old.state = 'ACTIVE' and :new.state = 'COMPLETE') then
+            raise_application_error (-20001,'Invalid state transition');
+        end if;
+    end if;
+    :new.updated_by := nvl(v('APP_USER'),user);
+    :new.updated := current_timestamp;
+    eba_sb_fw.tag_sync(
+        p_new_tags      => :new.tags,
+        p_old_tags      => :old.tags,
+        p_content_type  => 'SURVEYS',
+        p_content_id    => :new.id );
+end;
+
+/
+/
+ALTER TRIGGER "HHA_PROD"."EBA_SB_SURVEYS_BIU" ENABLE;]]></n0:source>
+		</n0:createOracleTrigger>
+	</changeSet>
+</databaseChangeLog>

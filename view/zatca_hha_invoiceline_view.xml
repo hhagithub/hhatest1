@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="a58a4879051645640275d4a8a34657038dc4a0aa" author="(HHA_PROD)-Generated"     >
+		<n0:createSxmlObject objectName="ZATCA_HHA_INVOICELINE" objectType="VIEW" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  <VIEW xmlns="http://xmlns.oracle.com/ku" version="1.0">
+   <SCHEMA>HHA_PROD</SCHEMA>
+   <NAME>ZATCA_HHA_INVOICELINE</NAME>
+   <COL_LIST>
+      <COL_LIST_ITEM>
+         <NAME>INVOICE_ID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>UNITCODE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>CURRENCYID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>INVOICEDQUANTITY</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>LINEEXTENSIONAMOUNT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>TAXAMOUNT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ROUNDINGAMOUNT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>NAME</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>PRICEAMOUNT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>CLASSIFIEDTAXCATEGORYID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>TAXPERCENT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>TAXSCHEMEID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>CHARGEINDICATOR</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ALLOWANCECHARGEREASON</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>AMOUNT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>INV_LINE_ALW_PERC</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>INV_LINE_BASE_AMT</NAME>
+      </COL_LIST_ITEM>
+   </COL_LIST>
+   <SUBQUERY>SELECT
+INVOICE_NUMBER INVOICE_ID,                      --100
+line_no ID, --85                                --1
+TRIM(inv_uom) unitCode,--87                     --'PCE'
+TRIM(curr_inv_line_net_amt) currencyID,--89     --'SAR'
+inv_qty InvoicedQuantity,--86                   --1
+inv_line_net_amt LineExtensionAmount,--88       --200.00
+VAT_line_amt TaxAmount,--96                     --30.00
+line_amt_inc_vat RoundingAmount,--98            --230.00
+item_name Name,--100                            --'Item A'
+item_net_price PriceAmount,--104              --200.00
+inv_item_vat_cat_code ClassifiedTaxCategoryID,  --106 --'S'
+inv_item_vat_rate TaxPercent,--107              --15
+TRIM(tax_scheme_id_dtl)  TaxSchemeID, --108      --'VAT'
+
+--Line Discount
+'false'  ChargeIndicator,  --90
+'no discount' AllowanceChargeReason, --no discount
+Inv_Line_Alw_Amt Amount, --92,
+Inv_Line_Alw_Perc ,--91
+Inv_Line_Base_Amt --94
+
+FROM ZATCA_MAPPING_MASTER_DETAIL  --ZATCA_MAPPING_MASTER_DETAIL@to_appidev.hha.local  --ZATCA_MAPPING_MASTER_DETAIL_APEX
+--where invoice_number = 'SI2800179066'
+</SUBQUERY>
+</VIEW>]]></n0:source>
+		</n0:createSxmlObject>
+	</changeSet>
+</databaseChangeLog>

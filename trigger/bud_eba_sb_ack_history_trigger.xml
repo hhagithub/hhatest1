@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="a12801728ac5c214e402f334bbbec845b6a2f308" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleTrigger objectName="BUD_EBA_SB_ACK_HISTORY" objectType="TRIGGER" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE TRIGGER "HHA_PROD"."BUD_EBA_SB_ACK_HISTORY" 
+    before update or delete on eba_sb_ack_history
+    for each row
+begin
+    raise_application_error(-20001,'Updates and deletes are not allowed.');
+end bud_eba_sb_ack_history;
+
+/
+/
+ALTER TRIGGER "HHA_PROD"."BUD_EBA_SB_ACK_HISTORY" ENABLE;]]></n0:source>
+		</n0:createOracleTrigger>
+	</changeSet>
+</databaseChangeLog>

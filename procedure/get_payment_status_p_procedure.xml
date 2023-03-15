@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="4507b1e6664fa0670d8c394141f1aae84bf2f4ad" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleProcedure objectName="GET_PAYMENT_STATUS_P" objectType="PROCEDURE" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "HHA_PROD"."GET_PAYMENT_STATUS_P" ( v_merchant_reference IN varchar2 )   
+IS
+response_message varchar2(200);
+transaction_message varchar2(200);
+v_signature varchar2(2000);
+l_json_text clob;
+v_final_inv_no number;
+begin
+SELECT NVL(MAX(FINAL_INVOICE_NO),0)+1 into v_final_inv_no from vw_inv_mst;
+select lower(Amazon_sha256('Hha@2022_access_code=DiKdAZ6gWHdEn4IATsWElanguage=enmerchant_identifier=d9ab538emerchant_reference='||v_merchant_reference||'query_command=CHECK_STATUSHha@2022_')) into v_signature
+from dual;
+
+
+apex_web_service.g_request_headers(1).name := 'Content-Type';
+apex_web_service.g_request_headers(1).value:= 'application/json';
+apex_json.initialize_clob_output;
+apex_json.open_object;
+select   apex_web_service.make_rest_request(p_url => 'https://sbpaymentservices.PayFort.com/FortAPI/paymentApi' ,
+p_http_method => 'POST',      
+p_body  => '{
+  "access_code": "DiKdAZ6gWHdEn4IATsWE", 
+  "language": "en",
+  "merchant_identifier": "d9ab538e",
+  "merchant_reference": "'||v_merchant_reference||'",
+  "query_command": "CHECK_STATUS",
+  "signature": "'||v_signature||'"
+}' 
+ )     INTO l_json_text                                        
+from dual; 
+-- dbms_output.put_line(l_json_text);   2022-10-16T15:36:55+03:00
+
+SELECT
+JSON_VALUE(l_json_text, '$.response_message' ) AS response_message,
+JSON_VALUE(l_json_text, '$.transaction_message' ) AS transaction_message
+INTO response_message,transaction_message
+FROM
+dual; 
+ 
+if transaction_message='Success' then
+INSERT INTO PAYFORT_PAYMENT_RESPONSE_ONLINE_PAY (INVOICE_NO,RESP,STATUS) VALUES 
+((select INVOICE_NO from VW_INV_PAY_DET WHERE MERCHANT_REFERENCE=v_merchant_reference),l_json_text,response_message);
+update vw_inv_mst set FINAL_INVOICE_NO=v_final_inv_no
+WHERE INV_NO=(select INVOICE_NO from VW_INV_PAY_DET WHERE MERCHANT_REFERENCE=v_merchant_reference);
+commit;
+end if;
+dbms_output.put_line(transaction_message);
+EXCEPTION
+WHEN OTHERS THEN
+   raise_application_error(-20001,'An error was encountered - '||SQLCODE||' -ERROR- '||SQLERRM);
+end;
+/]]></n0:source>
+		</n0:createOracleProcedure>
+	</changeSet>
+</databaseChangeLog>

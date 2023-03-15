@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="d8283bda3f5dc93cd37ab8d535fe905983953d53" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleSynonym objectName="JOB_CARD_PHOTO" objectType="SYNONYM" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE SYNONYM "HHA_PROD"."JOB_CARD_PHOTO" FOR "HHA"."JOB_CARD_PHOTO"@"TO_APPI.HHA.LOCAL";]]></n0:source>
+		</n0:createOracleSynonym>
+	</changeSet>
+</databaseChangeLog>

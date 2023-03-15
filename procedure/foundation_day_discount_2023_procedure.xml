@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="e74769b4a45b3ab4322f5fded16485b4c0029692" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleProcedure objectName="FOUNDATION_DAY_DISCOUNT_2023" objectType="PROCEDURE" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "HHA_PROD"."FOUNDATION_DAY_DISCOUNT_2023" IS
+Begin
+
+  For i in (
+    Select jm_job_no
+    from work_vehicle_master vm,work_job_master jm
+    where vm.VM_CHASSIS_NO = jm.JM_CHASSIS_NO
+    and nvl(vm.VM_MODEL_YEAR,'2022') in ('2012','2013','2014','2015','2016','2017','2018','2019')  --to_char(sysdate,'rrrr')
+    --and to_char(sysdate,'RRRRMMDD') <= '20230115'
+    and trunc(jm.JM_JOB_DATE) between to_date('15022023','ddmmrrrr') and to_date('31052023','ddmmrrrr')
+    and vm.VM_SUPL_CODE = '01'
+    and nvl(jm.JM_CLASS_TYPE,'M')= 'M'
+    and Nvl(jm.jm_class_rep,'D') = 'R'
+    and Nvl(jm.JM_CLASS_SER,'Z') = 'Z'
+    and jm.JM_JOB_TYPE = '01'
+    and jm.jm_status != 3
+    and not exists (select JNO from discount_approval where jno =jm.jm_job_no )
+    )
+
+    loop
+    --FOUNDATION DAY DISCOUNT
+    insert into discount_approval (JNO,DT,DPTG,REMARKS)
+   values (i.jm_job_no,sysdate,33,'FOUNDATION DAY DISCOUNT');
+    end loop;
+    commit;
+
+  End;
+/]]></n0:source>
+		</n0:createOracleProcedure>
+	</changeSet>
+</databaseChangeLog>

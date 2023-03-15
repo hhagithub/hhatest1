@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="4227a2ac409bdaef95350eb3e1cbb91bf9e29d44" author="(HHA_PROD)-Generated"     >
+		<n0:createSxmlObject objectName="VDA_DETAIL" objectType="TABLE" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  <TABLE xmlns="http://xmlns.oracle.com/ku" version="1.0">
+   <SCHEMA>HHA_PROD</SCHEMA>
+   <NAME>VDA_DETAIL</NAME>
+   <RELATIONAL_TABLE>
+      <COL_LIST>
+         <COL_LIST_ITEM>
+            <NAME>STOCK_NO</NAME>
+            <DATATYPE>VARCHAR2</DATATYPE>
+            <LENGTH>15</LENGTH>
+         </COL_LIST_ITEM>
+         <COL_LIST_ITEM>
+            <NAME>SRNO</NAME>
+            <DATATYPE>NUMBER</DATATYPE>
+         </COL_LIST_ITEM>
+         <COL_LIST_ITEM>
+            <NAME>FTR_NO</NAME>
+            <DATATYPE>NUMBER</DATATYPE>
+         </COL_LIST_ITEM>
+         <COL_LIST_ITEM>
+            <NAME>FTR_TYPE</NAME>
+            <DATATYPE>VARCHAR2</DATATYPE>
+            <LENGTH>2</LENGTH>
+         </COL_LIST_ITEM>
+      </COL_LIST>
+      <FOREIGN_KEY_CONSTRAINT_LIST>
+         <FOREIGN_KEY_CONSTRAINT_LIST_ITEM>
+            <NAME>VDA_DETAIL_FK</NAME>
+            <COL_LIST>
+               <COL_LIST_ITEM>
+                  <NAME>STOCK_NO</NAME>
+               </COL_LIST_ITEM>
+            </COL_LIST>
+            <REFERENCES>
+               <SCHEMA>HHA_PROD</SCHEMA>
+               <NAME>VDA_MASTER</NAME>
+               <COL_LIST>
+                  <COL_LIST_ITEM>
+                     <NAME>STOCK_NO</NAME>
+                  </COL_LIST_ITEM>
+               </COL_LIST>
+            </REFERENCES>
+         </FOREIGN_KEY_CONSTRAINT_LIST_ITEM>
+      </FOREIGN_KEY_CONSTRAINT_LIST>
+      <PHYSICAL_PROPERTIES>
+         <HEAP_TABLE>
+            <SEGMENT_ATTRIBUTES>
+               <SEGMENT_CREATION_DEFERRED></SEGMENT_CREATION_DEFERRED>
+               <PCTFREE>10</PCTFREE>
+               <PCTUSED>40</PCTUSED>
+               <INITRANS>1</INITRANS>
+               <TABLESPACE>USERS</TABLESPACE>
+               <LOGGING>Y</LOGGING>
+            </SEGMENT_ATTRIBUTES>
+            <COMPRESS>N</COMPRESS>
+         </HEAP_TABLE>
+      </PHYSICAL_PROPERTIES>
+   </RELATIONAL_TABLE>
+</TABLE>]]></n0:source>
+		</n0:createSxmlObject>
+	</changeSet>
+</databaseChangeLog>

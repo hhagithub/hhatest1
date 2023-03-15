@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="d172adcbc5ec38859a08909c63295faecbc21999" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="BASE64DECODE" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."BASE64DECODE" (p_clob CLOB)
+  RETURN BLOB
+-- -----------------------------------------------------------------------------------
+-- File Name    : https://oracle-base.com/dba/miscellaneous/base64decode.sql
+-- Author       : Tim Hall
+-- Description  : Decodes a Base64 CLOB into a BLOB
+-- Last Modified: 09/11/2011
+-- -----------------------------------------------------------------------------------
+IS
+  l_blob    BLOB;
+  l_raw     RAW(32767);
+  l_amt     NUMBER := 7700;
+  l_offset  NUMBER := 1;
+  l_temp    VARCHAR2(32767);
+BEGIN
+  BEGIN
+    DBMS_LOB.createtemporary (l_blob, FALSE, DBMS_LOB.CALL);
+    LOOP
+      DBMS_LOB.read(p_clob, l_amt, l_offset, l_temp);
+      l_offset := l_offset + l_amt;
+      l_raw    := UTL_ENCODE.base64_decode(UTL_RAW.cast_to_raw(l_temp));
+      DBMS_LOB.append (l_blob, TO_BLOB(l_raw));
+    END LOOP;
+  EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+      NULL;
+  END;
+  RETURN l_blob;
+END;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

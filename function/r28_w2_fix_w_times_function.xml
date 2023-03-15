@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="0cea2b042cf69236cfee2014f1fa80c655465686" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="R28_W2_FIX_W_TIMES" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."R28_W2_FIX_W_TIMES" (wj_emp_no_ VARCHAR2,starttime_ DATE,WT_CODE_ number) return number is
+abcd number; --varchar2(20);
+begin
+  select round((nvl(Sum(WT_END_TIME-WT_START_TIME),0)*24),2 ) 
+  
+  /*
+          LPAD(floor(sum(((to_char(WT_END_TIME,'hh24')*60 +to_number(to_char(WT_END_TIME,'mi')))
+            -
+       (to_char(WT_START_TIME,'hh24')*60 + to_number(to_char(WT_START_TIME,'mi')))))/60),2,0)||':'||
+       LPAD(mod(sum(((to_char(WT_END_TIME,'hh24')*60 +to_number(to_char(WT_END_TIME,'mi')))
+        -
+       (to_char(WT_START_TIME,'hh24')*60 + to_number(to_char(WT_START_TIME,'mi'))))),60),2,0)
+       
+       */
+  /*
+        sum(((to_char(wj_end_time,'hh24')*60 +to_number(to_char(wj_end_time,'mi')))
+            -
+       (to_char(wj_start_time,'hh24')*60 + to_number(to_char(wj_start_time,'mi'))))) tottime
+    */    
+ --(sum(to_char(WJ_END_TIME,'hh24mi')-to_char(WJ_START_TIME,'hh24mi'))/100) abc
+    into abcd
+    from WORK_WASTED_TIME 
+   where WT_end_time is not null
+     and trunc(WT_START_TIME) = trunc(starttime_)
+		 and WT_EMP_NO = wj_emp_no_
+		 and WT_CODE =WT_CODE_
+group by trunc(WT_start_time),WT_EMP_NO;
+return (abcd);
+exception when others then return null;
+
+end;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

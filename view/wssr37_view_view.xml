@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="6cb92d39b4b8d827c4c661f96b1047849bb32e39" author="(HHA_PROD)-Generated"     >
+		<n0:createSxmlObject objectName="WSSR37_VIEW" objectType="VIEW" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  <VIEW xmlns="http://xmlns.oracle.com/ku" version="1.0">
+   <SCHEMA>HHA_PROD</SCHEMA>
+   <NAME>WSSR37_VIEW</NAME>
+   <COL_LIST>
+      <COL_LIST_ITEM>
+         <NAME>PERIOD</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>WJ_EMP_NO</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>EMP_NAME</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>WJ_LOCATION</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>HOURS</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>OVER_TIME</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>SOLD_CIG</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>SOLD_QUICK</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>SOLD_OTHER</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>OVER_TIME_PAYMENT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>PRODUCTIVITY</NAME>
+      </COL_LIST_ITEM>
+   </COL_LIST>
+   <SUBQUERY>SELECT '202301' Period, WJ_EMP_NO,EMP_NAME,wj_location,Hours,Over_Time,SOLD_CIG,SOLD_QUICK,SOLD_OTHER,OVER_TIME_PAYMENT,
+case when (Nvl(Hours,0)+Nvl(SOLD_OTHER,0)) > 0 then
+  round((SOLD_CIG/ (Nvl(Hours,0)))*100,2)
+  else
+    0
+   end  AS PRODUCTIVITY
+--round((SOLD_CIG/ In_Out_Inv_Hrs)*100,2) as Efficiency ,
+--round(((Ext_C_Hrs+ Int_I_Hrs+ WTY_G_Hrs)/ (Hours+Over_Time))*100,2) AS UTILISATION
+From
+(
+SELECT
+WJ_EMP_NO,
+WJ_EMP_NO EMP_NAME,
+to_number(wj_location) wj_location,
+Sum(( R28_std_timings(wj_location,WJ_EMP_NO,trunc(starttime)) ))  as Hours,
+sum(R28_overtime_hr(wj_location,WJ_EMP_NO,STARTTIME)) AS Over_Time,
+
+ --sum(R28_stdcash(WJ_EMP_NO,STARTTIME,starttime)) AS Ext_C_Hrs,
+ --sum(R28_stdint(WJ_EMP_NO,STARTTIME,STARTTIME))  AS Int_I_Hrs,
+ --sum(R28_std_wty(WJ_EMP_NO,STARTTIME,STARTTIME))  as WTY_G_Hrs,
+ --sum(R28_IN_OUT_ONLY_INV(WJ_EMP_NO,STARTTIME,STARTTIME)) as In_Out_Inv_Hrs,
+ sum(R28_SOLD_CIG_MNT_C(wj_emp_no,starttime)) AS SOLD_C,
+
+sum(R28_sold_cig_mnt(wj_emp_no,starttime,starttime)) AS SOLD_CIG,
+sum(R28_Quick_Sold(wj_emp_no,starttime)) AS SOLD_QUICK,
+sum(R28_Other_Sold(wj_emp_no,starttime)) AS SOLD_OTHER,
+sum(R28_Body_Shop(wj_emp_no,starttime)) AS SOLD_BODY,
+--,sum(R28_W1_veriable_W_Times_tot (wj_emp_no,starttime,0))  as TOT_VAR_W
+
+sum(R28_OVER_TIME_PAYMENT(wj_emp_no,starttime)) AS OVER_TIME_PAYMENT
+/*
+(select SUM(TOT_PAY_HOURS) from HCM_OVERTIME_PAYMENT
+  where TRUNC(OV_START_DATE) BETWEEN  TRUNC(to_date('01/01/2023','dd/mm/yyyy'))  AND TRUNC(to_date('05/01/2023','dd/mm/yyyy'))
+  AND  emp_no =to_number(W.wj_emp_no)
+) OVER_TIME_PAYMENT
+*/
+FROM
+   (
+         SELECT Distinct  Trunc(attendance_date) starttime,
+         to_char(WJ_EMP_NO) WJ_EMP_NO, --to_number(6819)
+         w.WJ_LOCATION
+         FROM HCM_TIMECARDN H,
+
+                              (
+                              SELECT Distinct  to_number(w.WJ_EMP_NO) WJ_EMP_NO ,w.WJ_LOCATION  --to_number(w.WJ_EMP_NO)
+                              FROM WORK_JOB_TIME W
+                              WHERE to_number(wj_location) between '481' and '481'
+                              and to_number(wj_emp_no) =  to_number(W.wj_emp_no)
+                              AND TRUNC(wj_start_time)    BETWEEN  TRUNC(to_date('01/01/2023','dd/mm/yyyy'))  AND TRUNC(to_date('31/01/2023','dd/mm/yyyy'))
+                              AND REGEXP_LIKE(WJ_EMP_NO, '^[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$')
+                              ) W
+
+   WHERE to_number(Emp_no) = to_number(W.wj_emp_no)
+   AND TRUNC(attendance_date)  BETWEEN  TRUNC(to_date('01/01/2023','dd/mm/yyyy'))  AND TRUNC(to_date('31/01/2023','dd/mm/yyyy'))
+   and w.WJ_EMP_NO = H.Emp_no
+   AND REGEXP_LIKE(H.Emp_no, '^[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$')
+   AND H.EMP_NO IS NOT NULL
+   ) w
+
+WHERE  REGEXP_LIKE(WJ_EMP_NO, '^[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$')
+AND WJ_EMP_NO IS NOT NULL
+group by WJ_EMP_NO,to_number(wj_location)
+) Wssr37
+</SUBQUERY>
+</VIEW>]]></n0:source>
+		</n0:createSxmlObject>
+	</changeSet>
+</databaseChangeLog>

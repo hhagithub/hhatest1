@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="c5a830ae7c400ad2e3957da3f0d4ab731a5096c2" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleTypeSpec objectName="ATTEND_TYPE" objectType="TYPE_SPEC" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE TYPE "HHA_PROD"."ATTEND_TYPE" as object
+(
+EMP_NO      varchar2(200),
+Month_Year  varchar2(200),
+Year_Month  varchar2(200),
+ST_ENAME    varchar2(200),
+P_DATE      varchar2(200),
+Legal_Employer    varchar2(200),
+Internal_address  varchar2(200),
+Branch            varchar2(200),
+Position          varchar2(200),
+EMAIL             varchar2(200),
+EMAIL_UNIQUE      varchar2(200),
+Tot_Ded_Perc      varchar2(200),
+ST_BASIC          varchar2(200),
+NTOT_DED_AMT      varchar2(200),
+DEDUCTIBLE_HOURS_TOT     varchar2(200),
+DEDUCTIBLE_HOURS_FORMAT  varchar2(200),
+REMARKS_Absent_Cnt       varchar2(200),
+REMARKS_Incomp_Cnt       varchar2(200),
+Exempt_Late              varchar2(200),
+Exempt_Out_Early         varchar2(200),
+Exempt_incmplt           varchar2(200),
+Exmpt_time               varchar2(200),
+Exmpt_Min                varchar2(200),
+REMARKS_Leave_Cnt        varchar2(200),
+REMARKS_Day_Off_Cnt      varchar2(200),
+REMARKS_Late_Cnt         varchar2(200),
+REMARKS_Out_Early_Cnt    varchar2(200),
+REMARKS_Half_Incomp_Cnt  varchar2(200),
+REMARKS_Half_Absent_Cnt  varchar2(200)
+)
+/]]></n0:source>
+		</n0:createOracleTypeSpec>
+	</changeSet>
+</databaseChangeLog>

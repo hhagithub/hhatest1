@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="128beda5809f014094165a1c5958b954fb245fff" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleProcedure objectName="WORK_JOB_EST_OPR_REFRESH" objectType="PROCEDURE" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "HHA_PROD"."WORK_JOB_EST_OPR_REFRESH" (JM_MAN_REFERENCE_NO_ varchar2,jm_location_ varchar2,JM_JOB_TYPE_ varchar2,JM_SUPL_CODE_ varchar2) is
+
+BEGIN
+--IF :PARAMETER.OPERATION_NO IN (1,2) THEN --DISCUSS WITH NAVEED BHAI
+
+---- CONTRACT STARTS
+declare
+            abc number;
+            begin
+select distinct 1 
+   into abc
+   from work_job_master
+  where JM_MAN_REFERENCE_NO = JM_MAN_REFERENCE_NO_
+    and jm_location = jm_location_
+    and JM_CONTRACT_CODE is not null
+    and jm_status = 1
+    and nvl(JOB_COMPLETE,'N') != 'Y';
+    
+    ------ DELETE CURRENT OPERATIONS IF ANY --STARTS 
+    DELETE
+            FROM WORK_JOB_DETAILS
+     WHERE JI_JOB_NO  = JM_MAN_REFERENCE_NO_
+       AND JI_LOCATION = jm_location_;
+
+    DELETE 
+      FROM WORK_STD_TIMINGS 
+     WHERE ST_JOB_NO  = JM_MAN_REFERENCE_NO_
+       AND ST_LOCATION = jm_location_;
+       
+   
+    ------ DELETE CURRENT OPERATIONS IF ANY --ENDS
+            
+            
+--- INSERT OPERATIONS
+
+INSERT INTO WORK_JOB_DETAILS 
+(JI_COMP_CODE,JI_DEPT_NO,JI_LOCATION,JI_JOB_NO,JI_JOB_TYPE,JI_SUPL_CODE,JI_SRL_NO,JI_OPERATION_ID,JI_OPERATION_DESCR,JI_LABOUR_PRICE,JI_CUSTOMER_LABOUR,JI_CORRECTION,
+STD_TIME,JI_CC_ID,JI_OPER_AMOUNT)
+
+SELECT 
+ WO_COMP_CODE,WO_DEPT_NO,jm_location_,JM_MAN_REFERENCE_NO_,JM_JOB_TYPE_,JM_SUPL_CODE_,'1',WO_OPERATION_ID,WO_OPERATION_DESCRIPTION,
+WO_NET_LABOUR,WO_NET_LABOUR,'Y',
+WO_STD_TIME,'1',WO_NET_LABOUR
+
+FROM work_contract_operations
+WHERE WO_RECALL_NO IN (
+select JM_CONTRACT_CODE from work_job_master
+where jm_job_no = JM_MAN_REFERENCE_NO_
+);
+
+
+--new end
+
+    EXCEPTION WHEN NO_DATA_FOUND THEN
+
+            NULL;
+            END;
+
+
+---- CONTRACT ENDS                      
+
+---- CAMPAIGN STARTS
+
+
+declare
+            abc number;
+            begin
+select distinct 1 
+   into abc
+   from work_job_master 
+  where JM_MAN_REFERENCE_NO = JM_MAN_REFERENCE_NO_
+    and jm_location = jm_location_
+    and JM_CAMPAIGN_CODE is not null
+    and jm_status = 1
+    and nvl(JOB_COMPLETE,'N') != 'Y';
+    
+    ------ DELETE CURRENT OPERATIONS IF ANY --STARTS 
+    DELETE
+            FROM WORK_JOB_DETAILS 
+     WHERE JI_JOB_NO  = JM_MAN_REFERENCE_NO_
+       AND JI_LOCATION = jm_location_;
+
+    DELETE 
+      FROM WORK_STD_TIMINGS 
+     WHERE ST_JOB_NO  = JM_MAN_REFERENCE_NO_
+       AND ST_LOCATION = jm_location_;
+       
+    ------ DELETE CURRENT OPERATIONS IF ANY --ENDS
+            
+            
+--- INSERT OPERATIONS FOR CAMPAIGN
+INSERT INTO WORK_JOB_DETAILS 
+(JI_COMP_CODE,JI_DEPT_NO,JI_LOCATION,JI_JOB_NO,JI_JOB_TYPE,JI_SUPL_CODE,JI_SRL_NO,JI_OPERATION_ID,JI_OPERATION_DESCR,JI_LABOUR_PRICE,JI_CUSTOMER_LABOUR,JI_CORRECTION,
+STD_TIME,JI_CC_ID,JI_OPER_AMOUNT)
+
+select WO_COMP_CODE,WO_DEPT_NO,jm_location_,JM_MAN_REFERENCE_NO_,JM_JOB_TYPE_,JM_SUPL_CODE_,'1',WO_OPERATION_ID,WO_OPERATION_DESCRIPTION,
+WO_NET_LABOUR,WO_NET_LABOUR,'Y',
+WO_STD_TIME,'1',WO_NET_LABOUR
+ from WORK_campaign_OPERATIONS where WO_RECALL_NO in 
+ (select JM_CAMPAIGN_CODE from work_job_master
+where jm_job_no =JM_MAN_REFERENCE_NO_
+);
+ 
+    EXCEPTION WHEN NO_DATA_FOUND THEN
+            NULL;
+            END;
+
+
+---- CAMPAIGN ENDS                     
+
+----2222
+
+---- RECALL STARTS
+
+declare
+            abc number;
+            begin
+select distinct 1 
+   into abc
+   from work_job_master 
+  where JM_MAN_REFERENCE_NO = JM_MAN_REFERENCE_NO_
+    and jm_location = jm_location_
+    and JM_CAMPAIGN_CODE is null
+    and JM_CONTRACT_CODE is null
+    AND NVL(JM_RECALL_FLAG,'N') = 'Y'
+    and jm_status = 1
+    and nvl(JOB_COMPLETE,'N') != 'Y';
+
+    ------ DELETE CURRENT OPERATIONS IF ANY --STARTS 
+
+    DELETE
+            FROM WORK_JOB_DETAILS 
+     WHERE JI_JOB_NO  = JM_MAN_REFERENCE_NO_
+       AND JI_LOCATION = jm_location_;
+
+    DELETE 
+      FROM WORK_STD_TIMINGS 
+     WHERE ST_JOB_NO  = JM_MAN_REFERENCE_NO_
+       AND ST_LOCATION = jm_location_;
+       
+    ------ DELETE CURRENT OPERATIONS IF ANY --ENDS
+            
+            
+--- INSERT OPERATIONS FOR CAMPAIGN
+
+INSERT INTO WORK_JOB_DETAILS 
+(JI_COMP_CODE,JI_DEPT_NO,JI_LOCATION,JI_JOB_NO,JI_JOB_TYPE,JI_SUPL_CODE,JI_SRL_NO,JI_OPERATION_ID,JI_OPERATION_DESCR,JI_LABOUR_PRICE,JI_CUSTOMER_LABOUR,JI_CORRECTION,
+STD_TIME,JI_CC_ID,JI_OPER_AMOUNT)
+
+SELECT '1','31',jm_location_,JM_MAN_REFERENCE_NO_,JM_JOB_TYPE_,JM_SUPL_CODE_,'1',RO_OPERATION_CODE,RO_OPERATION_DESC,RO_STD_RATE,RO_STD_RATE,'Y',RO_STD_TIME,'1',RO_STD_RATE FROM 
+work_recall_operations
+WHERE RO_RECALL_CODE IN(
+
+
+SELECT RD_RECALL_CODE FROM work_recall_detail WHERE RD_JOB_NO = JM_MAN_REFERENCE_NO_);
+
+
+    EXCEPTION WHEN NO_DATA_FOUND THEN
+            NULL;
+            END;
+
+
+---- RECALL ENDS 
+----2222
+
+---------------------------------DELETE ALL OPERATIONS
+
+declare
+            abc number;
+            begin
+select distinct 1 
+   into abc
+   from work_job_master  
+  where JM_MAN_REFERENCE_NO = JM_MAN_REFERENCE_NO_
+    and jm_location = jm_location_
+    and JM_CAMPAIGN_CODE is null
+    and JM_CONTRACT_CODE is null
+    and jm_status = 1
+    AND NVL(JM_RECALL_FLAG,'N') != 'Y'
+    and nvl(JOB_COMPLETE,'N') != 'Y';
+
+    ------ DELETE CURRENT OPERATIONS IF ANY --STARTS 
+
+    DELETE
+            FROM WORK_JOB_DETAILS 
+     WHERE JI_JOB_NO  = JM_MAN_REFERENCE_NO_
+       AND JI_LOCATION = jm_location_;
+
+    DELETE 
+      FROM WORK_STD_TIMINGS 
+     WHERE ST_JOB_NO  = JM_MAN_REFERENCE_NO_
+       AND ST_LOCATION = jm_location_;
+
+    EXCEPTION WHEN NO_DATA_FOUND THEN
+            NULL;
+            END;
+--:SYSTEM.MESSAGE_LEVEL := 5;
+ Begin
+  update work_job_master 
+   set JM_INVOICE_AMT='',JM_TOTAL_AMT='',JM_SPARE_PARTS_AMT='',JM_LABOUR_CHARGE=''
+   where jm_job_no = JM_MAN_REFERENCE_NO_ --:WORK_JOB_MASTER.JM_JOB_NO
+  and jm_status = 1;
+ EXCEPTION WHEN NO_DATA_FOUND THEN
+            NULL;
+ END;
+
+commit;
+
+--    nat.display_alert('a1','Operation Codes Are Refreshed ');
+--:SYSTEM.MESSAGE_LEVEL := 0;
+
+         --   end if;
+End;
+/]]></n0:source>
+		</n0:createOracleProcedure>
+	</changeSet>
+</databaseChangeLog>

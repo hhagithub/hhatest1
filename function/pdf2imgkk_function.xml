@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="e9151f4ee214f88863c1e7c0f3bf8f62cf1a8b8d" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="PDF2IMGKK" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."PDF2IMGKK" (p_blob IN BLOB)
+RETURN CLOB
+IS
+l_clob CLOB;
+l_step PLS_INTEGER := 12000; -- make sure you set a multiple of 3 not higher than 24573
+BEGIN
+FOR i IN 0 .. TRUNC((DBMS_LOB.getlength(p_blob) - 1 )/l_step) LOOP
+l_clob := l_clob || UTL_RAW.cast_to_varchar2(UTL_ENCODE.base64_encode
+(DBMS_LOB.substr(p_blob,
+l_step, i * l_step + 1)));
+END LOOP;
+RETURN l_clob;
+END;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

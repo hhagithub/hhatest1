@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="ab13f53f15e9946aee8167cc875de8cc78e80859" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleProcedure objectName="DELETE_DELV_RECORD" objectType="PROCEDURE" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "HHA_PROD"."DELETE_DELV_RECORD" (stock_no_ number) is
+
+begin
+delete  from veh_del_chklist where stock_no=stock_no_;
+
+delete from VEH_DEL_CHKLIST_QTN where stock_no=stock_no_;
+
+update  used_veh_details set DELIVERY_DATE=null  where stock_no=stock_no_;
+
+commit;
+
+end;
+/]]></n0:source>
+		</n0:createOracleProcedure>
+	</changeSet>
+</databaseChangeLog>

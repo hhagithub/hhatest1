@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="1a038bf6cd0b9a36888426bd3456703d33795e69" author="(HHA_PROD)-Generated"     >
+		<n0:createSxmlObject objectName="FAB_TEAM" objectType="VIEW" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  <VIEW xmlns="http://xmlns.oracle.com/ku" version="1.0">
+   <SCHEMA>HHA_PROD</SCHEMA>
+   <NAME>FAB_TEAM</NAME>
+   <COL_LIST>
+      <COL_LIST_ITEM>
+         <NAME>EMP_NO</NAME>
+      </COL_LIST_ITEM>
+   </COL_LIST>
+   <SUBQUERY>select distinct st_empcd emp_no from (
+select st_empcd from pastatic where st_status &#60;= '15' and st_empcd = 7125
+union all select st_empcd from pastatic
+where st_status &#60;= '15' and DIRECT_MANAGER_NUMBER = 7125 union all select st_empcd from pastatic
+where st_status &#60;= '15' and DIRECT_MANAGER_NUMBER in(select st_empcd from pastatic
+where st_status &#60;= '15' and DIRECT_MANAGER_NUMBER = 7125 and st_status &#60;= '15')
+union all select st_empcd from pastatic
+where st_status &#60;= '15' and DIRECT_MANAGER_NUMBER in(
+select ST_EMPCD from pastatic
+where st_status &#60;= '15' and DIRECT_MANAGER_NUMBER in(
+select st_empcd from pastatic
+where DIRECT_MANAGER_NUMBER = 7125 and st_status &#60;= '15'))
+union all
+select st_empcd from pastatic
+where st_status &#60;= '15' and DIRECT_MANAGER_NUMBER in(
+select ST_EMPCD from pastatic
+where st_status &#60;= '15' and DIRECT_MANAGER_NUMBER in(
+select ST_EMPCD from pastatic
+where st_status &#60;= '15' and DIRECT_MANAGER_NUMBER in(
+select st_empcd from pastatic
+where DIRECT_MANAGER_NUMBER = 7125 and st_status &#60;= '15')))
+union all
+select st_empcd from pastatic
+where st_status &#60;= '15' and DIRECT_MANAGER_NUMBER in(
+select ST_EMPCD from pastatic
+where st_status &#60;= '15' and DIRECT_MANAGER_NUMBER in(
+select ST_EMPCD from pastatic
+where st_status &#60;= '15' and DIRECT_MANAGER_NUMBER in(
+select ST_EMPCD from pastatic
+where st_status &#60;= '15' and DIRECT_MANAGER_NUMBER in(
+select st_empcd from pastatic
+where DIRECT_MANAGER_NUMBER = 7125 and st_status &#60;= '15'))))
+union all
+select st_empcd from pastatic
+where st_status &#60;= '15' and DIRECT_MANAGER_NUMBER in(
+select ST_EMPCD from pastatic
+where st_status &#60;= '15' and DIRECT_MANAGER_NUMBER in(
+select ST_EMPCD from pastatic
+where st_status &#60;= '15' and DIRECT_MANAGER_NUMBER in(
+select ST_EMPCD from pastatic
+where st_status &#60;= '15' and DIRECT_MANAGER_NUMBER in(
+select ST_EMPCD from pastatic
+where st_status &#60;= '15' and DIRECT_MANAGER_NUMBER in(
+select st_empcd from pastatic
+where DIRECT_MANAGER_NUMBER = 7125 and st_status &#60;= '15')))))
+)
+</SUBQUERY>
+</VIEW>]]></n0:source>
+		</n0:createSxmlObject>
+	</changeSet>
+</databaseChangeLog>

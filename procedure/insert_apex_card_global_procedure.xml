@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="052ef80f6db0784be71a115eaf05c8b147dbf293" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleProcedure objectName="INSERT_APEX_CARD_GLOBAL" objectType="PROCEDURE" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "HHA_PROD"."INSERT_APEX_CARD_GLOBAL" (P1_PERIOD VARCHAR2, DEFAULT_PERIOD VARCHAR2, USER_CODE_ VARCHAR2) IS
+BEGIN
+
+--DELETE FROM HCM_APEX_CARDS WHERE USER_CODE = USER_CODE_;
+COMMIT;
+INSERT INTO HCM_APEX_CARDS_GLOBAL(EMP_NO, EMP_NAME, LATE, INCOMPLETE, ABSENT, DEDUCTABLE, USER_CODE)
+(
+      --SELECT EMP_NO CARD_INITIALS, EMP_NAME CARD_TITLE, NULL CARD_SUBTEXT ,replace(remarks,',','') CARD_TEXT, 'fa-user-man' CARD_ICON, :P1_PERIODD CARD_COLOR
+      --from
+      --(
+      /*
+      SELECT EMP_NO ,(select st_ename from pastatic where st_empcd = emp_no) EMP_NAME,
+          --LISTAGG(
+          --    remarks,
+          --    ','
+          --) WITHIN GROUP(
+          --ORDER BY
+          --    remarks
+          wmsys.wm_concat(
+          REMARKS
+          )
+           AS REMARKS,
+           LATE, INCOMPLETE, ABSENT, DEDUCTABLE,
+           USER_CODE_
+      FROM
+      (
+      */
+
+SELECT
+EMP_NO,
+EMP_NAME,
+sum(nvl(LATE,0)) LATE,
+sum(nvl(INCOMPLETE,0)) INCOMPLETE,
+sum(nvl(ABSENT,0)) ABSENT,
+lpad(floor(floor(((nvl(sum(DEDUCTABLE),0))))/60),2,0)||':'||lpad(mod(floor(((nvl(sum(DEDUCTABLE),0)))),60),2,0) DEDUCTABLE,
+USER_CODE_
+
+from (
+select EMP_NO,
+(select st_ename from pastatic where st_empcd = emp_no) ||'   ' || (select st_Aname from pastatic where st_empcd = emp_no)
+EMP_NAME,
+to_char(count(*)) LATE,null INCOMPLETE,  null ABSENT, null DEDUCTABLE
+from hcm_timecardn tt
+where --1=1
+TRUNC (tt.ATTENDANCE_DATE) BETWEEN  TO_DATE(TO_CHAR(TO_DATE(NVL(P1_PERIOD,DEFAULT_PERIOD)||'01','YYYYMMDD'),'DD-MON-YY'),'DD-MON-YY') AND  TO_DATE(TO_CHAR(LAST_DAY(TO_DATE(NVL(P1_PERIOD,DEFAULT_PERIOD)||'01','YYYYMMDD')),'DD-MON-YY'),'DD-MON-YY')
+                 and EXISTS
+                 (
+                 select st_empcd from pastatic P1 where st_empcd = USER_CODE_  and  st_status <= '15' AND P1.st_empcd =  tt.EMP_NO
+                 union all
+                 select st_empcd from pastatic P2 where DIRECT_MANAGER_NUMBER =  USER_CODE_   and  st_status <= '15' AND P2.st_empcd =  tt.EMP_NO
+                 )
+                 and REMARKS is not null
+and remarks in( 'Late', 'Out Early')
+group by EMP_NO,REMARKS
+
+union all
+
+select EMP_NO,(select st_ename from pastatic where st_empcd = emp_no) ||'   ' || (select st_Aname from pastatic where st_empcd = emp_no)
+EMP_NAME,null LATE, to_char(count(*)) INCOMPLETE,  null ABSENT, null DEDUCTABLE
+from hcm_timecardn tt
+where --1=1
+ TRUNC (tt.ATTENDANCE_DATE) BETWEEN  TO_DATE(TO_CHAR(TO_DATE(NVL(P1_PERIOD,DEFAULT_PERIOD)||'01','YYYYMMDD'),'DD-MON-YY'),'DD-MON-YY') AND  TO_DATE(TO_CHAR(LAST_DAY(TO_DATE(NVL(P1_PERIOD,DEFAULT_PERIOD)||'01','YYYYMMDD')),'DD-MON-YY'),'DD-MON-YY')
+                 and EXISTS
+                 (
+                 select st_empcd from pastatic P1 where st_empcd = USER_CODE_ and  st_status <= '15' AND P1.st_empcd =  tt.EMP_NO
+                 union all
+                 select st_empcd from pastatic P2 where DIRECT_MANAGER_NUMBER = USER_CODE_   and  st_status <= '15' AND P2.st_empcd =  tt.EMP_NO
+                 )
+and REMARKS is not null
+and remarks in(  'Incomplete', 'Half Incomplete')
+group by EMP_NO,REMARKS
+
+union all
+
+select EMP_NO,(select st_ename from pastatic where st_empcd = emp_no) ||'   ' || (select st_Aname from pastatic where st_empcd = emp_no)
+EMP_NAME,null LATE, null INCOMPLETE, to_char(count(*)) ABSENT, null DEDUCTABLE
+from hcm_timecardn tt
+where --1=1
+TRUNC (tt.ATTENDANCE_DATE) BETWEEN  TO_DATE(TO_CHAR(TO_DATE(NVL(P1_PERIOD,DEFAULT_PERIOD)||'01','YYYYMMDD'),'DD-MON-YY'),'DD-MON-YY') AND  TO_DATE(TO_CHAR(LAST_DAY(TO_DATE(NVL(P1_PERIOD,DEFAULT_PERIOD)||'01','YYYYMMDD')),'DD-MON-YY'),'DD-MON-YY')
+                 and EXISTS
+                 (
+                 select st_empcd from pastatic P1 where st_empcd = USER_CODE_  and  st_status <= '15' AND P1.st_empcd =  tt.EMP_NO
+                 union all
+                 select st_empcd from pastatic P2 where DIRECT_MANAGER_NUMBER =  USER_CODE_   and  st_status <= '15' AND P2.st_empcd =  tt.EMP_NO
+                 )
+and REMARKS is not null
+and remarks in(  'Absent', 'Half Absent')
+group by EMP_NO,REMARKS
+
+union all
+
+select EMP_NO,(select st_ename from pastatic where st_empcd = emp_no) ||'   ' || (select st_Aname from pastatic where st_empcd = emp_no)
+EMP_NAME,null LATE, null INCOMPLETE, null ABSENT,nvl(sum(nvl(DEDUCTIBLE_HOURS,0)),0) DEDUCTABLE
+from hcm_timecardn hti
+where --1=1
+TRUNC (hti.ATTENDANCE_DATE) BETWEEN  TO_DATE(TO_CHAR(TO_DATE(NVL(P1_PERIOD,DEFAULT_PERIOD)||'01','YYYYMMDD'),'DD-MON-YY'),'DD-MON-YY') AND
+----------------TO_DATE(TO_CHAR(LAST_DAY(TO_DATE(NVL(to_char(sysdate,'yyyymm'),to_char(sysdate,'yyyymm'))||'01','YYYYMMDD')),'DD-MON-YY'),'DD-MON-YY')
+TO_DATE(TO_CHAR(LAST_DAY(TO_DATE(NVL(P1_PERIOD,DEFAULT_PERIOD)||'01','YYYYMMDD')),'DD-MON-YY'),'DD-MON-YY')
+                 and EXISTS
+                 (
+                 select st_empcd from pastatic P1 where st_empcd =  USER_CODE_  and  st_status <= '15' AND P1.st_empcd =  hti.EMP_NO
+                 union all
+                 select st_empcd from pastatic P2 where DIRECT_MANAGER_NUMBER = USER_CODE_  and  st_status <= '15' AND P2.st_empcd =  hti.EMP_NO
+                 )
+group by EMP_NO
+) abc
+group by EMP_NO, EMP_NAME
+
+--)
+--GROUP BY EMP_NO
+--)
+--where UPPER(EMP_NAME) LIKE '%'||NVL(UPPER(:P1_EMPNAME),UPPER(EMP_NAME))||'%'
+--ORDER BY EMP_NO;
+);
+--COMMIT;
+END;
+/]]></n0:source>
+		</n0:createOracleProcedure>
+	</changeSet>
+</databaseChangeLog>

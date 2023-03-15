@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="f4636ac6915c5d6aa90e2a162eb6b617b2f1e6c4" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleProcedure objectName="SEND_PROBATION_SMS" objectType="PROCEDURE" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "HHA_PROD"."SEND_PROBATION_SMS" (empno_ number, type_ varchar2, lang_ varchar2 default 'en') is
+msg_text varchar2(2000);
+mob_no   varchar2(20);
+begin
+select decode(lang_,'en',DESC_ENG,DESC_ARB) into msg_text
+from codes_descriptions
+where main_code = '260'
+and MAJOR_CODE = '7'
+and MINOR_CODE <> '0'
+and VALUE_1 = type_;
+
+begin
+select phone_number into mob_no
+from pastatic
+where st_empcd = empno_;
+--for send sms
+insert into sms_live(template_id, mobile, invdate, UDF10)
+values('MANS', nvl(mob_no,'0509490486'), to_char(sysdate,'dd\mm\yyyy hh24:mi'),msg_text);
+
+insert into sms_live(template_id, mobile, invdate, UDF10)
+values('MANS', '0566544848', to_char(sysdate,'dd\mm\yyyy hh24:mi'),msg_text||' EMP NO: '||empno_);
+
+
+
+
+
+commit;
+exception when no_data_found then
+  null;
+end;
+exception when no_data_found then
+  null;
+end;
+/]]></n0:source>
+		</n0:createOracleProcedure>
+	</changeSet>
+</databaseChangeLog>

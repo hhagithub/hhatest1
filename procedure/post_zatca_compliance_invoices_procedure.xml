@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="e93215fe51cddb2bd86dc7e82f3d74a356dacb9a" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleProcedure objectName="POST_ZATCA_COMPLIANCE_INVOICES" objectType="PROCEDURE" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "HHA_PROD"."POST_ZATCA_COMPLIANCE_INVOICES" (REQ_ID_ VARCHAR2) is
+  l_respclob CLOB;
+  l_reqbody  CLOB;
+  l_body CLOB;
+
+  l_xml     xmltype;
+  l_json    apex_json.t_values;
+  v_array   apex_application_global.vc_arr2;
+  l_members WWV_FLOW_T_VARCHAR2;
+
+  l_Status   VARCHAR2(200);
+  l_Status_Desc   VARCHAR2(200);
+  v_username VARCHAR2(4000);
+  v_password VARCHAR2(1000);
+
+  V_UUID VARCHAR2(200);
+  v_SIGNED_XML CLOB;
+  V_INVOICE_TYPE_TRANS VARCHAR2(20);
+  V_STEP1_HASH_OUTPUT VARCHAR2(200);
+begin
+
+    apex_web_service.g_request_headers(1).name := 'Content-Type';
+    apex_web_service.g_request_headers(1).value := 'application/json'; 
+    apex_web_service.g_request_headers(2).name := 'accept';
+    apex_web_service.g_request_headers(2).value := 'application/json';
+    apex_web_service.g_request_headers(3).name := 'Accept-Language';
+    apex_web_service.g_request_headers(3).value := 'en';
+    apex_web_service.g_request_headers(4).name := 'Accept-Version';
+    apex_web_service.g_request_headers(4).value := 'V2';
+    apex_web_service.g_request_headers(5).name := 'Authorization';
+    apex_web_service.g_request_headers(5).value := 'Basic VFVsSlJERkVRME5CTTIxblFYZEpRa0ZuU1ZSaWQwRkJaVE5WUVZsV1ZUTTBTUzhyTlZGQlFrRkJRamRrVkVGTFFtZG5jV2hyYWs5UVVWRkVRV3BDYWsxU1ZYZEZkMWxMUTFwSmJXbGFVSGxNUjFGQ1IxSlpSbUpIT1dwWlYzZDRSWHBCVWtKbmIwcHJhV0ZLYXk5SmMxcEJSVnBHWjA1dVlqTlplRVo2UVZaQ1oyOUthMmxoU21zdlNYTmFRVVZhUm1ka2JHVklVbTVaV0hBd1RWSjNkMGRuV1VSV1VWRkVSWGhPVlZVeGNFWlRWVFZYVkRCc1JGSlRNVlJrVjBwRVVWTXdlRTFDTkZoRVZFbDVUVVJaZUUxcVJUTk9SRUV4VFd4dldFUlVTVEJOUkZsNFRWUkZNMDVFUVRGTmJHOTNVMVJGVEUxQmEwZEJNVlZGUW1oTlExVXdSWGhFYWtGTlFtZE9Wa0pCYjFSQ1YwWnVZVmQ0YkUxU1dYZEdRVmxFVmxGUlRFVjNNVzlaV0d4b1NVaHNhRm95YUhSaU0xWjVUVkpKZDBWQldVUldVVkZFUlhkcmVFMXFZM1ZOUXpSM1RHcEZkMVpxUVZGQ1oyTnhhR3RxVDFCUlNVSkNaMVZ5WjFGUlFVTm5Ua05CUVZSVVFVczViSEpVVm10dk9YSnJjVFphV1dOak9VaEVVbHBRTkdJNVV6UjZRVFJMYlRkWldFb3JjMjVVVm1oTWEzcFZNRWh6YlZOWU9WVnVPR3BFYUZKVVQwaEVTMkZtZERoREwzVjFWVms1TXpSMmRVMU9ielJKUTBwNlEwTkJhVTEzWjFsblIwRXhWV1JGVVZOQ1owUkNLM0JJZDNkbGFrVmlUVUpyUjBFeFZVVkNRWGRUVFZNeGIxbFliR2htUkVsMFRXcE5NR1pFVFhSTlZFVjVUVkk0ZDBoUldVdERXa2x0YVZwUWVVeEhVVUpCVVhkUVRYcEJkMDFFWXpGT1ZHYzBUbnBCZDAxRVFYcE5VVEIzUTNkWlJGWlJVVTFFUVZGNFRWUkJkMDFTUlhkRWQxbEVWbEZSWVVSQmFHRlpXRkpxV1ZOQmVFMXFSVmxOUWxsSFFURlZSVVIzZDFCU2JUbDJXa05DUTJSWVRucGhWelZzWXpOTmVrMUNNRWRCTVZWa1JHZFJWMEpDVTJkdFNWZEVObUpRWm1KaVMydHRWSGRQU2xKWWRrbGlTRGxJYWtGbVFtZE9Wa2hUVFVWSFJFRlhaMEpTTWxsSmVqZENjVU56V2pGak1XNWpLMkZ5UzJOeWJWUlhNVXg2UWs5Q1owNVdTRkk0UlZKNlFrWk5SVTluVVdGQkwyaHFNVzlrU0ZKM1QyazRkbVJJVGpCWk0wcHpURzV3YUdSSFRtaE1iV1IyWkdrMWVsbFRPVVJhV0Vvd1VsYzFlV0l5ZUhOTU1WSlVWMnRXU2xSc1dsQlRWVTVHVEZaT01WbHJUa0pNVkVWMVdUTktjMDFKUjNSQ1oyZHlRbWRGUmtKUlkwSkJVVk5DYjBSRFFtNVVRblZDWjJkeVFtZEZSa0pSWTNkQldWcHBZVWhTTUdORWIzWk1NMUo2WkVkT2VXSkROVFpaV0ZKcVdWTTFibUl6V1hWak1rVjJVVEpXZVdSRlZuVmpiVGx6WWtNNVZWVXhjRVpoVnpVeVlqSnNhbHBXVGtSUlZFVjFXbGhvTUZveVJqWmtRelZ1WWpOWmRXSkhPV3BaVjNobVZrWk9ZVkpWYkU5V2F6bEtVVEJWZEZVelZtbFJNRVYwVFZObmVFdFROV3BqYmxGM1MzZFpTVXQzV1VKQ1VWVklUVUZIUjBneWFEQmtTRUUyVEhrNU1HTXpVbXBqYlhkMVpXMUdNRmt5UlhWYU1qa3lURzVPYUV3eU9XcGpNMEYzUkdkWlJGWlNNRkJCVVVndlFrRlJSRUZuWlVGTlFqQkhRVEZWWkVwUlVWZE5RbEZIUTBOelIwRlJWVVpDZDAxRFFtZG5ja0puUlVaQ1VXTkVRWHBCYmtKbmEzSkNaMFZGUVZsSk0wWlJiMFZIYWtGWlRVRnZSME5EYzBkQlVWVkdRbmROUTAxQmIwZERRM05IUVZGVlJrSjNUVVJOUVc5SFEwTnhSMU5OTkRsQ1FVMURRVEJyUVUxRldVTkpVVU5XZDBSTlkzRTJVRThyVFdOdGMwSllWWG92ZGpGSFpHaEhjRGR5Y1ZOaE1rRjRWRXRUZGpnek9FbEJTV2hCVDBKT1JFSjBPU3N6UkZOc2FXcHZWbVo0ZW5Ka1JHZzFNamhYUXpNM2MyMUZaRzlIVjFaeVUzQkhNUT09OlF5ZFZzU1FBcVRlZklCSzFsSnhyN3dCaHpjb2Z6MWxIdm11WjBrV0JDMzg9';
+
+    apex_json.initialize_clob_output;
+    apex_json.open_object;
+  
+    DELETE FROM ZATCA_REQ_RES_CLOB_VALIDATE where req_id = REQ_ID_;
+  
+   --  l_body := '{
+   --          "invoiceHash": "N6gVf2CDQgxwN/q+1inXtjfcgA/eH2dsliwv9ei4LdQ=",
+   --          "uuid": "3cf5ee18-ee25-44ea-a444-2c37ba7f28be",
+   --          "invoice": "PEludm9pY2UgeG1sbnM9InVybjpvYXNpczpuYW1lczpzcGVjaWZpY2F0aW9uOnVibDpzY2hlbWE6eHNkOkludm9pY2UtMiIgeG1sbnM6Y2FjPSJ1cm46b2FzaXM6bmFtZXM6c3BlY2lmaWNhdGlvbjp1Ymw6c2NoZW1hOnhzZDpDb21tb25BZ2dyZWdhdGVDb21wb25lbnRzLTIiIHhtbG5zOmNiYz0idXJuOm9hc2lzOm5hbWVzOnNwZWNpZmljYXRpb246dWJsOnNjaGVtYTp4c2Q6Q29tbW9uQmFzaWNDb21wb25lbnRzLTIiIHhtbG5zOmV4dD0idXJuOm9hc2lzOm5hbWVzOnNwZWNpZmljYXRpb246dWJsOnNjaGVtYTp4c2Q6Q29tbW9uRXh0ZW5zaW9uQ29tcG9uZW50cy0yIj4gPGNiYzpQcm9maWxlSUQ+cmVwb3J0aW5nOjEuMDwvY2JjOlByb2ZpbGVJRD4gPGNiYzpJRD4xMDA8L2NiYzpJRD4gPGNiYzpVVUlEPjNjZjVlZTE4LWVlMjUtNDRlYS1hNDQ0LTJjMzdiYTdmMjhiZTwvY2JjOlVVSUQ+IDxjYmM6SXNzdWVEYXRlPjIwMjEtMDQtMjU8L2NiYzpJc3N1ZURhdGU+IDxjYmM6SXNzdWVUaW1lPjE1OjMwOjAwPC9jYmM6SXNzdWVUaW1lPiA8Y2JjOkludm9pY2VUeXBlQ29kZSBuYW1lPSIwMTAwMDAwIj4zODg8L2NiYzpJbnZvaWNlVHlwZUNvZGU+IDxjYmM6RG9jdW1lbnRDdXJyZW5jeUNvZGU+U0FSPC9jYmM6RG9jdW1lbnRDdXJyZW5jeUNvZGU+IDxjYmM6VGF4Q3VycmVuY3lDb2RlPlNBUjwvY2JjOlRheEN1cnJlbmN5Q29kZT4gPGNiYzpMaW5lQ291bnROdW1lcmljPjI8L2NiYzpMaW5lQ291bnROdW1lcmljPiA8Y2FjOkFkZGl0aW9uYWxEb2N1bWVudFJlZmVyZW5jZT4gPGNiYzpJRD5JQ1Y8L2NiYzpJRD4gPGNiYzpVVUlEPjQ2NTMxPC9jYmM6VVVJRD4gPC9jYWM6QWRkaXRpb25hbERvY3VtZW50UmVmZXJlbmNlPiA8Y2FjOkFkZGl0aW9uYWxEb2N1bWVudFJlZmVyZW5jZT4gPGNiYzpJRD5QSUg8L2NiYzpJRD4gPGNhYzpBdHRhY2htZW50PiA8Y2JjOkVtYmVkZGVkRG9jdW1lbnRCaW5hcnlPYmplY3QgbWltZUNvZGU9InRleHQvcGxhaW4iPk5XWmxZMlZpTmpabVptTTRObVl6T0dRNU5USTNPRFpqTm1RMk9UWmpOemxqTW1SaVl6SXpPV1JrTkdVNU1XSTBOamN5T1dRM00yRXlOMlppTlRkbE9RPT08L2NiYzpFbWJlZGRlZERvY3VtZW50QmluYXJ5T2JqZWN0PiA8L2NhYzpBdHRhY2htZW50PiA8L2NhYzpBZGRpdGlvbmFsRG9jdW1lbnRSZWZlcmVuY2U+IDxjYWM6QWNjb3VudGluZ1N1cHBsaWVyUGFydHk+IDxjYWM6UGFydHk+IDxjYWM6UGFydHlJZGVudGlmaWNhdGlvbj4gPGNiYzpJRCBzY2hlbWVJRD0iTUxTIj4xMjM0NTc4OTA8L2NiYzpJRD4gPC9jYWM6UGFydHlJZGVudGlmaWNhdGlvbj4gPGNhYzpQb3N0YWxBZGRyZXNzPiA8Y2JjOlN0cmVldE5hbWU+QmFiIG1ha2thaDwvY2JjOlN0cmVldE5hbWU+IDxjYmM6QnVpbGRpbmdOdW1iZXI+MTIzNDwvY2JjOkJ1aWxkaW5nTnVtYmVyPiA8Y2JjOlBsb3RJZGVudGlmaWNhdGlvbj4xMjM0PC9jYmM6UGxvdElkZW50aWZpY2F0aW9uPiA8Y2JjOkNpdHlTdWJkaXZpc2lvbk5hbWU+QmFiIE1ha2thaDwvY2JjOkNpdHlTdWJkaXZpc2lvbk5hbWU+IDxjYmM6Q2l0eU5hbWU+SmVkZGFoPC9jYmM6Q2l0eU5hbWU+IDxjYmM6UG9zdGFsWm9uZT4xMjY0MzwvY2JjOlBvc3RhbFpvbmU+IDxjYmM6Q291bnRyeVN1YmVudGl0eT5NYWtrYWggUmVnaW9uPC9jYmM6Q291bnRyeVN1YmVudGl0eT4gPGNhYzpDb3VudHJ5PiA8Y2JjOklkZW50aWZpY2F0aW9uQ29kZT5TQTwvY2JjOklkZW50aWZpY2F0aW9uQ29kZT4gPC9jYWM6Q291bnRyeT4gPC9jYWM6UG9zdGFsQWRkcmVzcz4gPGNhYzpQYXJ0eVRheFNjaGVtZT4gPGNiYzpDb21wYW55SUQ+MzAwMjEwOTU4ODEwMDAzPC9jYmM6Q29tcGFueUlEPiA8Y2FjOlRheFNjaGVtZT4gPGNiYzpJRD5WQVQ8L2NiYzpJRD4gPC9jYWM6VGF4U2NoZW1lPiA8L2NhYzpQYXJ0eVRheFNjaGVtZT4gPGNhYzpQYXJ0eUxlZ2FsRW50aXR5PiA8Y2JjOlJlZ2lzdHJhdGlvbk5hbWU+SGFqaSBIdXNlaW4gQWxpcmV6YSBDby4gTHRkPC9jYmM6UmVnaXN0cmF0aW9uTmFtZT4gPC9jYWM6UGFydHlMZWdhbEVudGl0eT4gPC9jYWM6UGFydHk+IDwvY2FjOkFjY291bnRpbmdTdXBwbGllclBhcnR5PiA8Y2FjOkFjY291bnRpbmdDdXN0b21lclBhcnR5PiA8Y2FjOlBhcnR5PiA8Y2FjOlBhcnR5SWRlbnRpZmljYXRpb24+IDxjYmM6SUQgc2NoZW1lSUQ9IlNBRyI+MTIzQzEyMzQ1Njc4PC9jYmM6SUQ+IDwvY2FjOlBhcnR5SWRlbnRpZmljYXRpb24+IDxjYWM6UG9zdGFsQWRkcmVzcz4gPGNiYzpTdHJlZXROYW1lPktpbmcgQWJkdWxsYWggUm9hZDwvY2JjOlN0cmVldE5hbWU+IDxjYmM6QnVpbGRpbmdOdW1iZXI+MzcwOTwvY2JjOkJ1aWxkaW5nTnVtYmVyPiA8Y2JjOlBsb3RJZGVudGlmaWNhdGlvbj4xMDA0PC9jYmM6UGxvdElkZW50aWZpY2F0aW9uPiA8Y2JjOkNpdHlTdWJkaXZpc2lvbk5hbWU+QWwgTXVyc2FsYXQ8L2NiYzpDaXR5U3ViZGl2aXNpb25OYW1lPiA8Y2JjOkNpdHlOYW1lPlJpeWFkaDwvY2JjOkNpdHlOYW1lPiA8Y2JjOlBvc3RhbFpvbmU+MTE1NjQ8L2NiYzpQb3N0YWxab25lPiA8Y2JjOkNvdW50cnlTdWJlbnRpdHk+Uml5YWRoIFJlZ2lvbjwvY2JjOkNvdW50cnlTdWJlbnRpdHk+IDxjYWM6Q291bnRyeT4gPGNiYzpJZGVudGlmaWNhdGlvbkNvZGU+U0E8L2NiYzpJZGVudGlmaWNhdGlvbkNvZGU+IDwvY2FjOkNvdW50cnk+IDwvY2FjOlBvc3RhbEFkZHJlc3M+IDxjYWM6UGFydHlUYXhTY2hlbWU+IDxjYWM6VGF4U2NoZW1lPiA8Y2JjOklEPlZBVDwvY2JjOklEPiA8L2NhYzpUYXhTY2hlbWU+IDwvY2FjOlBhcnR5VGF4U2NoZW1lPiA8Y2FjOlBhcnR5TGVnYWxFbnRpdHk+IDxjYmM6UmVnaXN0cmF0aW9uTmFtZT5BTCBLQVdUSEFSIE1BUktFVFM8L2NiYzpSZWdpc3RyYXRpb25OYW1lPiA8L2NhYzpQYXJ0eUxlZ2FsRW50aXR5PiA8L2NhYzpQYXJ0eT4gPC9jYWM6QWNjb3VudGluZ0N1c3RvbWVyUGFydHk+IDxjYWM6RGVsaXZlcnk+IDxjYmM6QWN0dWFsRGVsaXZlcnlEYXRlPjIwMjItMDQtMjU8L2NiYzpBY3R1YWxEZWxpdmVyeURhdGU+IDwvY2FjOkRlbGl2ZXJ5PiA8Y2FjOlBheW1lbnRNZWFucz4gPGNiYzpQYXltZW50TWVhbnNDb2RlPjQyPC9jYmM6UGF5bWVudE1lYW5zQ29kZT4gPC9jYWM6UGF5bWVudE1lYW5zPiA8Y2FjOlRheFRvdGFsPiA8Y2JjOlRheEFtb3VudCBjdXJyZW5jeUlEPSJTQVIiPjEzNS4wMDwvY2JjOlRheEFtb3VudD4gPGNhYzpUYXhTdWJ0b3RhbD4gPGNiYzpUYXhhYmxlQW1vdW50IGN1cnJlbmN5SUQ9IlNBUiI+OTAwLjAwPC9jYmM6VGF4YWJsZUFtb3VudD4gPGNiYzpUYXhBbW91bnQgY3VycmVuY3lJRD0iU0FSIj4xMzUuMDA8L2NiYzpUYXhBbW91bnQ+IDxjYWM6VGF4Q2F0ZWdvcnk+IDxjYmM6SUQ+UzwvY2JjOklEPiA8Y2JjOlBlcmNlbnQ+MTU8L2NiYzpQZXJjZW50PiA8Y2FjOlRheFNjaGVtZT4gPGNiYzpJRD5WQVQ8L2NiYzpJRD4gPC9jYWM6VGF4U2NoZW1lPiA8L2NhYzpUYXhDYXRlZ29yeT4gPC9jYWM6VGF4U3VidG90YWw+IDwvY2FjOlRheFRvdGFsPiA8Y2FjOlRheFRvdGFsPiA8Y2JjOlRheEFtb3VudCBjdXJyZW5jeUlEPSJTQVIiPjEzNS4wMDwvY2JjOlRheEFtb3VudD4gPC9jYWM6VGF4VG90YWw+IDxjYWM6TGVnYWxNb25ldGFyeVRvdGFsPiA8Y2JjOkxpbmVFeHRlbnNpb25BbW91bnQgY3VycmVuY3lJRD0iU0FSIj45MDAuMDA8L2NiYzpMaW5lRXh0ZW5zaW9uQW1vdW50PiA8Y2JjOlRheEV4Y2x1c2l2ZUFtb3VudCBjdXJyZW5jeUlEPSJTQVIiPjkwMC4wMDwvY2JjOlRheEV4Y2x1c2l2ZUFtb3VudD4gPGNiYzpUYXhJbmNsdXNpdmVBbW91bnQgY3VycmVuY3lJRD0iU0FSIj4xMDM1LjAwPC9jYmM6VGF4SW5jbHVzaXZlQW1vdW50PiA8Y2JjOkFsbG93YW5jZVRvdGFsQW1vdW50IGN1cnJlbmN5SUQ9IlNBUiI+MC4wMDwvY2JjOkFsbG93YW5jZVRvdGFsQW1vdW50PiA8Y2JjOlBheWFibGVBbW91bnQgY3VycmVuY3lJRD0iU0FSIj4xMDM1LjAwPC9jYmM6UGF5YWJsZUFtb3VudD4gPC9jYWM6TGVnYWxNb25ldGFyeVRvdGFsPiA8Y2FjOkludm9pY2VMaW5lPiA8Y2JjOklEPjE8L2NiYzpJRD4gPGNiYzpJbnZvaWNlZFF1YW50aXR5IHVuaXRDb2RlPSJQQ0UiPjE8L2NiYzpJbnZvaWNlZFF1YW50aXR5PiA8Y2JjOkxpbmVFeHRlbnNpb25BbW91bnQgY3VycmVuY3lJRD0iU0FSIj4yMDAuMDA8L2NiYzpMaW5lRXh0ZW5zaW9uQW1vdW50PiA8Y2FjOlRheFRvdGFsPiA8Y2JjOlRheEFtb3VudCBjdXJyZW5jeUlEPSJTQVIiPjMwLjAwPC9jYmM6VGF4QW1vdW50PiA8Y2JjOlJvdW5kaW5nQW1vdW50IGN1cnJlbmN5SUQ9IlNBUiI+MjMwLjAwPC9jYmM6Um91bmRpbmdBbW91bnQ+IDwvY2FjOlRheFRvdGFsPiA8Y2FjOkl0ZW0+IDxjYmM6TmFtZT5JdGVtIEE8L2NiYzpOYW1lPiA8Y2FjOkNsYXNzaWZpZWRUYXhDYXRlZ29yeT4gPGNiYzpJRD5TPC9jYmM6SUQ+IDxjYmM6UGVyY2VudD4xNTwvY2JjOlBlcmNlbnQ+IDxjYWM6VGF4U2NoZW1lPiA8Y2JjOklEPlZBVDwvY2JjOklEPiA8L2NhYzpUYXhTY2hlbWU+IDwvY2FjOkNsYXNzaWZpZWRUYXhDYXRlZ29yeT4gPC9jYWM6SXRlbT4gPGNhYzpQcmljZT4gPGNiYzpQcmljZUFtb3VudCBjdXJyZW5jeUlEPSJTQVIiPjIwMC4wMDwvY2JjOlByaWNlQW1vdW50PiA8L2NhYzpQcmljZT4gPC9jYWM6SW52b2ljZUxpbmU+IDxjYWM6SW52b2ljZUxpbmU+IDxjYmM6SUQ+MjwvY2JjOklEPiA8Y2JjOkludm9pY2VkUXVhbnRpdHkgdW5pdENvZGU9IlBDRSI+MjwvY2JjOkludm9pY2VkUXVhbnRpdHk+IDxjYmM6TGluZUV4dGVuc2lvbkFtb3VudCBjdXJyZW5jeUlEPSJTQVIiPjcwMC4wMDwvY2JjOkxpbmVFeHRlbnNpb25BbW91bnQ+IDxjYWM6VGF4VG90YWw+IDxjYmM6VGF4QW1vdW50IGN1cnJlbmN5SUQ9IlNBUiI+MTA1LjAwPC9jYmM6VGF4QW1vdW50PiA8Y2JjOlJvdW5kaW5nQW1vdW50IGN1cnJlbmN5SUQ9IlNBUiI+ODA1LjAwPC9jYmM6Um91bmRpbmdBbW91bnQ+IDwvY2FjOlRheFRvdGFsPiA8Y2FjOkl0ZW0+IDxjYmM6TmFtZT5JdGVtIEI8L2NiYzpOYW1lPiA8Y2FjOkNsYXNzaWZpZWRUYXhDYXRlZ29yeT4gPGNiYzpJRD5TPC9jYmM6SUQ+IDxjYmM6UGVyY2VudD4xNTwvY2JjOlBlcmNlbnQ+IDxjYWM6VGF4U2NoZW1lPiA8Y2JjOklEPlZBVDwvY2JjOklEPiA8L2NhYzpUYXhTY2hlbWU+IDwvY2FjOkNsYXNzaWZpZWRUYXhDYXRlZ29yeT4gPC9jYWM6SXRlbT4gPGNhYzpQcmljZT4gPGNiYzpQcmljZUFtb3VudCBjdXJyZW5jeUlEPSJTQVIiPjM1MC4wMDwvY2JjOlByaWNlQW1vdW50PiA8L2NhYzpQcmljZT4gPC9jYWM6SW52b2ljZUxpbmU+IDwvSW52b2ljZT4="
+   --      }';
+   --3cf5ee18-ee25-44ea-a444-2c37ba7f28be     
+
+   --SELECT UUID INTO V_UUID FROM ZATCA_HHA_INVOICE WHERE INVOICE_ID = REQ_ID_;
+   SELECT INVOICE_UUID,INVOICE_TYPE_TRANS,SIGNED_XML,STEP1_HASH_OUTPUT INTO V_UUID,V_INVOICE_TYPE_TRANS,v_SIGNED_XML,V_STEP1_HASH_OUTPUT  FROM ZATCA_MAPPING_MASTER WHERE INVOICE_NUMBER = REQ_ID_;
+
+   --v_signed_xml := ZATCA_XML_ID( REQ_ID_);
+
+   IF SUBSTR(V_INVOICE_TYPE_TRANS,1,2) = '01' THEN
+    l_body := '{"invoiceHash":'||apex_json.stringify(ZATCA_GENERATEHASH(ZATCA_XML_ID(REQ_ID_)))||',"uuid":'||apex_json.stringify(V_UUID)||',"invoice":'||apex_json.stringify(Zatca_EncodeBASE64(ZATCA_XML_ID(REQ_ID_)))||'}';       
+   ELSE
+   -- l_body := '{"invoiceHash":'||apex_json.stringify(v_STEP1_HASH_OUTPUT)||',"uuid":'||apex_json.stringify(V_UUID)||',"invoice":'||apex_json.stringify(Zatca_EncodeBASE64_SIGNED(v_SIGNED_XML))||'}';       
+    l_body := '{"invoiceHash":'||apex_json.stringify(ZATCA_GENERATEHASH(ZATCA_XML_ID(REQ_ID_)))||',"uuid":'||apex_json.stringify(V_UUID)||',"invoice":'||apex_json.stringify(Zatca_EncodeBASE64_SIGNED(v_SIGNED_XML))||'}';       
+   END IF;
+
+   DBMS_OUTPUT.put_line('l_body=' || (l_body));
+
+    INSERT INTO ZATCA_REQ_RES_CLOB_VALIDATE (REQ_ID, REQ_CLOB) VALUES (REQ_ID_, l_body);
+   --  INSERT INTO ZATCA_REQ_RES_CLOB_LOG(ID,REQ_ID,REQ_CLOB,CREATED_DATE,CREATED_BY) VALUES ((SELECT NVL(MAX(ID),0)+1 FROM ZATCA_REQ_RES_CLOB_LOG),REQ_ID_, l_reqbody, SYSDATE,v('APP_USER')) ;
+  
+    apex_json.close_object;  --OPTIONAL
+    apex_json.free_output;   --OPTIONAL 
+         
+         -- FOR TEST API
+         --  l_body := APEX_WEB_SERVICE.make_rest_request(
+         --    p_url         => 'https://api.zippopotam.us/us/33162',
+         --    p_http_method => 'GET'  );
+           
+    l_respclob := apex_web_service.make_rest_request(p_url => 'https://gw-apic-gov.gazt.gov.sa/e-invoicing/developer-portal/compliance/invoices',
+                                                     p_http_method => 'POST',
+                                                     p_body => l_body,
+                                                     p_wallet_path => 'file:/u01/app/oracle/product/12.2.0/dbhome_1/wallet_zatca', --'file:/home/oracle/Wallet',   
+                                                     p_wallet_pwd => null                            
+                                                     --   p_username => '', 
+                                                     --   p_password => '',                                             
+                                                     );       
+                                   
+   --apex_json.parse(l_json, l_respclob);
+    l_Status := apex_web_service.g_status_code;
+    DBMS_OUTPUT.put_line('Status=' || (l_Status));
+    DBMS_OUTPUT.put_line('l_respclob=' || (l_respclob));
+   
+   
+   
+    IF l_Status = '200' THEN
+      l_Status_Desc := '200-Success';
+      -- UPDATE HCM_BTR.....
+      -- commit;
+    ELSIF l_Status = '400' THEN
+      l_Status_Desc := '409-HTTP Bad Request';
+    ELSIF l_Status = '401' THEN
+      l_Status_Desc := '401-Bad username and password';
+    ELSIF l_Status = '500' THEN
+      l_Status_Desc := '500-HTTP Internal Server Error.';
+    ELSE
+      l_Status_Desc := 'Error: ' || l_Status;
+    END IF;
+  
+    UPDATE ZATCA_REQ_RES_CLOB_VALIDATE SET RES_CLOB = l_respclob, EXP_CLOB = l_Status_Desc, res_code = l_status, TimeStamp=sysdate where req_id = REQ_ID_;
+   --  UPDATE ZATCA_REQ_RES_CLOB_LOG SET RES_CLOB = l_respclob, EXP_CLOB = l_Status where req_id = REQ_ID_;
+    commit;
+  
+  EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+      UPDATE ZATCA_REQ_RES_CLOB_VALIDATE SET EXP_CLOB = 'NO_DATA_FOUND', res_code = 501, TimeStamp=sysdate where req_id = REQ_ID_;
+      --UPDATE ZATCA_REQ_RES_CLOB_LOG SET EXP_CLOB = 'NO_DATA_FOUND' where req_id = REQ_ID_;
+      commit;
+      
+    WHEN OTHERS THEN
+       UPDATE ZATCA_REQ_RES_CLOB_VALIDATE SET EXP_CLOB = 'OTHER EXCEPTION', res_code = 502, TimeStamp=sysdate where req_id = REQ_ID_;
+   --    --UPDATE ZATCA_REQ_RES_CLOB_LOG SET EXP_CLOB = 'OTHER EXCEPTION' where req_id = REQ_ID_;
+       commit;
+      
+  END;
+/]]></n0:source>
+		</n0:createOracleProcedure>
+	</changeSet>
+</databaseChangeLog>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="c337ba1a71f451f8d1204dcc2c9ac122ce2619ab" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleRefConstraint objectName="VEH_FTR_DTL_FK" objectType="REF_CONSTRAINT" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  ALTER TABLE "HHA_PROD"."VEH_FTR_DTL" ADD CONSTRAINT "VEH_FTR_DTL_FK" FOREIGN KEY ("VEH_MODEL")
+	  REFERENCES "HHA_PROD"."VEH_FTR_MST" ("VEH_MODEL") ENABLE;]]></n0:source>
+		</n0:createOracleRefConstraint>
+	</changeSet>
+</databaseChangeLog>

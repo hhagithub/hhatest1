@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="b5d556b9d9655574331110d297ea36a8ea6d4ba0" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleProcedure objectName="TO_HIJRI" objectType="PROCEDURE" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "HHA_PROD"."TO_HIJRI" (gdate  in date, hdate out VARCHAR2) IS
+BEGIN
+ SELECT LTRIM(TO_CHAR(HIJ_YEAR)||'/'||LTRIM(TO_CHAR(HIJ_MONTH,'00'))||'/'||
+        SUBSTR(TO_CHAR(TO_NUMBER(TO_CHAR(GDATE,'J')) -
+               TO_NUMBER(TO_CHAR(GREG_DATE,'J')) + 1, '00'),2,2))
+ INTO   HDATE
+ FROM   DATES
+ WHERE  GREG_DATE = (SELECT MAX(GREG_DATE)
+                       FROM DATES
+                      WHERE GREG_DATE <= GDATE);
+END;
+/]]></n0:source>
+		</n0:createOracleProcedure>
+	</changeSet>
+</databaseChangeLog>

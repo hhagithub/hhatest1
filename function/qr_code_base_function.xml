@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="aab766dce98f7c9ab7d16a64cb3fb5fb40384640" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="QR_CODE_BASE" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."QR_CODE_BASE" (P_NO IN NUMBER,P_VAL IN VARCHAR2) return VARCHAR2 AS
+
+V_P_P   VARCHAR2(32767);
+V_P_LEN VARCHAR2(32767);
+V_P_VAL VARCHAR2(32767);
+V_BASE  VARCHAR2(32767);
+BEGIN
+
+--select   utl_encode.base64_encode(RAWTOHEX(UTL_RAW.CAST_TO_RAW(P_NO))) INTO V_P_P from dual;
+--select   utl_encode.base64_encode(RAWTOHEX(UTL_RAW.CAST_TO_RAW(LENGTH(P_VAL)))) INTO V_P_LEN from dual;
+--select   utl_encode.base64_encode(RAWTOHEX(UTL_RAW.CAST_TO_RAW(P_VAL))) INTO V_P_VAL from dual;
+
+--if p_no =1  then
+    select LPAD(TRIM(to_char(P_NO,'XXXXXXXXXX')),2,'0')           INTO V_P_P from dual;
+    SELECT LPAD(TRIM(TO_CHAR(LENGTHB(P_VAL),'XXXXXXXXXX')),2,'0') INTO V_P_LEN  FROM DUAL;
+  
+  --if P_NO in (8,9) then
+   --V_P_VAL := P_VAL;
+  --else
+
+     select RAWTOHEX(UTL_RAW.CAST_TO_RAW((utl_i18n.raw_to_char(utl_raw.cast_to_raw(P_VAL), 'utf8')))) INTO V_P_VAL from dual; 
+  --end if;
+    
+   
+   null;
+--else
+  -- select LPAD(TRIM(to_char(P_NO,'XXXXXXXXXX')),2,'0')          INTO V_P_P from dual;
+  --select LPAD(TRIM(to_char(LENGTH(P_VAL),'XXXXXXXXXX')),2,'0') INTO V_P_LEN from dual;
+--end if;
+
+
+
+
+V_BASE :=  V_P_P || V_P_LEN || V_P_VAL;
+
+--SELECT utl_raw.cast_to_varchar2 (utl_encode.base64_encode(V_BASE))   INTO V_BASE FROM DUAL;
+
+RETURN V_BASE;
+END;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

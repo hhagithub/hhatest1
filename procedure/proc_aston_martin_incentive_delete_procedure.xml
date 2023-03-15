@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="de94afc09a55b29bdad117868154cc626d053f5b" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleProcedure objectName="PROC_ASTON_MARTIN_INCENTIVE_DELETE" objectType="PROCEDURE" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "HHA_PROD"."PROC_ASTON_MARTIN_INCENTIVE_DELETE" (P_PERIOD VARCHAR2)
+IS
+
+BEGIN
+   FOR LOC IN (Select  distinct WT_LOCATION from work_team_details d where  ASTON_MARTIN_FLAG = 'Y') LOOP
+
+     DELETE FROM work_emp_incentives WHERE  WI_LOCATION = LOC.WT_LOCATION AND WI_PERIOD = P_PERIOD ;
+
+   END LOOP;
+
+    commit;
+
+    dbms_output.put_line(' Procedure Successful ');
+EXCEPTION
+     WHEN others THEN
+  dbms_output.put_line(' SQL Error Msg='||SQLERRM);
+
+END;
+/]]></n0:source>
+		</n0:createOracleProcedure>
+	</changeSet>
+</databaseChangeLog>

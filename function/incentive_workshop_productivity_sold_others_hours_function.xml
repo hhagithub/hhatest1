@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="447a2223e1ed03a23299e974008edfb68c87f927" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="INCENTIVE_WORKSHOP_PRODUCTIVITY_SOLD_OTHERS_HOURS" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."INCENTIVE_WORKSHOP_PRODUCTIVITY_SOLD_OTHERS_HOURS" (wj_location1_ varchar2,P_PERIOD VARCHAR2,WJ_EMP_NO_ VARCHAR2) return number is
+--1 HOURS
+V_HOURS number;--varchar2(80);
+ V_OVERTIME NUMBER;
+ abc_DAYOFF number;
+ V_sold_cig NUMBER;
+v_sold_others number;
+BEGIN
+
+
+begin
+  select sum(nvl(NEW_TIME,0)) into v_sold_others
+  from new_sold_time,work_job_master w
+         where st_emp_no = wj_emp_no_
+           and to_char(TRUNC(st_credit_date),'rrrrMM') =  P_PERIOD
+           and ST_CREDIT_DATE is not null
+           and ji_job_no = W.JM_JOB_NO 
+           and w.jm_campaign_code is null
+          and nvl(JM_CLASS_TYPE,'M') <> 'B';
+
+          Exception when no_Data_found then
+          null;
+end;
+
+
+      IF v_sold_others > 0 THEN
+            RETURN round((v_sold_others),2);
+      ELSE
+            RETURN 0;
+      END IF;
+     
+
+END;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

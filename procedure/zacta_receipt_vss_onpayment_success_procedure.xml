@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="833622c88db2d62effcdcb0bc995f7eee572a22a" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleProcedure objectName="ZACTA_RECEIPT_VSS_ONPAYMENT_SUCCESS" objectType="PROCEDURE" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "HHA_PROD"."ZACTA_RECEIPT_VSS_ONPAYMENT_SUCCESS" (INV_TRANNO_P IN NUMBER)  IS 
+--DECLARE
+SYS_TYPE_ varchar2(10) := '' ;
+BRANCH_CODE_ varchar2(10);
+ITEM_REMARKS_ varchar2(800);
+customer_name_ varchar2(800);
+NET_AMOUNT_ number;
+INV_TYPE_ varchar2(5);
+vat_amount_ number;
+amount_ number;
+inv_tranno_ number;
+
+cursor abc is
+ 
+select d.SYS_TYPE,m.BRANCH_CODE,ITEM_REMARKS,nvl(CUST_NAME_ARB,CUST_NAME_ENG) customer_name ,NET_AMOUNT,d.INV_TYPE, 
+ d.vat_amount,d.amount,m.inv_tranno from vw_inv_mst m, vw_inv_dtl d 
+ where m.inv_tranno=d.inv_tranno   and  d.INV_TRANNO=INV_TRANNO_P and d.SYS_TYPE in(1,5);
+ 
+begin
+ 
+open abc;
+loop
+fetch abc into SYS_TYPE_,BRANCH_CODE_,item_remarks_,customer_name_,net_amount_,inv_type_,VAT_AMOUNT_,AMOUNT_,INV_TRANNO_;
+exit when abc%notfound;
+
+
+        
+    if SYS_TYPE_=1 then 
+
+         zacta_receipt_in_VSS@to_appidev.hha.local(BRANCH_CODE_,item_remarks_,customer_name_,net_amount_,inv_type_,NULL,
+             null,null,null,null,'Y',VAT_AMOUNT_,AMOUNT_,null,INV_TRANNO_,sysdate);
+    elsif SYS_TYPE_=5 then 
+
+        zacta_receipt_in_VSS@to_appidev.hha.local(BRANCH_CODE_,item_remarks_,customer_name_,net_amount_,inv_type_,NULL,
+                 null,null,null,null,'N',VAT_AMOUNT_,AMOUNT_,net_amount_,INV_TRANNO_,sysdate);
+         ELSE
+                 NULL;
+    end if ;
+
+ 
+end loop;
+close abc;
+commit;
+EXCEPTION WHEN NO_DATA_FOUND THEN 
+NULL;
+
+end;
+/]]></n0:source>
+		</n0:createOracleProcedure>
+	</changeSet>
+</databaseChangeLog>

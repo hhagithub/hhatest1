@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="5043214ff5f95c1d27f67e9da60d90b735daa206" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="ZATCA_BILLINGREFERENCE" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."ZATCA_BILLINGREFERENCE" (Invoice_ID Varchar2,Invoice_Date Varchar2)  RETURN VARCHAR2 IS
+BEGIN
+Return 
+   '<cac:BillingReference>
+        <cac:InvoiceDocumentReference>
+            <cbc:ID>”Invoice Number: 348; Invoice Issue Date: 2022-11-04”</cbc:ID>
+        </cac:InvoiceDocumentReference>
+    </cac:BillingReference>';
+
+END;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

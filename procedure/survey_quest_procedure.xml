@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="02eae8e19c911331a14adac0926637e1885ba6a6" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleProcedure objectName="SURVEY_QUEST" objectType="PROCEDURE" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "HHA_PROD"."SURVEY_QUEST" (payload_ clob) IS
+   l_object         json_object_t;
+   l_object_a       json_object_t;
+   l_key_obj        json_key_list;
+   v_clob           CLOB;
+   tv               apex_json.t_values;
+   obj_in_obj       JSON_OBJECT_T;
+   l_key_list       json_key_list;
+   l_array          json_array_t;
+   l_element        json_element_t;
+   l_eats           json_array_t;
+   l_eats1           json_array_t;
+   output           json_array_t;
+   status           VARCHAR2(5000);  
+   v_job_no_OLD     VARCHAR2(100);
+   v_job_no_NEW     VARCHAR2(100);
+        L_OBJECT_SIZE_1  NUMBER;
+      L_OBJECT_SIZE_2  NUMBER;
+begin
+Select quest into v_clob from survey_Data;
+l_object := json_object_t(v_clob);
+     L_OBJECT_SIZE_1 := l_object.get_Array('questionairs').get_size ; --RepairItems  --ServiceItems
+      DBMS_OUTPUT.put_line ('Number of SIZE: ' ||  L_OBJECT_SIZE_1 );
+
+ --l_eats := l_object.get_Array('questionairs');
+ --DBMS_OUTPUT.put_line ('Number of elements in array: ' || l_eats.get_size);
+
+
+
+end;
+/]]></n0:source>
+		</n0:createOracleProcedure>
+	</changeSet>
+</databaseChangeLog>

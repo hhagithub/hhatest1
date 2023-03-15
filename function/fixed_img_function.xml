@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="a3f2e73cf828c79137388ff6c4ec50b6c80a6b1c" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="FIXED_IMG" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."FIXED_IMG" (p_blob       BLOB,
+
+                                     in_width     NUMBER,
+
+                                     in_height    NUMBER)
+
+   RETURN BLOB
+
+IS
+
+   vimagedata    BLOB;
+
+   vsizedimage   BLOB;
+
+BEGIN
+
+   vimagedata := p_blob;
+
+   DBMS_LOB.createtemporary(vsizedimage, FALSE, DBMS_LOB.call);
+
+   ordsys.ordimage.processcopy(vimagedata,
+
+                               'fixedScale=' || in_width || ' ' || in_height,
+
+                               vsizedimage);
+
+   RETURN vsizedimage;
+
+END;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

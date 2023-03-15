@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="055bf485d38c708b60800cca926c0299e8381432" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleTrigger objectName="INERT_LOG" objectType="TRIGGER" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE TRIGGER "HHA_PROD"."INERT_LOG" 
+  after insert
+  on EMP 
+  for each row
+begin
+  insert into EMP_LOG(EMPNO,SAL,COM, DT)
+  values (:NEW.empno, :NEW.sal, :NEW.comm, SYSDATE);
+end;
+
+/
+/
+ALTER TRIGGER "HHA_PROD"."INERT_LOG" ENABLE;]]></n0:source>
+		</n0:createOracleTrigger>
+	</changeSet>
+</databaseChangeLog>

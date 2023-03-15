@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="b96ec0d62a987dc7e540843bc9e806ab70472859" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="ZATCA_SIGNED_PROPERTIES_HASH" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."ZATCA_SIGNED_PROPERTIES_HASH" (AP_SIGNINGTIME_ varchar2) RETURN VARCHAR2 IS
+ h raw(32);
+ cb clob;
+
+
+BEGIN
+--2022-10-27T23:33:56Z
+
+--cb := '<xades:SignedProperties xmlns:xades="http://uri.etsi.org/01903/v1.3.2#" Id="xadesSignedProperties"><xades:SignedSignatureProperties><xades:SigningTime>2022-11-01T15:49:14Z</xades:SigningTime><xades:SigningCertificate><xades:Cert><xades:CertDigest><ds:DigestMethod xmlns:ds="http://www.w3.org/2000/09/xmldsig#" Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"></ds:DigestMethod><ds:DigestValue xmlns:ds="http://www.w3.org/2000/09/xmldsig#">ZGQ1MmU4MzM4YzIxZTU3MjJkYWM1MzZkNTU3NTIwNWMzMDY3MzM4ODU4YWQwYmEyYTYwMTI5MzI3YjEyOTczNQ== /ds:DigestValue></xades:CertDigest><xades:IssuerSerial><ds:X509IssuerName xmlns:ds="http://www.w3.org/2000/09/xmldsig#">CN=TSZEINVOICE-SubCA-1, DC=extgazt, DC=gov, DC=local </ds:X509IssuerName><ds:X509SerialNumber xmlns:ds="http://www.w3.org/2000/09/xmldsig#">2475382888117010136950089026926167642744062132</ds:X509SerialNumber></xades:IssuerSerial></xades:Cert></xades:SigningCertificate></xades:SignedSignatureProperties></xades:SignedProperties>';
+cb := '<xades:SignedProperties xmlns:xades="http://uri.etsi.org/01903/v1.3.2#" Id="xadesSignedProperties"> <xades:SignedSignatureProperties> <xades:SigningTime>2022-11-01T15:49:14Z</xades:SigningTime> <xades:SigningCertificate> <xades:Cert> <xades:CertDigest> <ds:DigestMethod xmlns:ds="http://www.w3.org/2000/09/xmldsig#" Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"> </ds:DigestMethod> <ds:DigestValue xmlns:ds="http://www.w3.org/2000/09/xmldsig#">ZGQ1MmU4MzM4YzIxZTU3MjJkYWM1MzZkNTU3NTIwNWMzMDY3MzM4ODU4YWQwYmEyYTYwMTI5MzI3YjEyOTczNQ== /ds:DigestValue></xades:CertDigest> <xades:IssuerSerial> <ds:X509IssuerName xmlns:ds="http://www.w3.org/2000/09/xmldsig#">CN=TSZEINVOICE-SubCA-1, DC=extgazt, DC=gov, DC=local </ds:X509IssuerName> <ds:X509SerialNumber xmlns:ds="http://www.w3.org/2000/09/xmldsig#">2475382888117010136950089026926167642744062132</ds:X509SerialNumber> </xades:IssuerSerial> </xades:Cert> </xades:SigningCertificate> </xades:SignedSignatureProperties> </xades:SignedProperties>';
+--select xmlserialize( Document  xmltype(v_input) as clob NO INDENT ) into cb1 from dual;
+--cb := trim(regexp_replace(cb,'><', '> <'));
+h := dbms_crypto.hash(utl_i18n.string_to_raw (cb, 'AL32UTF8'), dbms_crypto.hash_sh256);
+return utl_raw.cast_to_varchar2(utl_encode.base64_encode(utl_raw.cast_to_raw(h)));
+
+END;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

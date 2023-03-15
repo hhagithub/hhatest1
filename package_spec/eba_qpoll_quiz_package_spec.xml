@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="7c6879d3ad6cb99cc16deb78954d1b2f44ef4582" author="(HHA_PROD)-Generated"     >
+		<n0:createOraclePackageSpec objectName="EBA_QPOLL_QUIZ" objectType="PACKAGE_SPEC" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE PACKAGE "HHA_PROD"."EBA_QPOLL_QUIZ" is
+function delim_answers (
+   p_answer_01  in  varchar2,
+   p_answer_02  in  varchar2,
+   p_answer_03  in  varchar2,
+   p_answer_04  in  varchar2,
+   p_answer_05  in  varchar2,
+   p_answer_06  in  varchar2,
+   p_answer_07  in  varchar2,
+   p_answer_08  in  varchar2,
+   p_answer_09  in  varchar2,
+   p_answer_10  in  varchar2,
+   p_answer_11  in  varchar2,
+   p_answer_12  in  varchar2
+   )
+   return varchar2;
+function delim_answers_disp (
+   p_correct_answer  in  varchar2
+   )
+   return varchar2;
+end eba_qpoll_quiz;
+/]]></n0:source>
+		</n0:createOraclePackageSpec>
+	</changeSet>
+</databaseChangeLog>

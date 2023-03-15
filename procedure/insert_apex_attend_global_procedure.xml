@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="3550385be98f4738c156a6fbb2e85984122fa4d4" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleProcedure objectName="INSERT_APEX_ATTEND_GLOBAL" objectType="PROCEDURE" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "HHA_PROD"."INSERT_APEX_ATTEND_GLOBAL" (P1_EMPNO NUMBER, P1_FROM_DATE DATE, P1_TO_DATE DATE, USER_CODE_ VARCHAR2) IS
+BEGIN
+COMMIT;
+--DELETE FROM HCM_APEX_ATTEND WHERE USER_CODE = USER_CODE_;
+INSERT INTO HCM_APEX_ATTEND_GLOBAL
+(
+select EMP_CODE,(
+                select st_ename from pastatic where st_empcd = ee.EMP_CODE) emp_name,
+                --to_char(DATE_TIME,'dd/mm/yyyy') ATTEND_DATE,
+                trunc(DATE_TIME) ATTEND_DATE,
+                to_char(DATE_TIME,'HH24:MI') PUNCH_TIME,
+                DEVICE_CODE,
+                USER_CODE_
+from taempfingerswap ee
+                 WHERE EXISTS
+                 (
+                 select st_empcd from pastatic P1 where st_empcd =  USER_CODE_  and  st_status <= '15' AND P1.st_empcd =  ee.EMP_CODE
+                 union all
+                 select st_empcd from pastatic P2 where DIRECT_MANAGER_NUMBER =  USER_CODE_   and  st_status <= '15' AND P2.st_empcd =  ee.EMP_CODE
+                 )
+and  trunc(DATE_TIME) BETWEEN NVL(P1_FROM_DATE,trunc(SYSDATE)) AND NVL(P1_TO_DATE,trunc(SYSDATE))
+--NVL(TO_DATE(P1_FROM_DATE,'DD-MON-YY'),TO_DATE(SYSDATE,'DD-MON-YY')) AND NVL(TO_DATE(P1_TO_DATE,'DD-MON-YY'),TO_DATE(SYSDATE,'DD-MON-YY'))
+and EMP_CODE = decode(P1_EMPNO,NULL,EMP_CODE,P1_EMPNO)
+--order by EMP_CODE, DATE_TIME, PUNCH_TIME
+);
+--COMMIT;
+END;
+/]]></n0:source>
+		</n0:createOracleProcedure>
+	</changeSet>
+</databaseChangeLog>

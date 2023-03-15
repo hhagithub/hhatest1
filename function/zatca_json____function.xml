@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="ff37ff5e735ac53e7f071ec1b7215d31399ff4fb" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="ZATCA_JSON___" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."ZATCA_JSON___" RETURN CLOB is
+V_CLOB CLOB;
+BEGIN
+select 
+  json_object(
+   'invoiceHash' value ZATCA_GENERATEHASH((select xml from zatca_xml)),
+   'uuid' value '3cf5ee18-ee25-44ea-a444-2c37ba7f28be'
+   ,'invoice' value ZATCA_ENCODE64_CLOB((select xml from zatca_xml))
+   ) 
+   JSON_ INTO V_CLOB
+  from dual;
+RETURN V_CLOB;
+  END;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

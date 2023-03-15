@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="cfbd04390d33760c2f0217c415559262e83d8f54" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="ZATCA_INVOICELINE1__" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."ZATCA_INVOICELINE1__" (ID_ Varchar2) RETURN CLOB IS
+  r_clob         CLOB;
+  l_clob         CLOB;
+BEGIN
+
+--'|| ||'
+--_HHA
+for i in (select * From ZATCA_hha_invoiceline where INVOICE_ID = ID_) loop
+r_clob := ' <cac:InvoiceLine>
+      <cbc:ID>'|| i.ID ||'</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="'||i.unitCode||'">'||i.InvoicedQuantity ||'</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="'||i.currencyID||'">'||trim(to_char(round(i.LineExtensionAmount,2),'FM99999999999990.00'))||'</cbc:LineExtensionAmount>
+      <cac:TaxTotal>
+         <cbc:TaxAmount currencyID="'||i.currencyID||'">'||trim(to_char(round(i.TaxAmount,2),'FM99999999999990.00'))||'</cbc:TaxAmount>
+         <cbc:RoundingAmount currencyID="'||i.currencyID||'">'||trim(to_char(round(i.RoundingAmount,2),'FM99999999999990.00'))||'</cbc:RoundingAmount>
+      </cac:TaxTotal>
+      <cac:Item>
+         <cbc:Name>'|| i.Name||'</cbc:Name>
+         <cac:ClassifiedTaxCategory>
+            <cbc:ID>'||i.ClassifiedTaxCategoryID||'</cbc:ID>
+            <cbc:Percent>'||i.TaxPercent||'</cbc:Percent>
+            <cac:TaxScheme>
+               <cbc:ID>'||i.TaxSchemeID||'</cbc:ID>
+            </cac:TaxScheme>
+         </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+         <cbc:PriceAmount currencyID="'||i.currencyID||'">'||trim(to_char(round(i.PriceAmount,2),'FM99999999999990.00'))||'</cbc:PriceAmount>
+      </cac:Price>
+   </cac:InvoiceLine>
+ ' ;
+ 
+
+l_clob := l_clob || ' ' ||r_clob;
+End loop;
+  RETURN l_clob;
+  Exception When No_Data_Found then
+  REturn Null;
+END;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

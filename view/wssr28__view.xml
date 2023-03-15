@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="68eb129239406c4f6b40aa2a8ad65bd857263051" author="(HHA_PROD)-Generated"     >
+		<n0:createSxmlObject objectName="WSSR28_" objectType="VIEW" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  <VIEW xmlns="http://xmlns.oracle.com/ku" version="1.0">
+   <SCHEMA>HHA_PROD</SCHEMA>
+   <NAME>WSSR28_</NAME>
+   <COL_LIST>
+      <COL_LIST_ITEM>
+         <NAME>STARTTIME</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>WJ_EMP_NO</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>WJ_LOCATION</NAME>
+      </COL_LIST_ITEM>
+   </COL_LIST>
+   <SUBQUERY>SELECT Distinct
+Trunc(attendance_date) starttime,
+to_number(Emp_no) WJ_EMP_NO,
+w.WJ_LOCATION
+FROM HCM_TIMECARDN H,
+(
+SELECT Distinct  to_number(w.WJ_EMP_NO) WJ_EMP_NO ,w.WJ_LOCATION
+FROM WORK_JOB_TIME W
+where to_number(wj_location) = '481' and
+to_number(WJ_EMP_NO) = decode(6819,null,to_number(WJ_EMP_NO),6819)
+AND TRUNC(wj_start_time)  BETWEEN  TRUNC(to_date('01/11/2022','dd/mm/yyyy'))  AND TRUNC(to_date('14/11/2022','dd/mm/yyyy'))
+) W
+WHERE
+
+ to_number(Emp_no) = decode(689,null,to_number(Emp_no),6819)
+AND
+TRUNC(attendance_date)  BETWEEN  TRUNC(to_date('01/11/2022','dd/mm/yyyy'))  AND TRUNC(to_date('14/11/2022','dd/mm/yyyy'))
+and
+w.WJ_EMP_NO(+) = H.Emp_no
+</SUBQUERY>
+</VIEW>]]></n0:source>
+		</n0:createSxmlObject>
+	</changeSet>
+</databaseChangeLog>

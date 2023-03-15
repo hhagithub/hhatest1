@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="c533cb1a54b19238357e3ed6aca32edf1a188f53" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleProcedure objectName="IQ_DELETEAPPOINTMENTS" objectType="PROCEDURE" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "HHA_PROD"."IQ_DELETEAPPOINTMENTS" is
+token_string   varchar2(4000);
+l_reqBody      CLOB;
+l_response     CLOB;
+json_body      VARCHAR2(4000);
+l_Status       VARCHAR2(200);
+
+begin
+
+FOR C IN (SELECT * FROM work_appointment WHERE TRUNC(CRE_DATE) >= TRUNC(SYSDATE)-1 AND IQ_DATA_FLAG='Y' and ap_location in ('229','521','481'))
+LOOP 
+    
+token_string := getIQtoken('https://hha'||c.ap_location||'.iq-motive.com:10004/api/Auth/login', c.ap_location);
+
+apex_web_service.g_request_headers.delete();
+apex_web_service.g_request_headers(1).name  := 'Authorization';
+apex_web_service.g_request_headers(1).value := 'Bearer '||token_string;
+apex_web_service.g_request_headers(2).name  := 'Content-Type';
+apex_web_service.g_request_headers(2).value := 'application/json; charset=utf-8';
+--apex_web_service.g_request_headers(3).name := 'Content-Length';
+--apex_web_service.g_request_headers(3).value := '';
+
+BEGIN
+
+SELECT JOB INTO l_reqBody 
+FROM 
+(
+
+  select JSON_OBJECT 
+  (
+  'appointmentRef' is to_char(AP_APPOINT_NO),
+  'dmsid'          is ''
+  ) AS JOB
+  from work_appointment
+  where AP_APPOINT_NO = c.ap_appoint_no
+
+);
+
+json_body  := substr(l_reqBody, 1, 32767);
+
+l_response := apex_web_service.make_rest_request(p_url           => 'https://hha'||c.ap_location||'.iq-motive.com:10004/api/dms',
+                                                 p_http_method   => 'DELETE',
+                                                 p_body          => to_clob(json_body),
+                                                 p_wallet_path   => 'file:/u01/app/oracle/product/12.2.0/dbhome_1/wallet',
+                                                 p_wallet_pwd    => 'welcome1'
+                                             );
+
+l_Status := apex_web_service.g_status_code;
+
+IF l_Status = '200' THEN
+   begin
+     update work_appointment o
+     set o.IQ_DATA_FLAG = 'Y'
+     where AP_APPOINT_NO = c.ap_appoint_no;
+     commit;
+   end;
+END IF; 
+/*
+IF l_Status = '200' THEN
+   RETURN '200-Success';
+ELSIF l_Status = '400' THEN
+   RETURN '409-Bad Request';
+ELSIF l_Status = '409' THEN
+   RETURN '409-Conflict';   
+ELSE  
+   RETURN 'Error: '||l_Status;
+END IF;   
+
+EXCEPTION 
+  WHEN NO_DATA_FOUND THEN
+  RETURN SQLERRM;
+  WHEN OTHERS THEN
+  RETURN SQLERRM;
+*/  
+exception 
+  when others then
+  null;
+END;
+END LOOP;
+end;
+/]]></n0:source>
+		</n0:createOracleProcedure>
+	</changeSet>
+</databaseChangeLog>

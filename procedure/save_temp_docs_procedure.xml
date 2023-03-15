@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="42c13076dafc93f87bbf870b74de49bcc2518220" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleProcedure objectName="SAVE_TEMP_DOCS" objectType="PROCEDURE" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "HHA_PROD"."SAVE_TEMP_DOCS" AS
+  l_report blob;
+begin
+  l_report := apex_util.get_print_document (
+    p_application_id      => 130,
+    p_report_query_name   => 'MAZDA_SALES_VS_TARGET',
+    p_report_layout_name  => 'MAZDA_SALES_VS_TARGET',
+    p_report_layout_type  => 'rtf',
+    p_document_format     => 'pdf'
+  );
+  
+  -- delete if already exists
+--   Delete from emp_payslips where empno = V('P3_EMPNO');
+  insert into Apex_APP_Temp_Documents (
+   ser_no,
+   DOC_ID,
+   filename,
+   mimetype,
+   report,
+   created_date,
+   created_by,
+   hash_val
+
+  ) values (
+  (SELECT NVL(MAX(SER_NO),0)+1 FROM Apex_APP_Temp_Documents),
+  null ,
+   'REQ_FORM_'||TO_CHAR(SYSDATE,'HHMISS') ||'.PDF',
+   'application/pdf',
+   l_report,
+   sysdate,
+   2554,
+   lower(SYS_GUID())
+   ); 
+ 
+  END;
+/]]></n0:source>
+		</n0:createOracleProcedure>
+	</changeSet>
+</databaseChangeLog>

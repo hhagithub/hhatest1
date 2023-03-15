@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="f5997d7ae2759c073e0c6082b63a21a95bf19099" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="SOAP_CALC_TEMP" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."SOAP_CALC_TEMP" RETURN NUMBER AS
+  l_envelope  CLOB;
+  l_xml       XMLTYPE;
+  l_result    VARCHAR2(32767);
+  l_clob      VARCHAR2(32767);
+
+  l_celsius   VARCHAR2(128) := '10'; -- Celsius is passed here
+BEGIN
+
+  -- Build a SOAP document appropriate for the web service.
+  l_envelope := '<?xml version="1.0" encoding="utf-8"?>
+<soap12:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+                 xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+                 xmlns:soap12="http://www.w3.org/2003/05/soap-envelope"
+                 xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <soap12:Body>
+    <CelsiusToFahrenheit xmlns="http://www.w3schools.com/webservices/">
+      <Celsius>10</Celsius>
+    </CelsiusToFahrenheit>
+  </soap12:Body>
+</soap12:Envelope>';
+
+  -- Get the XML response from the web service.
+  l_xml := APEX_WEB_SERVICE.make_request(
+    p_url      => 'https://www.w3schools.com/xml/tempconvert.asmx',
+    p_action   => 'https://www.w3schools.com/xml/tempconvert.asmx/CelsiusToFahrenheit',
+    p_envelope => l_envelope
+  );
+
+  -- Display the whole SOAP document returned.
+  DBMS_OUTPUT.put_line('l_xml=' || l_xml.getClobVal());
+  l_Clob := l_xml.getClobVal();
+
+  -- Pull out the specific value of interest.
+  l_result := APEX_WEB_SERVICE.parse_xml(
+    p_xml   => l_xml,
+    p_xpath => '//return/text()',
+    p_ns    => 'xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"'
+    --  p_ns    => 'xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"'
+  );
+
+  DBMS_OUTPUT.put_line('l_result=' || l_result);
+
+  RETURN TO_NUMBER(l_result);
+END;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

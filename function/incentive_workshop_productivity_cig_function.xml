@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="b1095a83eeeb6a65eeec38764f9d2cc69401c314" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="INCENTIVE_WORKSHOP_PRODUCTIVITY_CIG" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."INCENTIVE_WORKSHOP_PRODUCTIVITY_CIG" (wj_location1_ varchar2,P_PERIOD VARCHAR2,WJ_EMP_NO_ VARCHAR2) return number is
+--1 HOURS
+V_HOURS number;--varchar2(80);
+ V_OVERTIME NUMBER;
+ abc_DAYOFF number;
+ V_sold_cig NUMBER;
+
+BEGIN
+
+
+
+     
+
+      declare
+      --create or replace function R28_sold_cig_mnt(wj_emp_no_ VARCHAR2,starttime_ DATE,endtime_ DATE) return number is
+      --8 SOLD_CIG
+      temp number;--varchar2(80);
+      begin
+      
+      
+
+      
+         select
+         Round(sum(nvl(round(NEW_TIME,2),0)),2)
+            --lpad(nvl(floor(sum(nvl(ST_GRANTED_TIME,0))),0),2,0)||':'||
+         -- nvl(floor(sum(nvl(NEW_TIME,0))),0)||':'||
+         --                                   lpad(nvl(round((sum(nvl(NEW_TIME,0))-floor(sum(nvl(NEW_TIME,0))))*60),0),2,0) 
+            into temp
+            from new_sold_time
+            where 
+            st_emp_no = Nvl(WJ_EMP_NO_,st_emp_no) and
+             JI_LOCATION =  wj_location1_ 
+            and to_char(trunc(st_credit_date),'rrrrmm') = P_PERIOD     --between trunc(starttime_) and trunc(endtime_)
+            and ST_CREDIT_DATE is not null;
+
+            
+      V_sold_cig := rOUND(NVL(TEMP,0),2);--return(temp);
+      RETURN V_sold_cig;
+      exception when others then 
+         V_sold_cig := 0;--return null;
+         RETURN V_sold_cig;
+      end;
+
+
+
+
+END;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

@@ -1,0 +1,463 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="b9fe38b159efd4abf471cef421e3d0dd723c433a" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="GET_ATTEND_TYPE_RECSTEAMSDTL" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."GET_ATTEND_TYPE_RECSTEAMSDTL" 
+(
+P_EMPNO           varchar2 default null,
+P_APP_USER        varchar2,
+P_FROM_DATE       date,
+P_TO_DATE         date,
+P_LOC             varchar2 default null,
+P_Legal_Emp       varchar2 default null,
+P_Period          varchar2 default null
+)
+return attend_type_recs_dtl is
+return_rows attend_type_recs_dtl;
+
+START_DATE DATE;
+END_DATE   DATE;
+
+begin
+
+if P_Period is not null then
+   START_DATE := TO_DATE(TO_CHAR(TO_DATE(P_Period||'-01','YYYY-MM-DD'),'DD-MON-YY'),'DD-MON-YY');
+   END_DATE   := TO_DATE(TO_CHAR(LAST_DAY(TO_DATE(P_Period||'-01','YYYY-MM-DD')),'DD-MON-YY'),'DD-MON-YY');
+else
+   START_DATE := P_FROM_DATE;
+   END_DATE   := P_TO_DATE;
+end if;
+
+
+select attend_type_dtl
+(
+EMP_NO,
+MONTH_YEAR,
+P_DATE,
+ST_ENAME,
+LEGAL_EMPLOYER,
+LOC_CODE,
+COMPINATION,
+ATTENDANCE_DATE,
+PATTERN_NAME,
+TIME_IN,
+TIME_OUT,
+TOTAL_HOURS,
+TOTAL_HOURS_FORMAT,
+TOTAL_HOURS_EMP,
+TOTAL_HOURS_EMP_FORMAT,
+ADDITIONAL_IN,
+ADDITIONAL_IN_FORMAT,
+ADDITIONAL_IN_EMP,
+ADDITIONAL_IN_EMP_FORMAT,
+SHORTAGE_IN,
+SHORTAGE_IN_FORMAT,
+SHORTAGE_IN_EMP,
+SHORTAGE_IN_EMP_FORMAT,
+ADDITIONAL_OUT,
+ADDITIONAL_OUT_FORMAT,
+ADDITIONAL_OUT_EMP,
+ADDITIONAL_OUT_EMP_FORMAT,
+SHORTAGE_OUT,
+SHORTAGE_OUT_FORMAT,
+SHORTAGE_OUT_EMP,
+SHORTAGE_OUT_EMP_FORMAT,
+SCHEDULED_HOURS,
+SCHEDULED_HOURS_FORMAT,
+SCHEDULED_HOURS_EMP,
+SCHEDULED_HOURS_EMP_FORMAT,
+DEDUCTIBLE_HOURS,
+DEDUCTIBLE_HOURS_FORMAT,
+DEDUCTIBLE_HOURS_EMP,
+DEDUCTIBLE_HOURS_EMP_FORMAT,
+REMARKS,
+REMARKS1,
+TOT_DEDUCTABLE_AM
+)
+bulk collect into return_rows
+from (
+
+  SELECT dd.EMP_NO EMP_NO,
+         TO_CHAR (ATTENDANCE_DATE, 'Month RRRR', 'nls_date_language=English') Month_Year,
+         TO_CHAR (SYSDATE, 'dd-mm-yyyy hh:mm:ss', 'nls_date_language=English') P_DATE,
+         (SELECT ST_ENAME
+            FROM PASTATIC
+           WHERE ST_EMPCD = dd.EMP_NO)
+            ST_ENAME,
+          (SELECT LEGAL_EMPLOYER
+            FROM PASTATIC
+           WHERE ST_EMPCD = dd.EMP_NO)
+            LEGAL_EMPLOYER,
+         (SELECT st_BRCD
+            FROM PASTATIC
+           WHERE ST_EMPCD = dd.EMP_NO)
+            LOC_CODE,
+         'ALL' "COMPINATION",
+         TO_CHAR (ATTENDANCE_DATE, 'DD-MM-RRRR') ATTENDANCE_DATE,
+         PATTERN_NAME,
+         TO_CHAR (TIME_IN, 'HH24:MI') TIME_IN,
+         TO_CHAR (TIME_OUT, 'HH24:MI') TIME_OUT,
+         TOTAL_HOURS,
+          CASE
+            WHEN Time_in is null AND time_out is null
+            THEN
+               ''
+            ELSE
+         NVL (
+            LTRIM (
+                  LPAD (FLOOR (TOTAL_HOURS / 60), 2, 0)
+               || ':'
+               || LPAD (MOD (TOTAL_HOURS, 60), 2, 0),
+               ':'),
+            '00:00')
+            end
+            Total_Hours_Format,
+         (SELECT SUM (NVL (TOTAL_HOURS, 0)) TOTAL_HOURS_EMP
+            FROM hcm_timecardn bb
+           WHERE     EMP_NO = dd.EMP_NO
+                 AND TRUNC (dd.ATTENDANCE_DATE) BETWEEN  TO_DATE(TO_CHAR(TO_DATE(TO_CHAR(bb.ATTENDANCE_DATE, 'YYYY-MM')||'-01','YYYY-MM-DD'),'DD-MON-YY'),'DD-MON-YY') AND  TO_DATE(TO_CHAR(LAST_DAY(TO_DATE(TO_CHAR(bb.ATTENDANCE_DATE, 'YYYY-MM')||'-01','YYYY-MM-DD')),'DD-MON-YY'),'DD-MON-YY')
+                 )
+            TOTAL_HOURS_EMP,
+         LTRIM (
+               LPAD (
+                  FLOOR (
+                       (SELECT SUM (NVL (TOTAL_HOURS, 0)) TOTAL_HOURS_EMP
+                          FROM hcm_timecardn bb
+                         WHERE     EMP_NO = dd.EMP_NO
+                               AND TRUNC (dd.ATTENDANCE_DATE) BETWEEN  TO_DATE(TO_CHAR(TO_DATE(TO_CHAR(bb.ATTENDANCE_DATE, 'YYYY-MM')||'-01','YYYY-MM-DD'),'DD-MON-YY'),'DD-MON-YY') AND  TO_DATE(TO_CHAR(LAST_DAY(TO_DATE(TO_CHAR(bb.ATTENDANCE_DATE, 'YYYY-MM')||'-01','YYYY-MM-DD')),'DD-MON-YY'),'DD-MON-YY')
+                               )
+                     / 60),
+                  3,
+                  0)
+            || ':'
+            || LPAD (
+                  MOD (
+                     (SELECT SUM (NVL (TOTAL_HOURS, 0)) TOTAL_HOURS_EMP
+                        FROM hcm_timecardn bb
+                       WHERE     EMP_NO = dd.EMP_NO
+                             AND TRUNC (dd.ATTENDANCE_DATE) BETWEEN  TO_DATE(TO_CHAR(TO_DATE(TO_CHAR(bb.ATTENDANCE_DATE, 'YYYY-MM')||'-01','YYYY-MM-DD'),'DD-MON-YY'),'DD-MON-YY') AND  TO_DATE(TO_CHAR(LAST_DAY(TO_DATE(TO_CHAR(bb.ATTENDANCE_DATE, 'YYYY-MM')||'-01','YYYY-MM-DD')),'DD-MON-YY'),'DD-MON-YY')
+                             ),
+                     60),
+                  2,
+                  0),
+            ':')
+            Total_Hours_EMP_Format,
+         ADDITIONAL_IN,
+         CASE
+            WHEN Time_in is null AND time_out is null
+            THEN
+               ''
+            ELSE
+               NVL (
+                  LTRIM (
+                        LPAD (FLOOR (ADDITIONAL_IN / 60), 2, 0)
+                     || ':'
+                     || LPAD (MOD (ADDITIONAL_IN, 60), 2, 0),
+                     ':'),
+                  '00:00')
+         END
+            ADDITIONAL_IN_FORMAT,
+         (SELECT SUM (NVL (ADDITIONAL_IN, 0)) ADDITIONAL_IN_EMP
+            FROM hcm_timecardn bb
+           WHERE     EMP_NO = dd.EMP_NO
+                 AND TRUNC (dd.ATTENDANCE_DATE) BETWEEN  TO_DATE(TO_CHAR(TO_DATE(TO_CHAR(bb.ATTENDANCE_DATE, 'YYYY-MM')||'-01','YYYY-MM-DD'),'DD-MON-YY'),'DD-MON-YY') AND  TO_DATE(TO_CHAR(LAST_DAY(TO_DATE(TO_CHAR(bb.ATTENDANCE_DATE, 'YYYY-MM')||'-01','YYYY-MM-DD')),'DD-MON-YY'),'DD-MON-YY')
+                 )
+            ADDITIONAL_IN_EMP,
+         NVL (
+            LTRIM (
+                  LPAD (
+                     FLOOR (
+                          (SELECT SUM (NVL (ADDITIONAL_IN, 0))
+                                     ADDITIONAL_IN_EMP
+                             FROM hcm_timecardn bb
+                            WHERE     EMP_NO = dd.EMP_NO
+                                  AND TRUNC (dd.ATTENDANCE_DATE) BETWEEN  TO_DATE(TO_CHAR(TO_DATE(TO_CHAR(bb.ATTENDANCE_DATE, 'YYYY-MM')||'-01','YYYY-MM-DD'),'DD-MON-YY'),'DD-MON-YY') AND  TO_DATE(TO_CHAR(LAST_DAY(TO_DATE(TO_CHAR(bb.ATTENDANCE_DATE, 'YYYY-MM')||'-01','YYYY-MM-DD')),'DD-MON-YY'),'DD-MON-YY')
+                                  )
+                        / 60),
+                     3,
+                     0)
+               || ':'
+               || LPAD (
+                     MOD (
+                        (SELECT SUM (NVL (ADDITIONAL_IN, 0)) ADDITIONAL_IN_EMP
+                           FROM hcm_timecardn bb
+                          WHERE     EMP_NO = dd.EMP_NO
+                                AND TRUNC (dd.ATTENDANCE_DATE) BETWEEN  TO_DATE(TO_CHAR(TO_DATE(TO_CHAR(bb.ATTENDANCE_DATE, 'YYYY-MM')||'-01','YYYY-MM-DD'),'DD-MON-YY'),'DD-MON-YY') AND  TO_DATE(TO_CHAR(LAST_DAY(TO_DATE(TO_CHAR(bb.ATTENDANCE_DATE, 'YYYY-MM')||'-01','YYYY-MM-DD')),'DD-MON-YY'),'DD-MON-YY')
+                                ),
+                        60),
+                     2,
+                     0),
+               ':'),
+            '00:00')
+            ADDITIONAL_IN_EMP_Format,
+         SHORTAGE_IN,
+         CASE
+            WHEN Time_in is null AND time_out is null
+            THEN
+               ''
+            ELSE
+               NVL (
+                  LTRIM (
+                        LPAD (FLOOR (SHORTAGE_IN / 60), 2, 0)
+                     || ':'
+                     || LPAD (MOD (SHORTAGE_IN, 60), 2, 0),
+                     ':'),
+                  '00:00')
+         END
+            SHORTAGE_IN_FORMAT,
+         (SELECT SUM (NVL (SHORTAGE_IN, 0)) SHORTAGE_IN_EMP
+            FROM hcm_timecardn bb
+           WHERE     EMP_NO = dd.EMP_NO
+                 AND TRUNC (dd.ATTENDANCE_DATE) BETWEEN  TO_DATE(TO_CHAR(TO_DATE(TO_CHAR(bb.ATTENDANCE_DATE, 'YYYY-MM')||'-01','YYYY-MM-DD'),'DD-MON-YY'),'DD-MON-YY') AND  TO_DATE(TO_CHAR(LAST_DAY(TO_DATE(TO_CHAR(bb.ATTENDANCE_DATE, 'YYYY-MM')||'-01','YYYY-MM-DD')),'DD-MON-YY'),'DD-MON-YY')
+                 )
+            SHORTAGE_IN_EMP,
+         NVL (
+            LTRIM (
+                  LPAD (
+                     FLOOR (
+                          (SELECT SUM (NVL (SHORTAGE_IN, 0)) SHORTAGE_IN_EMP
+                             FROM hcm_timecardn bb
+                            WHERE     EMP_NO = dd.EMP_NO
+                                  AND TRUNC (dd.ATTENDANCE_DATE) BETWEEN  TO_DATE(TO_CHAR(TO_DATE(TO_CHAR(bb.ATTENDANCE_DATE, 'YYYY-MM')||'-01','YYYY-MM-DD'),'DD-MON-YY'),'DD-MON-YY') AND  TO_DATE(TO_CHAR(LAST_DAY(TO_DATE(TO_CHAR(bb.ATTENDANCE_DATE, 'YYYY-MM')||'-01','YYYY-MM-DD')),'DD-MON-YY'),'DD-MON-YY')
+                                  )
+                        / 60),
+                     3,
+                     0)
+               || ':'
+               || LPAD (
+                     MOD (
+                        (SELECT SUM (NVL (SHORTAGE_IN, 0)) SHORTAGE_IN_EMP
+                           FROM hcm_timecardn bb
+                          WHERE     EMP_NO = dd.EMP_NO
+                                AND TRUNC (dd.ATTENDANCE_DATE) BETWEEN  TO_DATE(TO_CHAR(TO_DATE(TO_CHAR(bb.ATTENDANCE_DATE, 'YYYY-MM')||'-01','YYYY-MM-DD'),'DD-MON-YY'),'DD-MON-YY') AND  TO_DATE(TO_CHAR(LAST_DAY(TO_DATE(TO_CHAR(bb.ATTENDANCE_DATE, 'YYYY-MM')||'-01','YYYY-MM-DD')),'DD-MON-YY'),'DD-MON-YY')
+                                ),
+                        60),
+                     2,
+                     0),
+               ':'),
+            '00:00')
+            SHORTAGE_IN_EMP_Format,
+         ADDITIONAL_OUT,
+         CASE
+            WHEN Time_in is null AND time_out is null
+            THEN
+               ''
+            ELSE
+               NVL (
+                  LTRIM (
+                        LPAD (FLOOR (ADDITIONAL_OUT / 60), 2, 0)
+                     || ':'
+                     || LPAD (MOD (ADDITIONAL_OUT, 60), 2, 0),
+                     ':'),
+                  '00:00')
+         END
+            ADDITIONAL_OUT_FORMAT,
+         (SELECT SUM (NVL (ADDITIONAL_OUT, 0)) ADDITIONAL_OUT_EMP
+            FROM hcm_timecardn bb
+           WHERE     EMP_NO = dd.EMP_NO
+                 AND TRUNC (dd.ATTENDANCE_DATE) BETWEEN  TO_DATE(TO_CHAR(TO_DATE(TO_CHAR(bb.ATTENDANCE_DATE, 'YYYY-MM')||'-01','YYYY-MM-DD'),'DD-MON-YY'),'DD-MON-YY') AND  TO_DATE(TO_CHAR(LAST_DAY(TO_DATE(TO_CHAR(bb.ATTENDANCE_DATE, 'YYYY-MM')||'-01','YYYY-MM-DD')),'DD-MON-YY'),'DD-MON-YY')
+                 )
+            ADDITIONAL_OUT_EMP,
+         LTRIM (
+               LPAD (
+                  FLOOR (
+                       (SELECT SUM (NVL (ADDITIONAL_OUT, 0)) ADDITIONAL_OUT_EMP
+                          FROM hcm_timecardn bb
+                         WHERE     EMP_NO = dd.EMP_NO
+                               AND TRUNC (dd.ATTENDANCE_DATE) BETWEEN  TO_DATE(TO_CHAR(TO_DATE(TO_CHAR(bb.ATTENDANCE_DATE, 'YYYY-MM')||'-01','YYYY-MM-DD'),'DD-MON-YY'),'DD-MON-YY') AND  TO_DATE(TO_CHAR(LAST_DAY(TO_DATE(TO_CHAR(bb.ATTENDANCE_DATE, 'YYYY-MM')||'-01','YYYY-MM-DD')),'DD-MON-YY'),'DD-MON-YY')
+                               )
+                     / 60),
+                  3,
+                  0)
+            || ':'
+            || LPAD (
+                  MOD (
+                     (SELECT SUM (NVL (ADDITIONAL_OUT, 0)) ADDITIONAL_OUT_EMP
+                        FROM hcm_timecardn bb
+                       WHERE     EMP_NO = dd.EMP_NO
+                            AND TRUNC (dd.ATTENDANCE_DATE) BETWEEN  TO_DATE(TO_CHAR(TO_DATE(TO_CHAR(bb.ATTENDANCE_DATE, 'YYYY-MM')||'-01','YYYY-MM-DD'),'DD-MON-YY'),'DD-MON-YY') AND  TO_DATE(TO_CHAR(LAST_DAY(TO_DATE(TO_CHAR(bb.ATTENDANCE_DATE, 'YYYY-MM')||'-01','YYYY-MM-DD')),'DD-MON-YY'),'DD-MON-YY')
+                            ),
+                     60),
+                  2,
+                  0),
+            ':')
+            ADDITIONAL_OUT_EMP_Format,
+         SHORTAGE_OUT,
+        CASE
+            WHEN Time_in is null AND time_out is null
+            THEN
+               ''
+            ELSE
+               NVL (
+                  LTRIM (
+                        LPAD (FLOOR (SHORTAGE_OUT / 60), 2, 0)
+                     || ':'
+                     || LPAD (MOD (SHORTAGE_OUT, 60), 2, 0),
+                     ':'),
+                  '00:00')
+         END
+            SHORTAGE_OUT_FORMAT,
+         (SELECT SUM (NVL (SHORTAGE_OUT, 0)) SHORTAGE_OUT_EMP
+            FROM hcm_timecardn bb
+           WHERE     EMP_NO = dd.EMP_NO
+                 AND TRUNC (dd.ATTENDANCE_DATE) BETWEEN  TO_DATE(TO_CHAR(TO_DATE(TO_CHAR(bb.ATTENDANCE_DATE, 'YYYY-MM')||'-01','YYYY-MM-DD'),'DD-MON-YY'),'DD-MON-YY') AND  TO_DATE(TO_CHAR(LAST_DAY(TO_DATE(TO_CHAR(bb.ATTENDANCE_DATE, 'YYYY-MM')||'-01','YYYY-MM-DD')),'DD-MON-YY'),'DD-MON-YY')
+                 )
+            SHORTAGE_OUT_EMP,
+         NVL (
+            LTRIM (
+                  LPAD (
+                     FLOOR (
+                          (SELECT SUM (NVL (SHORTAGE_OUT, 0)) SHORTAGE_OUT_EMP
+                             FROM hcm_timecardn bb
+                            WHERE     EMP_NO = dd.EMP_NO
+                                  AND TRUNC (dd.ATTENDANCE_DATE) BETWEEN  TO_DATE(TO_CHAR(TO_DATE(TO_CHAR(bb.ATTENDANCE_DATE, 'YYYY-MM')||'-01','YYYY-MM-DD'),'DD-MON-YY'),'DD-MON-YY') AND  TO_DATE(TO_CHAR(LAST_DAY(TO_DATE(TO_CHAR(bb.ATTENDANCE_DATE, 'YYYY-MM')||'-01','YYYY-MM-DD')),'DD-MON-YY'),'DD-MON-YY')
+                                  )
+                        / 60),
+                     3,
+                     0)
+               || ':'
+               || LPAD (
+                     MOD (
+                        (SELECT SUM (NVL (SHORTAGE_OUT, 0)) SHORTAGE_OUT_EMP
+                           FROM hcm_timecardn bb
+                          WHERE     EMP_NO = dd.EMP_NO
+                                AND TRUNC (dd.ATTENDANCE_DATE) BETWEEN  TO_DATE(TO_CHAR(TO_DATE(TO_CHAR(bb.ATTENDANCE_DATE, 'YYYY-MM')||'-01','YYYY-MM-DD'),'DD-MON-YY'),'DD-MON-YY') AND  TO_DATE(TO_CHAR(LAST_DAY(TO_DATE(TO_CHAR(bb.ATTENDANCE_DATE, 'YYYY-MM')||'-01','YYYY-MM-DD')),'DD-MON-YY'),'DD-MON-YY')
+                                ),
+                        60),
+                     2,
+                     0),
+               ':'),
+            '00:00')
+            SHORTAGE_OUT_EMP_Format,
+         SCHEDULED_HOURS,
+         CASE
+            WHEN Time_in is null AND time_out is null
+            THEN
+               ''
+            ELSE
+               NVL (
+                  LTRIM (
+                        LPAD (FLOOR (SCHEDULED_HOURS / 60), 2, 0)
+                     || ':'
+                     || LPAD (MOD (SCHEDULED_HOURS, 60), 2, 0),
+                     ':'),
+                  '00:00')
+         END
+            SCHEDULED_HOURS_FORMAT,
+         (SELECT SUM (NVL (SCHEDULED_HOURS, 0)) SCHEDULED_HOURS_EMP
+            FROM hcm_timecardn bb
+           WHERE     EMP_NO = dd.EMP_NO
+                 AND TRUNC (dd.ATTENDANCE_DATE) BETWEEN  TO_DATE(TO_CHAR(TO_DATE(TO_CHAR(bb.ATTENDANCE_DATE, 'YYYY-MM')||'-01','YYYY-MM-DD'),'DD-MON-YY'),'DD-MON-YY') AND  TO_DATE(TO_CHAR(LAST_DAY(TO_DATE(TO_CHAR(bb.ATTENDANCE_DATE, 'YYYY-MM')||'-01','YYYY-MM-DD')),'DD-MON-YY'),'DD-MON-YY')
+                 )
+            SCHEDULED_HOURS_EMP,
+         LTRIM (
+               LPAD (
+                  FLOOR (
+                       (SELECT SUM (NVL (SCHEDULED_HOURS, 0))
+                                  SCHEDULED_HOURS_EMP
+                          FROM hcm_timecardn bb
+                         WHERE     EMP_NO = dd.EMP_NO
+                               AND TRUNC (dd.ATTENDANCE_DATE) BETWEEN  TO_DATE(TO_CHAR(TO_DATE(TO_CHAR(bb.ATTENDANCE_DATE, 'YYYY-MM')||'-01','YYYY-MM-DD'),'DD-MON-YY'),'DD-MON-YY') AND  TO_DATE(TO_CHAR(LAST_DAY(TO_DATE(TO_CHAR(bb.ATTENDANCE_DATE, 'YYYY-MM')||'-01','YYYY-MM-DD')),'DD-MON-YY'),'DD-MON-YY')
+                               )
+                     / 60),
+                  3,
+                  0)
+            || ':'
+            || LPAD (
+                  MOD (
+                     (SELECT SUM (NVL (SCHEDULED_HOURS, 0)) SCHEDULED_HOURS_EMP
+                        FROM hcm_timecardn bb
+                       WHERE     EMP_NO = dd.EMP_NO
+                             AND TRUNC (dd.ATTENDANCE_DATE) BETWEEN  TO_DATE(TO_CHAR(TO_DATE(TO_CHAR(bb.ATTENDANCE_DATE, 'YYYY-MM')||'-01','YYYY-MM-DD'),'DD-MON-YY'),'DD-MON-YY') AND  TO_DATE(TO_CHAR(LAST_DAY(TO_DATE(TO_CHAR(bb.ATTENDANCE_DATE, 'YYYY-MM')||'-01','YYYY-MM-DD')),'DD-MON-YY'),'DD-MON-YY')
+                             ),
+                     60),
+                  2,
+                  0),
+            ':')
+            SCHEDULED_HOURS_EMP_Format,
+         DEDUCTIBLE_HOURS,
+         NVL (
+            LTRIM (
+                  LPAD (FLOOR (DEDUCTIBLE_HOURS / 60), 2, 0)
+               || ':'
+               || LPAD (MOD (DEDUCTIBLE_HOURS, 60), 2, 0),
+               ':'),
+            '00:00')
+            DEDUCTIBLE_HOURS_FORMAT,
+         (SELECT SUM (NVL (DEDUCTIBLE_HOURS, 0)) DEDUCTIBLE_HOURS_EMP
+            FROM hcm_timecardn bb
+           WHERE     EMP_NO = dd.EMP_NO
+                 AND TRUNC (dd.ATTENDANCE_DATE) BETWEEN  TO_DATE(TO_CHAR(TO_DATE(TO_CHAR(bb.ATTENDANCE_DATE, 'YYYY-MM')||'-01','YYYY-MM-DD'),'DD-MON-YY'),'DD-MON-YY') AND  TO_DATE(TO_CHAR(LAST_DAY(TO_DATE(TO_CHAR(bb.ATTENDANCE_DATE, 'YYYY-MM')||'-01','YYYY-MM-DD')),'DD-MON-YY'),'DD-MON-YY')
+                 )
+            DEDUCTIBLE_HOURS_EMP,
+         LTRIM (
+               LPAD (
+                  FLOOR (
+                       (SELECT SUM (NVL (DEDUCTIBLE_HOURS, 0))
+                                  DEDUCTIBLE_HOURS_EMP
+                          FROM hcm_timecardn bb
+                         WHERE     EMP_NO = dd.EMP_NO
+                               AND TRUNC (dd.ATTENDANCE_DATE) BETWEEN  TO_DATE(TO_CHAR(TO_DATE(TO_CHAR(bb.ATTENDANCE_DATE, 'YYYY-MM')||'-01','YYYY-MM-DD'),'DD-MON-YY'),'DD-MON-YY') AND  TO_DATE(TO_CHAR(LAST_DAY(TO_DATE(TO_CHAR(bb.ATTENDANCE_DATE, 'YYYY-MM')||'-01','YYYY-MM-DD')),'DD-MON-YY'),'DD-MON-YY')
+                               )
+                     / 60),
+                  3,
+                  0)
+            || ':'
+            || LPAD (
+                  MOD (
+                     (SELECT SUM (NVL (DEDUCTIBLE_HOURS, 0))
+                                DEDUCTIBLE_HOURS_EMP
+                        FROM hcm_timecardn bb
+                       WHERE     EMP_NO = dd.EMP_NO
+                             --AND TO_CHAR (bb.ATTENDANCE_DATE, 'MM,RRRR') = TO_CHAR (dd.ATTENDANCE_DATE, 'MM,RRRR')
+                             AND TRUNC (dd.ATTENDANCE_DATE) BETWEEN  TO_DATE(TO_CHAR(TO_DATE(TO_CHAR(bb.ATTENDANCE_DATE, 'YYYY-MM')||'-01','YYYY-MM-DD'),'DD-MON-YY'),'DD-MON-YY') AND  TO_DATE(TO_CHAR(LAST_DAY(TO_DATE(TO_CHAR(bb.ATTENDANCE_DATE, 'YYYY-MM')||'-01','YYYY-MM-DD')),'DD-MON-YY'),'DD-MON-YY')
+                             ),
+                     60),
+                  2,
+                  0),
+            ':')
+            DEDUCTIBLE_HOURS_EMP_Format,
+            REMARKS,
+            --REPLACE(REMARKS,'','NO DEDEUCTION') REMARKS1,
+            CASE WHEN REMARKS IS NULL THEN 'No Deduction' ELSE REMARKS END AS REMARKS1,
+
+
+         (SELECT HHA.get_Attend_ded_periodAmt@TO_APPI.HHA.LOCAL (
+                    dd.EMP_NO,
+                    TO_CHAR (dd.ATTENDANCE_DATE, 'MM,RRRR')
+                    )
+            FROM DUAL)
+            Tot_deductable_Am
+    FROM hcm_timecardn dd, PASTATIC pp
+    WHERE dd.EMP_NO = pp.st_empcd
+    AND exists--  dd.EMP_NO IN
+                (SELECT st_empcd
+                   FROM pastatic
+                  WHERE st_status <= '15'
+                  and st_empcd = dd.EMP_NO
+                 --------------AND dd.EMP_NO = NVL(:P1_EMPNO, EMP_NO)
+                 AND EXISTS
+                 (
+                 select st_empcd from pastatic P1 where st_empcd =  P_APP_USER and  st_status <= '15' AND P1.st_empcd =  dd.EMP_NO
+                 union all
+                 --select st_empcd from pastatic P2 where DIRECT_MANAGER_NUMBER =  P_APP_USER  and  st_status <= '15' AND P2.st_empcd =  dd.EMP_NO
+                 select EMP_NO from managers_all m where m.manager_no = P_APP_USER AND m.EMP_NO =  dd.EMP_NO
+                 )
+                 AND TRUNC (dd.ATTENDANCE_DATE) BETWEEN START_DATE AND END_DATE --TO_DATE('01-dec-19','DD-MON-YY') and TO_DATE('31-dec-19','DD-MON-YY')
+                 --TO_DATE(TO_CHAR(TO_DATE(P_Period||'-01','YYYY-MM-DD'),'DD-MON-YY'),'DD-MON-YY') AND  TO_DATE(TO_CHAR(LAST_DAY(TO_DATE(P_Period||'-01','YYYY-MM-DD')),'DD-MON-YY'),'DD-MON-YY')
+                 --TO_DATE(:P1_DATE1,'DD-MON-YY') AND  TO_DATE(:P1_DATE2,'DD-MON-YY')
+         )
+ORDER BY to_number(dd.EMP_NO), dd.ATTENDANCE_DATE, dd.PATTERN_NAME
+);
+return return_rows;
+end;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="9e9c7d0091d6b87c8d80d62759848caf5562bc74" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleProcedure objectName="POPULATE_RETENSION_REP_SER" objectType="PROCEDURE" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "HHA_PROD"."POPULATE_RETENSION_REP_SER" (fran_code number) is
+wdt1 date;
+wdt2 date;
+sdt1 date;
+sdt2 date;
+WSSVAL NUMBER;
+VSSVAL NUMBER;
+begin
+
+
+
+delete from work_retention_report_SER;
+
+
+
+for c in
+(
+
+
+
+SELECT DESC_ARB yr, DESC_ENG qt, value_1 yn
+FROM codes_descriptions
+WHERE MAIN_CODE = '183'
+AND VALUE_1 = '1'
+)
+loop
+
+
+
+get_rention_dates_service(c.yr,c.qt,c.yn,wdt1,wdt2,sdt1,sdt2);
+
+
+
+BEGIN
+select count(distinct(jj.jm_chassis_no)) INTO WSSVAL
+from work_job_master jj
+where trunc(jm_job_date) between wdt1 and wdt2 --between to_date('01/10/2019','dd/mm/rrrr') and to_date('30/09/2021','dd/mm/rrrr')
+
+-----------------------------------------((QUARTER DATE + 1DAY ) - 2 YEARS )---------QUARTER DATE---------------------------
+-- to_date('01/10/2018','dd/mm/rrrr') and to_date('30/09/2020','dd/mm/rrrr') --:w1 and :w2
+--and jm_supl_code = '01'
+and jm_location not in ('211','140','214')
+and jm_job_type not in ( '03' )
+and jj.jm_campaign_code is not null
+and jj.jm_speedometer_reading <= '19999'
+and (ltrim(rtrim(JM_CAMPAIGN_CODE)) like 'HHA%10'
+or ltrim(rtrim(JM_CAMPAIGN_CODE)) like 'HHA%10A')
+and exists
+(
+SELECT
+distinct CHASSIS_NUMBER
+FROM INVOICE_HEADER IH, INVOICE_DETAILS ID,MODELS M,SOURCE_TYPE T ,used_veh_details ud
+WHERE IH.LOCATION = ID.LOCATION
+AND IH.INVOICE_NUMBER = ID.INVOICE_NUMBER
+and ID.IN_CN_REFERENCE is null
+AND ID.SERIAL_NO=M.MOD_CODE
+AND IH.RECORD_TYPE != 'S'
+AND id.RECORD_TYPE<>'S'
+AND IH.RECORD_TYPE = 'I'
+AND IH.SOURCE=T.SRC_CODE
+and ID.IN_CN_REFERENCE is null
+and ih.franchise=fran_code
+and id.new_or_used='N'
+and ud.stock_no(+)=id.stock_number and
+trunc(ud.delivery_date) between sdt1 and sdt2
+-- trunc(ud.delivery_date) between to_date('01/10/2019','dd/mm/rrrr') and to_date('30/09/2020','dd/mm/rrrr') --'01/07/2018' and '30/06/2019' -- :s1 and :s2
+-----------------------------------------((QUARTER DATE + 1DAY ) - 2 YEARS )---------(QUARTER DATE - 1 YEAR)---------------------------
+and jj.jm_chassis_no = CHASSIS_NUMBER
+--AND IH.LOCATION = b.ynb
+);
+
+EXCEPTION WHEN NO_DATA_FOUND THEN
+WSSVAL:=0;
+END;
+BEGIN
+SELECT count(distinct(CHASSIS_NUMBER)) INTO VSSVAL
+FROM INVOICE_HEADER IH, INVOICE_DETAILS ID,MODELS M,SOURCE_TYPE T ,used_veh_details ud
+WHERE IH.LOCATION = ID.LOCATION
+AND IH.INVOICE_NUMBER = ID.INVOICE_NUMBER
+and ID.IN_CN_REFERENCE is null
+AND ID.SERIAL_NO=M.MOD_CODE
+AND IH.RECORD_TYPE != 'S'
+AND id.RECORD_TYPE<>'S'
+AND IH.RECORD_TYPE = 'I'
+AND IH.SOURCE=T.SRC_CODE
+and ID.IN_CN_REFERENCE is null
+and ih.franchise=fran_code--'01'
+and id.new_or_used='N'
+and IH.LOCATION not in ('211','140','214')
+and ud.stock_no(+)=id.stock_number
+AND trunc(ud.delivery_date) between sdt1 and sdt2;
+-- trunc(ud.delivery_date) between sdt1 and sdt2;
+--and trunc(ud.delivery_date) between to_date('01/10/2019','dd/mm/rrrr') and to_date('30/09/2020','dd/mm/rrrr')
+END;
+
+
+
+insert into work_retention_report_SER(RET_YEAR,QUARTER,FOR_YEAR_SALES,WSS_RETENTION_VEHICLES,VSS_DELIVERED_VEHICLES,FRANCHISE)
+values(c.yr,c.qt,c.yn,WSSVAL,VSSVAL,fran_code);
+--commit;
+end loop;
+COMMIT;
+end;
+/]]></n0:source>
+		</n0:createOracleProcedure>
+	</changeSet>
+</databaseChangeLog>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="36b39eefa0c55f36aaf279fe95aff40865ba4cc3" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="ZATCA_ALLOWANCE_LINE" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."ZATCA_ALLOWANCE_LINE" (ID_ Varchar2)  RETURN VARCHAR2 IS
+
+BEGIN
+
+   return 
+   '<!--Allowance (discount) at Line level -->
+    <cac:AllowanceCharge>
+         <cbc:ChargeIndicator>false</cbc:ChargeIndicator>
+         <cbc:AllowanceChargeReason>no discount</cbc:AllowanceChargeReason>
+         <cbc:Amount currencyID="SAR">0.00</cbc:Amount>
+      </cac:AllowanceCharge>'; 
+
+END;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

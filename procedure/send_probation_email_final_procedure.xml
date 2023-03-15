@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="fab80c83b68126468d3b2dbde5dcfaec51ecf414" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleProcedure objectName="SEND_PROBATION_EMAIL_FINAL" objectType="PROCEDURE" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "HHA_PROD"."SEND_PROBATION_EMAIL_FINAL" (empno_ number, role_ varchar2, lang_ varchar2 default 'en') is
+PA_ROLE_          varchar2(200);
+email_addr        varchar2(200);
+email_subject     varchar2(200);
+emp_name          varchar2(200);
+emp_job           varchar2(200);
+emp_loc           varchar2(200);
+join_date         date;
+msg               varchar2(2000);
+
+FINAL_DECESION_      VARCHAR2(2);
+PROB_EMP_CONF_EXTEN_ VARCHAR2(20);
+STATUS_              VARCHAR2(200);
+
+begin
+
+BEGIN 
+SELECT FINAL_DECESION INTO FINAL_DECESION_ 
+FROM 
+(
+select DISTINCT FINAL_DECESION ,PA_APP_REQ_SEQ
+from hcm_prob_approval 
+where PA_EMP_NO = empno_
+AND FINAL_DECESION IS NOT NULL
+and PROB_EVAL_NO = (select Nvl(max(PROB_EVAL_NO),1)   --Added This Line By Imran & Tariq --'181830' as with this employee status goes blank in email
+                    from hcm_prob_approval where PA_EMP_NO = empno_
+                    AND FINAL_DECESION IS NOT NULL )
+ORDER BY PA_APP_REQ_SEQ DESC
+) ABC WHERE ROWNUM = 1;
+EXCEPTION WHEN NO_DATA_FOUND THEN
+NULL;
+END;
+
+IF FINAL_DECESION_ = 'EP' THEN
+
+  BEGIN
+  SELECT PROB_EMP_CONF_EXTEN INTO PROB_EMP_CONF_EXTEN_
+  FROM PASTATIC 
+  WHERE ST_EMPCD = empno_;
+  EXCEPTION WHEN NO_DATA_FOUND THEN
+  NULL;
+  END;
+
+  if PROB_EMP_CONF_EXTEN_ = 'R' THEN
+     STATUS_ := 'Probation Extended, Employee Refused';
+  elsif  PROB_EMP_CONF_EXTEN_ = 'A' THEN
+     STATUS_ := 'Probation Extended, Employee Accepted';
+  else
+     STATUS_ := 'Probation Extended';
+  end if;
+
+ELSIF FINAL_DECESION_ = 'EE' THEN
+
+ STATUS_ := 'End Employement';
+
+ELSIF FINAL_DECESION_ = 'CE' THEN
+
+ STATUS_ := 'Confirm Employement'; 
+  
+END IF;  
+
+
+  select ltrim(rtrim(st_ename)),st_gdoj, get_branch_codedesc(ST_brcd), job_name
+  into emp_name, join_date, emp_loc, emp_job
+  from pastatic
+  where st_empcd = empNo_;
+    msg := 'Dear Governement Relation & Payroll Team,' ||chr(10)||'This is to bear your kind attention that the employee status is changed with: ' || STATUS_ ||' regarding to the said Associate for your reference and future action as agreed to Job Contract.'||chr(10)||chr(13)||
+           'HHA - Recruitment Manager.';
+
+
+    email_subject:= '(No Reply) '||empNo_||'-'||emp_name||'/'||emp_job||'/'||emp_loc||'/'||join_date;
+
+
+FOR C IN
+    (
+    select emp_email
+    from pastatic
+    where st_empcd in
+    (
+    select EMPLOYEE_NUMBER
+    from HCM_USERS_ROLES
+    where ROLECOMMONNAME = 'PROBATION_FYI'
+    ))
+  LOOP
+  -------------------------send email
+  SEND_MAIL2(p_sender =>'hr@hha.com.sa' ,p_recipient => C.emp_email,p_subject => email_subject,p_message => msg);
+
+END LOOP;
+
+exception when no_data_found then
+  null;
+end;
+/]]></n0:source>
+		</n0:createOracleProcedure>
+	</changeSet>
+</databaseChangeLog>

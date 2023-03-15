@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="ba5dc2ce074fdf4b006ddd55d0312cf80edf2bda" author="(HHA_PROD)-Generated"     >
+		<n0:createSxmlObject objectName="ZATCA_HHA_SELLER__" objectType="VIEW" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  <VIEW xmlns="http://xmlns.oracle.com/ku" version="1.0">
+   <SCHEMA>HHA_PROD</SCHEMA>
+   <NAME>ZATCA_HHA_SELLER__</NAME>
+   <COL_LIST>
+      <COL_LIST_ITEM>
+         <NAME>INVOICE_ID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>SCHEMEID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>STREETNAME</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>BUILDINGNUMBER</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>PLOTIDENTIFICATION</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>CITYNAME</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>POSTALZONE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>CITYSUBDIVISIONNAME</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>IDENTIFICATIONCODE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>COMPANYID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ID_TAXSCHEME</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>REGISTRATIONNAME</NAME>
+      </COL_LIST_ITEM>
+   </COL_LIST>
+   <SUBQUERY>SELECT
+INVOICE_NUMBER INVOICE_ID,
+crno ID, --21  --'123457890'
+'CRN' schemeID,   --21.1  --'CRN FIXED FOR SELLER'
+addr_street StreetName, --22  --'Bab makkah'
+addr_addl_buildi BuildingNumber, --24  --1234
+0000 PlotIdentification, --25  --1234
+addr_city CityName,  --26  --'Jeddah'
+addr_postal_code PostalZone,  --27  --12643
+--ADDR_PROVINCE CountrySubentity,   --28  --'Makkah Region'  --Optional
+addr_district CitySubdivisionName,--29  --'Bab Makkah'
+addr_country_code IdentificationCode,   --30, --'SA'
+310175397400003 CompanyID,   --vat_reg_no --31  HHA VAT  --300210958810003      SandBox--300075588700003 
+'VAT' ID_TAXSCHEME,  --31.1  --'VAT'
+cmpny_desc RegistrationName   --32   --'Haji Husein Alireza Co. Ltd'  --Al Salam Supplies Co. LTD
+FROM ZATCA_MAPPING_MASTER
+</SUBQUERY>
+</VIEW>]]></n0:source>
+		</n0:createSxmlObject>
+	</changeSet>
+</databaseChangeLog>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="6fec2c608d48f6afa266e598ea2f19f5f4c74296" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleProcedure objectName="R_QUERY" objectType="PROCEDURE" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "HHA_PROD"."R_QUERY" (code_ varchar2, type1_ varchar2, desc_ varchar2, type2_ varchar2 default null)
+is 
+begin
+
+  insert into QUERY_XML(CODE,TYPE1,TYPE2,LOG_DESC) values (code_, type1_, type2_, desc_);
+  commit;
+
+exception
+  when others then
+  null;
+end;
+/]]></n0:source>
+		</n0:createOracleProcedure>
+	</changeSet>
+</databaseChangeLog>

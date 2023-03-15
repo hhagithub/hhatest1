@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="e890962235b7585b1544a81c44e554b23e938321" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="INVOICE_HASH_" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."INVOICE_HASH_" (v_input clob) RETURN VARCHAR2 IS
+ h raw(32);
+ cb clob;
+ cb1 clob;
+
+BEGIN
+cb:= v_input;
+--select xmlserialize( Document  xmltype(v_input) as clob NO INDENT ) into cb1 from dual;
+
+--cb := trim(regexp_replace(cb,'><', '> <'));
+
+--h := dbms_crypto.hash(utl_i18n.string_to_raw (cb, 'AL32UTF8'), dbms_crypto.hash_sh256);
+h := dbms_crypto.hash(cb, dbms_crypto.hash_sh256);
+return h;
+RETURN utl_raw.cast_to_varchar2(UTL_ENCODE.BASE64_ENCODE(h));
+
+END;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

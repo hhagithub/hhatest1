@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="b2704a1ad22b688f7022ac9ae2ff90be4f2f1778" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="GET_DEPENDENT_EMPS" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."GET_DEPENDENT_EMPS" (EMPNO_ number) RETURN SYS_REFCURSOR AS
+   my_ref_cur SYS_REFCURSOR;
+BEGIN
+   /*
+   DELETE FROM DEPENDENT_EMP;
+   INSERT INTO DEPENDENT_EMP(DEPENDENT_EMPNO, EMPNO)
+   (
+    select distinct st_empcd emp_no, EMPNO_ from
+    (
+    select st_empcd from pastatic where st_status <= '15' and st_empcd = EMPNO_
+    union all select st_empcd from pastatic
+    where st_status <= '15' and DIRECT_MANAGER_NUMBER = EMPNO_ union all select st_empcd from pastatic
+    where st_status <= '15' and DIRECT_MANAGER_NUMBER in(select st_empcd from pastatic
+    where st_status <= '15' and DIRECT_MANAGER_NUMBER = EMPNO_ and st_status <= '15')
+    union all select st_empcd from pastatic
+    where st_status <= '15' and DIRECT_MANAGER_NUMBER in(
+    select ST_EMPCD from pastatic
+    where st_status <= '15' and DIRECT_MANAGER_NUMBER in(
+    select st_empcd from pastatic
+    where DIRECT_MANAGER_NUMBER = EMPNO_ and st_status <= '15'))
+    union all
+    select st_empcd from pastatic
+    where st_status <= '15' and DIRECT_MANAGER_NUMBER in(
+    select ST_EMPCD from pastatic
+    where st_status <= '15' and DIRECT_MANAGER_NUMBER in(
+    select ST_EMPCD from pastatic
+    where st_status <= '15' and DIRECT_MANAGER_NUMBER in(
+    select st_empcd from pastatic
+    where DIRECT_MANAGER_NUMBER = EMPNO_ and st_status <= '15')))
+    union all
+    select st_empcd from pastatic
+    where st_status <= '15' and DIRECT_MANAGER_NUMBER in(
+    select ST_EMPCD from pastatic
+    where st_status <= '15' and DIRECT_MANAGER_NUMBER in(
+    select ST_EMPCD from pastatic
+    where st_status <= '15' and DIRECT_MANAGER_NUMBER in(
+    select ST_EMPCD from pastatic
+    where st_status <= '15' and DIRECT_MANAGER_NUMBER in(
+    select st_empcd from pastatic
+    where DIRECT_MANAGER_NUMBER = EMPNO_ and st_status <= '15'))))
+    union all
+    select st_empcd from pastatic
+    where st_status <= '15' and DIRECT_MANAGER_NUMBER in(
+    select ST_EMPCD from pastatic
+    where st_status <= '15' and DIRECT_MANAGER_NUMBER in(
+    select ST_EMPCD from pastatic
+    where st_status <= '15' and DIRECT_MANAGER_NUMBER in(
+    select ST_EMPCD from pastatic
+    where st_status <= '15' and DIRECT_MANAGER_NUMBER in(
+    select ST_EMPCD from pastatic
+    where st_status <= '15' and DIRECT_MANAGER_NUMBER in(
+    select st_empcd from pastatic
+    where DIRECT_MANAGER_NUMBER = EMPNO_ and st_status <= '15')))))
+    )
+   );
+   */
+   OPEN my_ref_cur FOR
+   SELECT DEPENDENT_EMPNO
+   FROM DEPENDENT_EMP
+   WHERE EMPNO = EMPNO_;
+   RETURN my_ref_cur;
+END;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

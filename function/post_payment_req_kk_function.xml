@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="9a0d358951d67b89975cc4607c287e7718e05324" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="POST_PAYMENT_REQ_KK" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."POST_PAYMENT_REQ_KK" ( V_AMOUNT IN number, V_CUSTOMER_EMAIL varchar2,V_REQUEST_EXPIRY_DATE varchar2,V_NOTIFICATION_TYPE varchar2,V_MERCHANT_REFERENCE varchar2,V_PAYMENT_LINK_ID number,v_invoice_no number,
+GL_ACCESS_CODE varchar2,GL_CURRENCY varchar2,GL_LANGUAGE varchar2,GL_MERCHANT_IDENTIFIER varchar2,GL_SERVICE_COMMAND varchar2) return varchar is
+   
+l_json_text CLOB;
+response_message clob;
+payment_link varchar2(200);
+v_signature varchar2(2000);
+BEGIN
+select lower(Amazon_sha256('Hha@2022_access_code='||GL_ACCESS_CODE||'amount='||V_AMOUNT||'currency='||GL_CURRENCY||'customer_email='||V_CUSTOMER_EMAIL||'language='||GL_LANGUAGE||'merchant_identifier='||GL_MERCHANT_IDENTIFIER||
+'merchant_reference='||V_MERCHANT_REFERENCE||'notification_type='||V_NOTIFICATION_TYPE||'payment_link_id='||V_PAYMENT_LINK_ID||'request_expiry_date='||V_REQUEST_EXPIRY_DATE||'service_command='||GL_SERVICE_COMMAND||'Hha@2022_')) into v_signature
+from dual;
+apex_web_service.g_request_headers(1).name := 'Content-Type';
+apex_web_service.g_request_headers(1).value:= 'application/json';
+apex_json.initialize_clob_output;
+apex_json.open_object;
+select   apex_web_service.make_rest_request(p_url => 'https://sbpaymentservices.PayFort.com/FortAPI/paymentApi' ,
+p_http_method => 'POST',      
+p_body  => '{
+  "access_code":"'||GL_ACCESS_CODE||'",
+  "service_command":"'||GL_SERVICE_COMMAND||'",
+  "currency":"'||GL_CURRENCY||'",
+  "language":"'||GL_LANGUAGE||'",
+  "amount":"'||V_AMOUNT||'",
+  "customer_email":"'||V_CUSTOMER_EMAIL||'",
+  "request_expiry_date":"'||V_REQUEST_EXPIRY_DATE||'",
+  "notification_type":"'||V_NOTIFICATION_TYPE||'",
+  "merchant_identifier":"'||GL_MERCHANT_IDENTIFIER||'",
+  "merchant_reference":"'||V_MERCHANT_REFERENCE||'",
+  "payment_link_id":"'||V_PAYMENT_LINK_ID||'",
+  "signature":"'||v_signature||'"
+}' 
+ )     INTO l_json_text                                        
+from dual; 
+-- dbms_output.put_line(l_json_text);   2022-10-16T15:36:55+03:00
+
+SELECT
+JSON_VALUE(l_json_text, '$.response_message' ) AS response_message,
+JSON_VALUE(l_json_text, '$.payment_link' ) AS payment_link
+INTO response_message,payment_link
+FROM
+dual;
+INSERT INTO PAYFORT_PAYMENT_RESPONSE(l_json_text,reponse,invoice_no) VALUES (l_json_text,response_message,v_invoice_no);
+if response_message='Success' then
+   return payment_link;
+else
+APEX_ERROR.ADD_ERROR(P_MESSAGE => 'Error: '||response_message,p_display_location => apex_error.c_inline_in_notification);
+end if;
+end;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

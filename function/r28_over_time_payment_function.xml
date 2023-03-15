@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="507430766b208b73c76dc45df6ba5bedd3d8a994" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="R28_OVER_TIME_PAYMENT" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."R28_OVER_TIME_PAYMENT" (WJ_EMP_NO_ VARCHAR2,STARTTIME_ DATE) return number is
+
+--1 HOURS
+abc number;--varchar2(80);
+begin
+
+Select Nvl(SUM(TOT_PAY_HOURS),0) into abc
+from HCM_OVERTIME_PAYMENT
+where TRUNC(OV_START_DATE) =  TRUNC(STARTTIME_) 
+AND  emp_no =to_number( WJ_EMP_NO_);
+
+return abc;
+
+end;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

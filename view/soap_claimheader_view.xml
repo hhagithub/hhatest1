@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="de1246d79f5cc47430d0f09c06e2882f280bb710" author="(HHA_PROD)-Generated"     >
+		<n0:createSxmlObject objectName="SOAP_CLAIMHEADER" objectType="VIEW" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  <VIEW xmlns="http://xmlns.oracle.com/ku" version="1.0">
+   <SCHEMA>HHA_PROD</SCHEMA>
+   <NAME>SOAP_CLAIMHEADER</NAME>
+   <COL_LIST>
+      <COL_LIST_ITEM>
+         <NAME>DMSSYSTEMID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>VIN</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>DMSORDERNO</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>DMSJOBNO</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>DMSMISC</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>HEADERTEXT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>GOODWILLTYPE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>AUTHORISNO</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>PRIMARYREPMAT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>REASONMISSINGPDP</NAME>
+      </COL_LIST_ITEM>
+   </COL_LIST>
+   <SUBQUERY>SELECT 
+--&#60;ClaimHeader>
+'MANTRAS-SYSTEM'  DMSSystemID,
+'WMA06XZZ2FM665978'  VIN,
+'SMHEZ1' DMSOrderNo,
+'003' DMSJobNo,
+'GA-O Import TEST Antrag 2' DMSMisc,
+'SMH_EZ' HeaderText,
+'' GoodwillType,
+'159' AuthorisNo,
+'07970202252' PrimaryRepMat,
+'A' ReasonMissingPDP
+--&#60;/ClaimHeader>
+FROM DUAL
+</SUBQUERY>
+</VIEW>]]></n0:source>
+		</n0:createSxmlObject>
+	</changeSet>
+</databaseChangeLog>

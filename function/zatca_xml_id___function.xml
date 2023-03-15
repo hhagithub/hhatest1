@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="c51fafa44df0e88d9cc2b095709a0ce7e1e867b7" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="ZATCA_XML_ID__" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."ZATCA_XML_ID__" (ID_ NUMBER) RETURN clob IS
+ cb clob;
+BEGIN
+
+  return NULL;
+/*
+  select 
+  '<Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2" xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2" xmlns:ext="urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2">'
+  --||Zatca_UBLExtensions()
+  ||Zatca_Invoice1(z.id)  
+  ||ZATCA_invoiceline1(z.id) 
+  ||'</Invoice>' as XML 
+INTO CB
+From Zatca_hha_Invoice z
+where ID = ID_;
+
+RETURN trim(CB);
+*/
+
+END;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

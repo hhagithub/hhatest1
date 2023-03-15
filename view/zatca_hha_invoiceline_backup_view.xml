@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="d5d0f00e2fedc1c592f41edfbc8f05b0b513304b" author="(HHA_PROD)-Generated"     >
+		<n0:createSxmlObject objectName="ZATCA_HHA_INVOICELINE_BACKUP" objectType="VIEW" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  <VIEW xmlns="http://xmlns.oracle.com/ku" version="1.0">
+   <SCHEMA>HHA_PROD</SCHEMA>
+   <NAME>ZATCA_HHA_INVOICELINE_BACKUP</NAME>
+   <COL_LIST>
+      <COL_LIST_ITEM>
+         <NAME>INVOICE_ID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>UNITCODE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>CURRENCYID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>INVOICEDQUANTITY</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>LINEEXTENSIONAMOUNT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>TAXAMOUNT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ROUNDINGAMOUNT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>NAME</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>PRICEAMOUNT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>CLASSIFIEDTAXCATEGORYID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>TAXPERCENT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>TAXSCHEMEID</NAME>
+      </COL_LIST_ITEM>
+   </COL_LIST>
+   <SUBQUERY>SELECT
+INVOICE_NUMBER INVOICE_ID, --100
+LINE_NO ID,  --1
+TRIM(INV_UOM) unitCode, --'PCE'
+TRIM(CURR_INV_LINE_NET_AMT) currencyID,  --'SAR'
+INV_QTY InvoicedQuantity, --1
+INV_LINE_NET_AMT LineExtensionAmount, --200.00
+VAT_LINE_AMT TaxAmount, --30.00
+LINE_AMT_INC_VAT RoundingAmount, --230.00
+ITEM_NAME Name, --'Item A'
+ITEM_GROSS_PRICE PriceAmount, --200.00
+INV_ITEM_VAT_CAT_CODE ClassifiedTaxCategoryID, --'S'
+INV_ITEM_VAT_RATE TaxPercent, --15
+TRIM(TAX_SCHEME_ID_DTL)  TaxSchemeID --'VAT'
+FROM ZATCA_MAPPING_MASTER_DETAIL
+</SUBQUERY>
+</VIEW>]]></n0:source>
+		</n0:createSxmlObject>
+	</changeSet>
+</databaseChangeLog>

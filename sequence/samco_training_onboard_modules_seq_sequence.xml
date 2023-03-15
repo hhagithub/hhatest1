@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="cc30517765566259eb0c8baffb9286ac74afb450" author="(HHA_PROD)-Generated"     >
+		<n0:createSxmlObject objectName="SAMCO_TRAINING_ONBOARD_MODULES_SEQ" objectType="SEQUENCE" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  <SEQUENCE xmlns="http://xmlns.oracle.com/ku" version="1.0">
+   <SCHEMA>HHA_PROD</SCHEMA>
+   <NAME>SAMCO_TRAINING_ONBOARD_MODULES_SEQ</NAME>
+   <START_WITH>15</START_WITH>
+   <INCREMENT>1</INCREMENT>
+   <MINVALUE>15</MINVALUE>
+   <MAXVALUE>99999999999999999</MAXVALUE>
+   <CACHE>0</CACHE>
+   <ORDER></ORDER>
+   <SCALE>NOSCALE</SCALE>
+</SEQUENCE>]]></n0:source>
+		</n0:createSxmlObject>
+	</changeSet>
+</databaseChangeLog>

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="c20af12374f64240cf47724fb2410f9e00d597c7" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleTrigger objectName="WORK_JOB_MASTER_JOBNO_T1" objectType="TRIGGER" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE TRIGGER "HHA_PROD"."WORK_JOB_MASTER_JOBNO_T1" 
+  
+BEFORE
+insert on WORK_JOB_MASTER_JOBNO
+for each row
+DECLARE
+V_JM_MASTER_JOB_NO VARCHAR2(20);
+begin
+
+SELECT MAX(JM_MASTER_JOB_NO) INTO V_JM_MASTER_JOB_NO
+FROM WORK_JOB_MASTER_OPEN_JOBNO
+WHERE JM_LOCATION = :NEW.JM_LOCATION
+AND jm_chassis_no = :NEW.jm_chassis_no ;
+
+    IF V_JM_MASTER_JOB_NO IS NULL THEN
+        SELECT MAX(JM_MASTER_JOB_NO)+1 INTO V_JM_MASTER_JOB_NO
+        FROM WORK_JOB_MASTER_JOBNO
+        WHERE JM_LOCATION = :NEW.JM_LOCATION;
+    END IF;
+
+    IF V_JM_MASTER_JOB_NO IS NULL THEN
+        V_JM_MASTER_JOB_NO := '9'||:NEW.JM_LOCATION|| '100001';
+    END IF;
+
+  :NEW.JM_MASTER_JOB_NO :=   V_JM_MASTER_JOB_NO;
+
+Exception when no_data_found THEN
+  begin
+    SELECT MAX(JM_MASTER_JOB_NO)+1 INTO V_JM_MASTER_JOB_NO
+    FROM WORK_JOB_MASTER_JOBNO
+    WHERE JM_LOCATION = :NEW.JM_LOCATION;
+  
+    IF V_JM_MASTER_JOB_NO IS NULL THEN
+            V_JM_MASTER_JOB_NO := '9'||:NEW.JM_LOCATION|| '100001';
+        END IF;
+
+    :NEW.JM_MASTER_JOB_NO :=   V_JM_MASTER_JOB_NO;
+  Exception when NO_data_Found THEN
+
+      IF V_JM_MASTER_JOB_NO IS NULL THEN
+        V_JM_MASTER_JOB_NO := '9'||:NEW.JM_LOCATION|| '100001';
+     END IF;
+
+    :NEW.JM_MASTER_JOB_NO :=   V_JM_MASTER_JOB_NO;
+  end;
+  
+
+
+END;
+
+/
+/
+ALTER TRIGGER "HHA_PROD"."WORK_JOB_MASTER_JOBNO_T1" ENABLE;]]></n0:source>
+		</n0:createOracleTrigger>
+	</changeSet>
+</databaseChangeLog>

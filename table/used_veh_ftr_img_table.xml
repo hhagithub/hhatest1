@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="1a71ca18c537701ff43fbc74040d75016dbc10e1" author="(HHA_PROD)-Generated"     >
+		<n0:createSxmlObject objectName="USED_VEH_FTR_IMG" objectType="TABLE" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  <TABLE xmlns="http://xmlns.oracle.com/ku" version="1.0">
+   <SCHEMA>HHA_PROD</SCHEMA>
+   <NAME>USED_VEH_FTR_IMG</NAME>
+   <RELATIONAL_TABLE>
+      <COL_LIST>
+         <COL_LIST_ITEM>
+            <NAME>SR_NO</NAME>
+            <DATATYPE>NUMBER</DATATYPE>
+         </COL_LIST_ITEM>
+         <COL_LIST_ITEM>
+            <NAME>STOCK_NO</NAME>
+            <DATATYPE>NUMBER</DATATYPE>
+         </COL_LIST_ITEM>
+         <COL_LIST_ITEM>
+            <NAME>IMG</NAME>
+            <DATATYPE>BLOB</DATATYPE>
+         </COL_LIST_ITEM>
+         <COL_LIST_ITEM>
+            <NAME>IMG_NAME</NAME>
+            <DATATYPE>VARCHAR2</DATATYPE>
+            <LENGTH>80</LENGTH>
+         </COL_LIST_ITEM>
+         <COL_LIST_ITEM>
+            <NAME>MIME_TYPE</NAME>
+            <DATATYPE>VARCHAR2</DATATYPE>
+            <LENGTH>200</LENGTH>
+         </COL_LIST_ITEM>
+         <COL_LIST_ITEM>
+            <NAME>IMG_TYPE</NAME>
+            <DATATYPE>VARCHAR2</DATATYPE>
+            <LENGTH>10</LENGTH>
+         </COL_LIST_ITEM>
+      </COL_LIST>
+      <PHYSICAL_PROPERTIES>
+         <HEAP_TABLE>
+            <SEGMENT_ATTRIBUTES>
+               <SEGMENT_CREATION_DEFERRED></SEGMENT_CREATION_DEFERRED>
+               <PCTFREE>10</PCTFREE>
+               <PCTUSED>40</PCTUSED>
+               <INITRANS>1</INITRANS>
+               <TABLESPACE>USERS</TABLESPACE>
+               <LOGGING>Y</LOGGING>
+            </SEGMENT_ATTRIBUTES>
+            <COMPRESS>N</COMPRESS>
+         </HEAP_TABLE>
+      </PHYSICAL_PROPERTIES>
+      <TABLE_PROPERTIES>
+         <COLUMN_PROPERTIES>
+            <COL_LIST>
+               <COL_LIST_ITEM>
+                  <NAME>IMG</NAME>
+                  <DATATYPE>BLOB</DATATYPE>
+                  <LOB_PROPERTIES>
+                     <STORAGE_TABLE>
+                        <TABLESPACE>USERS</TABLESPACE>
+                        <SECUREFILE></SECUREFILE>
+                        <STORAGE_IN_ROW></STORAGE_IN_ROW>
+                        <CHUNK>8192</CHUNK>
+                        <CACHE>N</CACHE>
+                        <LOGGING>Y</LOGGING>
+                        <VALIDATE>N</VALIDATE>
+                     </STORAGE_TABLE>
+                  </LOB_PROPERTIES>
+               </COL_LIST_ITEM>
+            </COL_LIST>
+         </COLUMN_PROPERTIES>
+      </TABLE_PROPERTIES>
+   </RELATIONAL_TABLE>
+</TABLE>]]></n0:source>
+		</n0:createSxmlObject>
+	</changeSet>
+</databaseChangeLog>

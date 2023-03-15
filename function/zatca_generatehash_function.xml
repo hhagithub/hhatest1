@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="2d0e5ae68951624d04203eb134c14812713e06cb" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="ZATCA_GENERATEHASH" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."ZATCA_GENERATEHASH" (v_input clob) RETURN VARCHAR2 IS
+ h raw(32);
+ cb clob;
+ cb1 clob;
+
+BEGIN
+--cb1 := v_input;
+select xmlserialize( Document  xmltype(v_input) as clob NO INDENT ) into cb1 from dual;
+
+cb := trim(regexp_replace(cb1,'><', '> <'));
+h := dbms_crypto.hash(utl_i18n.string_to_raw (cb, 'AL32UTF8'), dbms_crypto.hash_sh256);
+RETURN  utl_raw.cast_to_varchar2(UTL_ENCODE.BASE64_ENCODE(h));
+
+END;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

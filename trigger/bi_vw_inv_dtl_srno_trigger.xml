@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="a92cdde882d8353cca6fe5d924fcdf2ab8291a8c" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleTrigger objectName="BI_VW_INV_DTL_SRNO" objectType="TRIGGER" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE TRIGGER "HHA_PROD"."BI_VW_INV_DTL_SRNO" 
+  before insert on  VW_INV_DTL
+  for each row
+begin
+  if :NEW.SRNO is null then
+    select NVL(MAX(SRNO),0)+1 into :NEW.SRNO from VW_INV_DTL WHERE INV_TRANNO=V('P230_INV_TRANNO');
+  end if;
+end;
+/
+/
+ALTER TRIGGER "HHA_PROD"."BI_VW_INV_DTL_SRNO" ENABLE;]]></n0:source>
+		</n0:createOracleTrigger>
+	</changeSet>
+</databaseChangeLog>

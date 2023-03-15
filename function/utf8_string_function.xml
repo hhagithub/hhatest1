@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="bfb23d315024659b9ed0277e78af38979471ce30" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="UTF8_STRING" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."UTF8_STRING" (arb_str varchar2,char_length number) return varchar2 is
+c1      number:=1;
+utf     varchar2(200);
+utf_str varchar2(200);
+begin
+for c1 in 1..char_length
+loop
+begin
+select utf8 into utf
+from arb_utf8
+where arb = substr(arb_str,c1,1);
+utf_str := utf_str || utf;
+exception
+  when no_data_found then
+  utf := '';
+  utf_str := utf_str || utf;
+  when others then
+  utf := '';
+  utf_str := utf_str || utf;
+end;
+end loop;
+return utf_str;
+end;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

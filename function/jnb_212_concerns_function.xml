@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="dad7b5ccd2c530854db4a9302adee9e5ec91321c" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="JNB_212_CONCERNS" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."JNB_212_CONCERNS" (stk IN number  ) RETURN  char  IS
+phon  varchar2(2000) := '' ;
+phon2 varchar2(2000) := '';
+begin
+for c in (SELECT JOB_DESC  FROM VSS_JNB_INSPECTION I , VSS_JNB_INSPEC_DTL D WHERE I.PDI_JOB_NO = D.PDI_JOBNO  AND STOCK_NO = stk)
+loop
+phon2  := phon2||c.JOB_DESC||' / ';
+end loop;
+return(rtrim(phon2,' / '));
+EXCEPTION
+   WHEN  no_data_found  THEN
+ return null;
+END;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

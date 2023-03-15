@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="5f42f604514d940986746cd68a9b459817e6e8f4" author="(HHA_PROD)-Generated"     >
+		<n0:createSxmlObject objectName="SCHOOL_FEE_NOTIFICATION" objectType="VIEW" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  <VIEW xmlns="http://xmlns.oracle.com/ku" version="1.0">
+   <SCHEMA>HHA_PROD</SCHEMA>
+   <NAME>SCHOOL_FEE_NOTIFICATION</NAME>
+   <COL_LIST>
+      <COL_LIST_ITEM>
+         <NAME>NOTE_ICON_COLOR</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>NOTE_TEXT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>NOTE_LINK</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>NOTE_COLOR</NAME>
+      </COL_LIST_ITEM>
+   </COL_LIST>
+   <SUBQUERY>select 'rgb(192,0,15)' AS NOTE_ICON_COLOR,'School Fees Approval - FYA: ('||(SELECT ST_ENAME FROM PASTATIC WHERE ST_EMPCd=V.REQ_by)||'Request school fees approval' as NOTE_TEXT,
+APEX_UTIL.PREPARE_URL(p_url => 'f?p=' || '147' || ':97:'|| V('APP_SESSION')
+||'::NO::P97_SER_NO,P97_FLAG_CHECK_USER:'||(SELECT SER_NO FROM HCM_SCHOOL_REQ_MST WHERE REQ_ID = V.REQ_ID)||',Y')
+AS NOTE_LINK,
+'' AS NOTE_COLOR
+from HCM_APPROVAL_VIEW V
+WHERE EMP_NO=v('APP_USER')
+</SUBQUERY>
+</VIEW>]]></n0:source>
+		</n0:createSxmlObject>
+	</changeSet>
+</databaseChangeLog>

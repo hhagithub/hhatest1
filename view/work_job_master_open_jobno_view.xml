@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="7500312687574564051706b598d4e649f6090fbf" author="(HHA_PROD)-Generated"     >
+		<n0:createSxmlObject objectName="WORK_JOB_MASTER_OPEN_JOBNO" objectType="VIEW" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  <VIEW xmlns="http://xmlns.oracle.com/ku" version="1.0">
+   <SCHEMA>HHA_PROD</SCHEMA>
+   <NAME>WORK_JOB_MASTER_OPEN_JOBNO</NAME>
+   <COL_LIST>
+      <COL_LIST_ITEM>
+         <NAME>JM_COMP_CODE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>JM_DEPT_NO</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>JM_LOCATION</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>JM_JOB_NO</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>JM_JOB_DATE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>JM_INVOICE_DATE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>JM_JOB_TYPE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>JM_STATUS</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>JM_CHASSIS_NO</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>JM_MASTER_JOB_NO</NAME>
+      </COL_LIST_ITEM>
+   </COL_LIST>
+   <SUBQUERY>select JM_COMP_CODE,JM_DEPT_NO,JM_LOCATION,JM_JOB_NO,JM_JOB_DATE,jm_invoice_date,JM_JOB_TYPE,JM_STATUS,JM_CHASSIS_NO,JM_MASTER_JOB_NO from work_job_master_JOBNO
+where jm_status = 1
+and jm_job_type != '03'
+and jm_master_job_no is not null
+--and jm_chassis_no = :
+
+union all
+
+select JM_COMP_CODE,JM_DEPT_NO,JM_LOCATION,JM_JOB_NO,JM_JOB_DATE,jm_invoice_date,JM_JOB_TYPE,JM_STATUS,JM_CHASSIS_NO,JM_MASTER_JOB_NO from work_job_master_JOBNO
+where jm_status = 1
+and jm_job_type = '03'
+and trunc(jm_invoice_date) is null
+and jm_master_job_no is not null
+--and jm_chassis_no = :
+</SUBQUERY>
+</VIEW>]]></n0:source>
+		</n0:createSxmlObject>
+	</changeSet>
+</databaseChangeLog>

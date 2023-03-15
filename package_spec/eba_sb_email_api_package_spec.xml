@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="723b2f2584e878c29a47c2f6f7fa28452836353d" author="(HHA_PROD)-Generated"     >
+		<n0:createOraclePackageSpec objectName="EBA_SB_EMAIL_API" objectType="PACKAGE_SPEC" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE PACKAGE "HHA_PROD"."EBA_SB_EMAIL_API" as
+    type temp_subs_t is table of varchar(4000) index by varchar2(4000);
+    procedure do_substitutions (
+        p_dest in out nocopy clob,
+        p_text in clob,
+        p_subs in temp_subs_t default cast(null as temp_subs_t)
+    );
+    function do_substitutions (
+        p_text in clob,
+        p_subs in temp_subs_t default cast(null as temp_subs_t)
+    ) return clob;
+    procedure show_template (
+        p_template_id in number,
+        p_subs        in temp_subs_t default cast(null as temp_subs_t)
+    );
+    procedure send (
+        p_template_id   in number,
+        p_subs          in temp_subs_t default cast(null as temp_subs_t),
+        p_to            in varchar2,
+        p_from          in varchar2,
+        p_cc            in varchar2 default null,
+        p_bcc           in varchar2 default null,
+        p_replyto       in varchar2 default null,
+        p_log           in boolean default false,
+        p_survey_id     in number default null,
+        p_community_id  in number default null,
+        p_respondent_id in number default null
+    );
+end eba_sb_email_api;
+/]]></n0:source>
+		</n0:createOraclePackageSpec>
+	</changeSet>
+</databaseChangeLog>

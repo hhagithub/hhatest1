@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="8613d5aede96cd87b701b8ceb144ad0d4ed5feef" author="(HHA_PROD)-Generated"     >
+		<n0:createSxmlObject objectName="AV_P0300_PLSQL_CODE_BY_PAGE_V" objectType="VIEW" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  <VIEW xmlns="http://xmlns.oracle.com/ku" version="1.0">
+   <SCHEMA>HHA_PROD</SCHEMA>
+   <NAME>AV_P0300_PLSQL_CODE_BY_PAGE_V</NAME>
+   <COL_LIST>
+      <COL_LIST_ITEM>
+         <NAME>APPLICATION_ID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>PAGE_ID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>PAGE_NAME_AND_ID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>PAGE_GROUP</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>PAGE_FUNCTION</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>BEST_PRACTICE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>COMPONENTS_COUNT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>CODE_LENGTH_SUM</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>CODE_LINES_SUM</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>TOOLTIP</NAME>
+      </COL_LIST_ITEM>
+   </COL_LIST>
+   <SUBQUERY>select application_id
+      ,page_id
+      ,page_name || ' (' || page_id || ')' page_name_and_id
+      ,page_group
+      ,page_function
+      ,best_practice
+      ,components_count
+      ,code_length_sum
+      ,code_lines_sum
+      ,'&#60;table>' || --
+       '&#60;tr>&#60;td>page name&#60;/td>&#60;td>' || page_name || '&#60;/td>&#60;/tr>' || --
+       '&#60;tr>&#60;td>page id&#60;/td>&#60;td>' || page_id || '&#60;/td>&#60;/tr>' || --
+       '&#60;tr>&#60;td>page group&#60;/td>&#60;td>' || page_group || '&#60;/td>&#60;/tr>' || --
+       '&#60;tr>&#60;td>page function&#60;/td>&#60;td>' || page_function || '&#60;/td>&#60;/tr>' || --
+       '&#60;tr>&#60;td>number of plsql components&#60;/td>&#60;td>' || components_count || '&#60;/td>&#60;/tr>' || --
+       '&#60;tr>&#60;td>overall lines of plsql code&#60;/td>&#60;td>' || code_lines_sum || '&#60;/td>&#60;/tr>' || --
+       '&#60;tr>&#60;td>overall character of plsql code&#60;/td>&#60;td>' || code_length_sum || '&#60;/td>&#60;/tr>' || --
+       '&#60;/table>' tooltip
+from (select distinct application_id
+                     ,page_id
+                     ,page_name
+                     ,page_group
+                     ,page_function
+                     ,best_practice
+                     ,count(*) over(partition by application_id, page_id) components_count
+                     ,sum(code_length) over(partition by application_id, page_id) code_length_sum
+                     ,sum(code_lines) over(partition by application_id, page_id) code_lines_sum
+      from av_plsql_v)
+</SUBQUERY>
+</VIEW>]]></n0:source>
+		</n0:createSxmlObject>
+	</changeSet>
+</databaseChangeLog>

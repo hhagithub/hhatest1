@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="079a155df32907b3be1cbf448c413264b76208ef" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleTrigger objectName="EBA_QPOLL_ERRORS_BI" objectType="TRIGGER" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE TRIGGER "HHA_PROD"."EBA_QPOLL_ERRORS_BI" 
+    before insert or update on eba_qpoll_errors
+    for each row
+begin
+    if :new.id is null then
+       :new.id := to_number(sys_guid(),'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX');
+    end if;
+end;
+
+/
+/
+ALTER TRIGGER "HHA_PROD"."EBA_QPOLL_ERRORS_BI" ENABLE;]]></n0:source>
+		</n0:createOracleTrigger>
+	</changeSet>
+</databaseChangeLog>

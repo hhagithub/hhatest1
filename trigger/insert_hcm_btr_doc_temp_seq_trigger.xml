@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="c9963fd4c2e12ecbcfa915ba6afd922d2e631b77" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleTrigger objectName="INSERT_HCM_BTR_DOC_TEMP_SEQ" objectType="TRIGGER" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE TRIGGER "HHA_PROD"."INSERT_HCM_BTR_DOC_TEMP_SEQ" BEFORE INSERT ON hcm_btr_doc_temp FOR EACH ROW
+BEGIN
+ SELECT BTR_TEMP_DOC_SEQ.NEXTVAL INTO :NEW.SEQ_NO FROM DUAL;
+ SELECT SYSDATE INTO :NEW.CREATED_DATE FROM DUAL;
+END;
+
+
+/
+/
+ALTER TRIGGER "HHA_PROD"."INSERT_HCM_BTR_DOC_TEMP_SEQ" ENABLE;]]></n0:source>
+		</n0:createOracleTrigger>
+	</changeSet>
+</databaseChangeLog>

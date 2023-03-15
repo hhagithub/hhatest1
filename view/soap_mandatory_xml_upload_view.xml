@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="ebe647e60d24d320c3f03d23e86d819264753fe0" author="(HHA_PROD)-Generated"     >
+		<n0:createSxmlObject objectName="SOAP_MANDATORY_XML_UPLOAD" objectType="VIEW" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  <VIEW xmlns="http://xmlns.oracle.com/ku" version="1.0">
+   <SCHEMA>HHA_PROD</SCHEMA>
+   <NAME>SOAP_MANDATORY_XML_UPLOAD</NAME>
+   <COL_LIST>
+      <COL_LIST_ITEM>
+         <NAME>XML</NAME>
+      </COL_LIST_ITEM>
+   </COL_LIST>
+   <SUBQUERY>select H||ClaimHeader||ClaimVersion||F XML from 
+(
+SELECT
+'&#60;soapenv:Envelope xmlns:ns0="http://man.eu/ClaimsAndWarranty" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"> &#60;soapenv:Header> &#60;soapenv:Body>' AS H
+FROM DUAL
+),
+
+(
+Select 
+xmlagg(xmlelement( "ClaimHeader",              
+xmlforest(VIN, DMSOrderNo, DMSJobNo))).getClobVal() ClaimHeader  
+from SOAP_MANDATORY
+WHERE VIN = 'RS071WZZ9BD001367'
+),
+
+(
+Select 
+xmlagg(xmlelement( "ClaimVersion",              
+xmlforest(FirstRegDate,
+RepairBegin,
+WarrantyType,
+MeasReading,
+(Select xmlforest(ObjectCode1 as ObjectCode1)  from Dual) DefectCodeDetails,
+WarrantyCat
+))).getClobVal() ClaimVersion  
+from SOAP_MANDATORY
+WHERE VIN = 'RS071WZZ9BD001367'
+
+),
+(SELECT '&#60;/soapenv:Body>&#60;/soapenv:Header> &#60;/soapenv:Envelope>' AS F FROM DUAL)
+</SUBQUERY>
+</VIEW>]]></n0:source>
+		</n0:createSxmlObject>
+	</changeSet>
+</databaseChangeLog>

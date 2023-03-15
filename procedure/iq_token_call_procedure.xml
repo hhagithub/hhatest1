@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="3b98edca1519022a0bf3ed9228864091e1f1daab" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleProcedure objectName="IQ_TOKEN_CALL" objectType="PROCEDURE" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "HHA_PROD"."IQ_TOKEN_CALL" (url varchar2, loc varchar2, token_str out varchar2, token_val out varchar2, exp_val out varchar) is
+l_response CLOB;
+l_json     apex_json.t_values;
+l_reqBody  CLOB;
+begin
+--apex_web_service.g_request_headers.delete();
+  apex_web_service.g_request_headers(1).name := 'Content-Type';
+  apex_web_service.g_request_headers(1).value := 'application/json; charset=utf-8';
+  --apex_web_service.g_request_headers(2).name := 'Authorization';
+
+  l_reqBody :='{username:"admin",password:"HHA-76e54ef-adm!"}';
+
+  l_response := apex_web_service.make_rest_request(p_url           => url,
+                                                   p_http_method   => 'POST',
+                                                   --p_username      => 'admin',
+                                                   --p_password      => 'HHA-76e54ef-adm!',
+                                                   p_body          => l_reqbody,
+                                                   p_wallet_path   => 'file:/u01/app/oracle/product/12.2.0/dbhome_1/wallet',
+                                                   p_wallet_pwd    => 'welcome1'
+                                               );
+  apex_json.parse(l_json, l_response);
+  token_str := substr(l_response, 1, 32767);
+  token_val := substr(token_str,instr(token_str,'"token":"')+9,instr(token_str,'","exp')-11);
+  exp_val   := substr(token_str,instr(token_str,'"expiration":"')+14,20);
+  
+
+end;
+/]]></n0:source>
+		</n0:createOracleProcedure>
+	</changeSet>
+</databaseChangeLog>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="a3372d8b8c1aea2d781eacc43aa98d676f5c4074" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleTrigger objectName="INSERT_HEJAZDT" objectType="TRIGGER" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE TRIGGER "HHA_PROD"."INSERT_HEJAZDT" before insert on HEJAZULTRA for each row
+begin
+  :NEW.IDT := SYSDATE;
+  :NEW.SKIPPED_DAYS := TRUNC(SYSDATE) - TRUNC(:NEW.ACTIVITY_DATE);
+end;
+
+/
+/
+ALTER TRIGGER "HHA_PROD"."INSERT_HEJAZDT" ENABLE;]]></n0:source>
+		</n0:createOracleTrigger>
+	</changeSet>
+</databaseChangeLog>

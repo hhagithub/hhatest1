@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="8c3024e06cda8078e0c5ef4369223bc62d1666c8" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="ZATCA_PAYMENTMEANS" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."ZATCA_PAYMENTMEANS" (InstructionNote Varchar2)  RETURN VARCHAR2 IS
+
+BEGIN
+
+-- <!-- C The date when the supply is performed For credit and debit notes , it acts as the original supply date.-->
+-- <cac:Delivery>   
+--     <cbc:ActualDeliveryDate>2022-11-04</cbc:ActualDeliveryDate>
+-- </cac:Delivery>
+
+   return 
+'<!--The means, expressed as code, for how a payment is expected to be or has been settled.
+Entries from the UNTDID 4461 code list -->
+    <cac:PaymentMeans>
+        <!--cbc:PaymentMeansCode>42</cbc:PaymentMeansCode -->  <!--O -->
+        <cbc:InstructionNote>“Returned items”</cbc:InstructionNote> <!--M Reasons for issuance of credit / debit note-->
+    </cac:PaymentMeans>'; 
+
+END;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="93068ad6283e04231e968429e6c50bd56d82196d" author="(HHA_PROD)-Generated"     >
+		<n0:createSxmlObject objectName="EBA_QPOLL_RESP_COMM_REF_UK" objectType="INDEX" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  <INDEX xmlns="http://xmlns.oracle.com/ku" version="1.0">
+   <UNIQUE></UNIQUE>
+   <SCHEMA>HHA_PROD</SCHEMA>
+   <NAME>EBA_QPOLL_RESP_COMM_REF_UK</NAME>
+   <TABLE_INDEX>
+      <ON_TABLE>
+         <SCHEMA>HHA_PROD</SCHEMA>
+         <NAME>EBA_QPOLL_RESP_COMM_REF</NAME>
+      </ON_TABLE>
+      <COL_LIST>
+         <COL_LIST_ITEM>
+            <NAME>RESPONDENT_ID</NAME>
+         </COL_LIST_ITEM>
+         <COL_LIST_ITEM>
+            <NAME>COMMUNITY_ID</NAME>
+         </COL_LIST_ITEM>
+      </COL_LIST>
+      <INDEX_ATTRIBUTES>
+         <PCTFREE>10</PCTFREE>
+         <INITRANS>2</INITRANS>
+         <TABLESPACE>USERS</TABLESPACE>
+         <LOGGING>Y</LOGGING>
+      </INDEX_ATTRIBUTES>
+   </TABLE_INDEX>
+</INDEX>]]></n0:source>
+		</n0:createSxmlObject>
+	</changeSet>
+</databaseChangeLog>

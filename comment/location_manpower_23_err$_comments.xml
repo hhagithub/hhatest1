@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="2d353bc90e2cacbb52ee78974e6e0fe7f1c9537e" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleComment objectName="LOCATION_MANPOWER_23_ERR$_comments" objectType="COMMENT" ownerName="HHA_PROD" sourceType="STRING"  >
+			<n0:source><![CDATA[
+   COMMENT ON TABLE "HHA_PROD"."LOCATION_MANPOWER_23_ERR$"  IS 'DML Error Logging table for "LOCATION_MANPOWER_23"';]]></n0:source>
+		</n0:createOracleComment>
+	</changeSet>
+</databaseChangeLog>

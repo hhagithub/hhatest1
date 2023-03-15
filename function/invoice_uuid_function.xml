@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="9cffbde05ff6ed97e52748b3c021566baa97a208" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="INVOICE_UUID" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."INVOICE_UUID" (ID_ Varchar2) RETURN VARCHAR2 IS
+V_UUID VARCHAR2(300);
+BEGIN
+SELECT UUID INTO V_UUID FROM ZATCA_INVOICE WHERE id = ID_;
+   RETURN V_UUID;
+EXCEPTION WHEN NO_DATA_FOUND THEN
+   RETURN NULL;
+
+END;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

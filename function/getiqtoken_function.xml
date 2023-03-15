@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="e718e1edea7c430eee8e5e1dae341c17be55a9ac" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="GETIQTOKEN" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."GETIQTOKEN" (url varchar2, branch varchar2) return varchar2 is
+token_str  VARCHAR2(4000);
+token_val  VARCHAR2(4000);
+exp_val    VARCHAR2(4000);
+l_response CLOB;
+l_json     apex_json.t_values;
+l_reqBody  CLOB;
+l_members  WWV_FLOW_T_VARCHAR2;
+EXP_DATE   DATE; 
+
+BEGIN
+
+SELECT TO_DATE(SUBSTR(EXPIRY,1,10),'YYYY-MM-DD'), TOKEN
+INTO  EXP_DATE, token_val
+FROM IQ_TOKEN 
+WHERE loc = branch;
+
+IF EXP_DATE <= TRUNC(SYSDATE) THEN
+
+  BEGIN
+  --apex_web_service.g_request_headers.delete();
+  apex_web_service.g_request_headers(1).name := 'Content-Type';
+  apex_web_service.g_request_headers(1).value := 'application/json; charset=utf-8';
+  --apex_web_service.g_request_headers(2).name := 'Authorization';
+
+  l_reqBody :='{username:"admin",password:"HHA-76e54ef-adm!"}';
+
+  l_response := apex_web_service.make_rest_request(p_url           => url,
+                                                   p_http_method   => 'POST',
+                                                   --p_username      => 'admin',
+                                                   --p_password      => 'HHA-76e54ef-adm!',
+                                                   p_body          => l_reqbody, 
+                                                   p_wallet_path   => 'file:/u01/app/oracle/product/12.2.0/dbhome_1/wallet',
+                                                   p_wallet_pwd    => 'welcome1'
+                                               );
+  apex_json.parse(l_json, l_response);    
+  token_str := substr(l_response, 1, 32767);
+  token_val := substr(token_str,instr(token_str,'"token":"')+9,instr(token_str,'","exp')-11);
+  exp_val   := substr(token_str,instr(token_str,'"expiration":"')+14,20);
+
+  --DELETE FROM IQ_TOKEN WHERE LOC = branch;
+  --INSERT INTO IQ_TOKEN(LOC, TOKEN_STRING, TOKEN, EXPIRY, SYS_DT) VALUES (branch, token_str, token_val, exp_val, SYSDATE);
+  --commit;
+  return token_val;
+  exception 
+  when others then
+  return null;
+
+  END;
+
+ELSE
+   RETURN token_val;
+END IF;
+
+EXCEPTION WHEN NO_DATA_FOUND THEN
+  begin
+  --apex_web_service.g_request_headers.delete();
+  apex_web_service.g_request_headers(1).name := 'Content-Type';
+  apex_web_service.g_request_headers(1).value := 'application/json; charset=utf-8';
+  --apex_web_service.g_request_headers(2).name := 'Authorization';
+
+  l_reqBody :='{username:"admin",password:"HHA-76e54ef-adm!"}';
+
+  l_response := apex_web_service.make_rest_request(p_url           => url,
+                                                   p_http_method   => 'POST',
+                                                   --p_username      => 'admin',
+                                                   --p_password      => 'HHA-76e54ef-adm!',
+                                                   p_body          => l_reqbody, 
+                                                   p_wallet_path   => 'file:/u01/app/oracle/product/12.2.0/dbhome_1/wallet',
+                                                   p_wallet_pwd    => 'welcome1'
+                                               );
+  apex_json.parse(l_json, l_response);    
+  token_str := substr(l_response, 1, 32767);
+  token_val := substr(token_str,instr(token_str,'"token":"')+9,instr(token_str,'","exp')-11);
+  exp_val   := substr(token_str,instr(token_str,'"expiration":"')+14,20);
+
+  --INSERT INTO IQ_TOKEN(LOC, TOKEN_STRING, TOKEN, EXPIRY, SYS_DT) VALUES (branch, token_str, token_val, exp_val, SYSDATE);
+  --commit;
+  return token_val;
+  exception 
+  when others then
+  return null;
+  end;
+  
+END;
+
+
+-- APEX_JSON.get_varchar2(p_path => 'l_json.token');
+--l_token  := apex_json.get_members(p_values => l_json(1));
+--l_expiry := apex_json.get_members(p_path=>'.',p_values=>l_json)(2);
+
+--pex_json.parse(j, '{ "foo": 3, "bar": [1, 2, 3, 4] }'); 
+  --  dbms_output.put_line(apex_json.get_members(p_path=>'.',p_values=>j)(1)); -- foo
+    --dbms_output.put_line(apex_json.get_members(p_path=>'.',p_values=>j)(2)); -- bar 
+                  
+
+--open=F, temp=T, length=486, chunksize=8132, data={"token":"eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNobWFjLXNoYTUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIs
+
+
+/*
+-- Pull out the specific value of interest.
+  l_token := APEX_WEB_SERVICE.parse_xml(
+              p_xml   => XMLTYPE(l_response),
+              p_xpath => '//token/text()'
+  );
+*/
+--  DBMS_OUTPUT.put_line('l_result=' || l_result);
+
+  
+--l_token  := apex_json.get_varchar2('token');
+--l_expiry := apex_json.get_varchar2('expiration');
+
+
+
+/*    
+apex_web_service.oauth_authenticate(
+p_token_url => 'https://HHA229.iq-motive.com:10004/api/Auth/login',
+p_client_id => 'admin',
+p_client_secret => 'HHA-76e54ef-adm!',
+p_wallet_path => 'file:/u01/app/oracle/product/12.2.0/dbhome_1/wallet',
+p_wallet_pwd => 'welcome1'
+);
+*/
+
+--dbms_output.put_line( 'The token is: ' || l_token || ' Exp. is: ' || l_expiry);
+--token_string :=  apex_web_service.oauth_get_last_token;
+--RETURN 'Bearer '||apex_web_service.oauth_get_last_token;
+
+
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

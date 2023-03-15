@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="4e60964da24d4e2f4771bf6b5b6d878fa13cd439" author="(HHA_PROD)-Generated"     >
+		<n0:createSxmlObject objectName="PARTS_LABOUR" objectType="VIEW" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  <VIEW xmlns="http://xmlns.oracle.com/ku" version="1.0">
+   <SCHEMA>HHA_PROD</SCHEMA>
+   <NAME>PARTS_LABOUR</NAME>
+   <COL_LIST>
+      <COL_LIST_ITEM>
+         <NAME>JM_JOB_NO</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>JM_SUPL_CODE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>JM_MASTER_JOB_NO</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>JM_JOB_CRE_DT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>JM_IN_SYSDATE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>JM_LOCATION</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>SITE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>JM_CHASSIS_NO</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>JM_CUSTOMER_NAME</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>JM_MOBILE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>LABOUR</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>PARTS</NAME>
+      </COL_LIST_ITEM>
+   </COL_LIST>
+   <SUBQUERY>select JM_JOB_NO,
+JM_SUPL_CODE,
+JM_MASTER_JOB_NO,
+JM_JOB_CRE_DT,
+JM_IN_SYSDATE,
+JM_LOCATION,
+JM_SUPL_CODE AS SITE,
+JM_CHASSIS_NO,
+JM_CUSTOMER_NAME,
+JM_MOBILE,
+
+
+NVL((
+select  LR_LABOUR_RATE * ( SELECT STD_TIME 
+FROM (SELECT SUM(STD_TIME) STD_TIME FROM WORK_JOB_DETAILS_EST WHERE JI_JOB_NO = A.JM_JOB_NO))
+from work_labour_rates
+where lr_supl_code = (SELECT JM_SUPL_CODE FROM WORK_JOB_MASTER WHERE JM_JOB_NO = A.JM_JOB_NO)
+and lr_job_type = (SELECT JM_JOB_TYPE FROM WORK_JOB_MASTER WHERE JM_JOB_NO = A.JM_JOB_NO))
+,0)-NVL( JM_ESTIMATE_LABOUR,0) AS Labour,
+
+NVL((
+select SUM(((nvl(QT_QTY,0)*nvl(QT_PRICE,0))-(nvl(QT_QTY,0)*nvl(QT_DISC,0)))) 
+from QUOTEESTIMATIONVEW aa
+where 
+(QT_JOBNUMBER,QT_CONCERNCODE,QT_REQSITIONCODE,QT_REQSITIONSLNO ) in (
+ select JR_JOB_NO,JR_CC_ID,JR_REQ_ID,JR_SNO
+ from WORK_JOB_REQS 
+ where JR_JOB_NO = A.JM_JOB_NO
+)
+and QT_JOBNUMBER = A.JM_JOB_NO
+),0) - NVL(JM_ESTIMATE_PARTS,0)  AS PARTS
+
+
+
+
+
+from work_job_master A --, work_job_reqs B,work_job_details_est C
+where jm_status = 3 
+and JM_ESTIMATE_JOB = 'Y' 
+and  jm_job_no in
+( 
+(select Distinct JR_JOB_NO	 from work_job_reqs B where ( nvl(B.EST_APPROVED,'P') in ('N','P')))
+union 
+(SELECT DISTINCT JI_JOB_NO FROM work_job_details_est C WHERE  nvl(C.est_approved,'P') in ('N','P'))
+)
+
+
+--and TO_CHAR(jm_invoice_date,'RRRRMM') = '202205'
+and ( trunc(jm_invoice_date) between TRUNC(to_date('01/06/2022','dd/mm/yyyy')) and TRUNC(to_date(SYSDATE,'dd/mm/yyyy')) ) 
+  AND EXISTS  (SELECT 1 FROM USER_AUTH_BRANCHES  WHERE USER_CODE=2554 AND    BRANCH_CODE = JM_LOCATION )
+ AND EXISTS (SELECT 1 FROM USER_AUTH_FRANCHISE WHERE USER_CODE = 2554 AND NVL(TO_NUMBER(MK_CODE),'0') = NVL(TO_NUMBER(JM_SUPL_CODE),'0') )
+--order by jm_invoice_date
+</SUBQUERY>
+</VIEW>]]></n0:source>
+		</n0:createSxmlObject>
+	</changeSet>
+</databaseChangeLog>

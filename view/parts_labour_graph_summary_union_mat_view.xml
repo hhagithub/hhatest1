@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="2c03a9535e5379e9032a3b154c7f3815d6ea5968" author="(HHA_PROD)-Generated"     >
+		<n0:createSxmlObject objectName="PARTS_LABOUR_GRAPH_SUMMARY_UNION_MAT" objectType="VIEW" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  <VIEW xmlns="http://xmlns.oracle.com/ku" version="1.0">
+   <SCHEMA>HHA_PROD</SCHEMA>
+   <NAME>PARTS_LABOUR_GRAPH_SUMMARY_UNION_MAT</NAME>
+   <COL_LIST>
+      <COL_LIST_ITEM>
+         <NAME>TYPE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>TOT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>APPROVED_AMOUNT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>NON_APPROVED_AMOUNT</NAME>
+      </COL_LIST_ITEM>
+   </COL_LIST>
+   <SUBQUERY>Select 'Fully Approved' AS Type,count(*) TOT,Round(sum(APPROVED_LABOUR)+sum(APPROVED_PARTS)+SUM(EST_OTH_APPROVED)) Approved_Amount,0 Non_Approved_Amount
+from PARTS_LABOUR_GRAPH_MAT
+where 
+(NOT_APPROVED_LABOUR = 0 and  NOT_APPROVED_PARTS = 0 AND EST_OTH_ESTIMATE = 0 )
+AND ( trunc(jm_invoice_date) between TRUNC(to_date('12/06/2022','dd/mm/yyyy')) and TRUNC(to_date('12/06/2022','dd/mm/yyyy')) )
+
+UNION ALL
+
+Select A.TYPE,A.TOT,A.Approved_Amount,B.Non_Approved_Amount
+FROM 
+(
+Select 'Partially Approved' AS Type ,count(*) TOT,Round(sum(APPROVED_LABOUR)+sum(APPROVED_PARTS)+SUM(EST_OTH_APPROVED)) Approved_Amount,0 Non_Approved_Amount
+from PARTS_LABOUR_GRAPH_MAT
+where 
+(NOT_APPROVED_LABOUR > 0 or  NOT_APPROVED_PARTS > 0  AND EST_OTH_ESTIMATE = 0)
+AND ( trunc(jm_invoice_date) between TRUNC(to_date('12/06/2022','dd/mm/yyyy')) and TRUNC(to_date('12/06/2022','dd/mm/yyyy')) )
+)  A
+,
+(
+Select 'Partially Non Approved' AS Type ,count(*) TOT,0 Approved_Amount,Round(sum(Not_APPROVED_LABOUR)+sum(Not_APPROVED_PARTS)+sUM(EST_OTH_ESTIMATE)) Non_Approved_Amount 
+from PARTS_LABOUR_GRAPH_MAT
+where 
+(NOT_APPROVED_LABOUR > 0 or  NOT_APPROVED_PARTS > 0 OR   EST_OTH_ESTIMATE > 0 )
+AND ( trunc(jm_invoice_date) between TRUNC(to_date('12/06/2022','dd/mm/yyyy')) and TRUNC(to_date('12/06/2022','dd/mm/yyyy')) )
+) B
+
+
+UNION ALL
+
+Select 'Non Approved' AS Type,count(*) TOT,0 Approved_Amount,Round(sum(Not_APPROVED_LABOUR)+sum(Not_APPROVED_PARTS)+sUM(EST_OTH_ESTIMATE)) Non_Approved_Amount
+from PARTS_LABOUR_GRAPH_MAT
+where 
+(APPROVED_LABOUR = 0 and  APPROVED_PARTS = 0 AND EST_OTH_APPROVED=0) and (NOT_APPROVED_LABOUR > 0 or  NOT_APPROVED_PARTS > 0 OR EST_OTH_ESTIMATE >0 )
+AND ( trunc(jm_invoice_date) between TRUNC(to_date('12/06/2022','dd/mm/yyyy')) and TRUNC(to_date('12/06/2022','dd/mm/yyyy')) )
+</SUBQUERY>
+</VIEW>]]></n0:source>
+		</n0:createSxmlObject>
+	</changeSet>
+</databaseChangeLog>

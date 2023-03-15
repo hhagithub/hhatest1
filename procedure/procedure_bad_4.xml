@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="15576e4dc8ad2a38256f57b216ab79bcd12e25ca" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleProcedure objectName="%OBJECT_NAME%" objectType="PROCEDURE" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "HHA_PROD"."WORK_JOB_EST_EST" (JM_JOB_NO_ varchar2,FLAG_PER_INSERT_) is
+ vat_p number:=5;
+
+v_JM_ESTIMATE_PARTS number;
+v_JM_ESTIMATE_PARTS_VAT number;
+
+JM_ESTIMATE_LABOUR number;
+JM_ESTIMATE_LABOUR_VAT number;
+
+BEGIN	
+
+Begin
+select distinct to_number(DESC_ENG) into vat_p
+from codes_descriptions
+where main_code= '146'
+and MAJOR_CODE = '1'
+and VALUE_1 = 'WSS'; 
+
+--:system.message_level := '20';
+commit;
+
+   	-----------------------PARTS TOTAL-----------
+/*		BEGIN
+		select SUM(((nvl(QT_QTY,0)*nvl(QT_PRICE,0))-(nvl(QT_QTY,0)*nvl(QT_DISC,0)))) into v_JM_ESTIMATE_PARTS
+		--,aa.*
+		from QUOTEESTIMATIONVEW aa
+		where 
+		(QT_JOBNUMBER,QT_CONCERNCODE,QT_REQSITIONCODE,QT_REQSITIONSLNO ) in (
+		select JR_JOB_NO,JR_CC_ID,JR_REQ_ID,JR_SNO
+		from WORK_JOB_REQS 
+		where JR_JOB_NO = JM_JOB_NO_
+		AND EST_APPROVED = 'Y'
+		)
+		and QT_JOBNUMBER = JM_JOB_NO_;
+		
+		v_JM_ESTIMATE_PARTS_VAT := (v_JM_ESTIMATE_PARTS*vat_p)/100;
+		exception when no_data_found then
+			null;
+		END;   */
+		
+
+
+
+
+---------------------naveed
+
+DECLARE vat_p number:=5;
+BEGIN	
+select distinct to_number(DESC_ENG) into vat_p
+from codes_descriptions
+where main_code= '146'
+and MAJOR_CODE = '1'
+and VALUE_1 = 'WSS'; 
+   	-----------------------PARTS TOTAL-----------
+		BEGIN
+		select SUM(((nvl(QT_QTY,0)*nvl(QT_PRICE,0))-(nvl(QT_QTY,0)*nvl(QT_DISC,0)))) into v_JM_ESTIMATE_PARTS
+		--,aa.*
+		from QUOTEESTIMATIONVEW aa
+		where 
+		(QT_JOBNUMBER,QT_CONCERNCODE,QT_REQSITIONCODE,QT_REQSITIONSLNO ) in (
+		select JR_JOB_NO,JR_CC_ID,JR_REQ_ID,JR_SNO
+		from WORK_JOB_REQS 
+		where JR_JOB_NO = JM_JOB_NO_
+		AND EST_APPROVED = 'A'
+		)
+		and QT_JOBNUMBER = JM_JOB_NO_;
+		
+		v_JM_ESTIMATE_PARTS_VAT := (v_JM_ESTIMATE_PARTS*vat_p)/100;
+		exception when no_data_found then
+			null;
+		END;   
+		
+		-----------------------PARTS TOTAL-----------
+		DECLARE LAB_RATE NUMBER;
+		BEGIN
+		
+		select  LR_LABOUR_RATE INTO LAB_RATE
+		from work_labour_rates
+		where lr_supl_code = (SELECT JM_SUPL_CODE FROM WORK_JOB_MASTER WHERE JM_JOB_NO = JM_JOB_NO_)
+		and lr_job_type = (SELECT JM_JOB_TYPE FROM WORK_JOB_MASTER WHERE JM_JOB_NO = JM_JOB_NO_);
+		
+		SELECT STD_TIME * LAB_RATE INTO v_JM_ESTIMATE_LABOUR
+		FROM (SELECT SUM(STD_TIME) STD_TIME FROM WORK_JOB_DETAILS_EST WHERE JI_JOB_NO = JM_JOB_NO_ AND EST_APPROVED  ='A'
+		);
+		
+		v_JM_ESTIMATE_LABOUR_VAT := (v_JM_ESTIMATE_LABOUR*vat_p)/100;
+		
+		exception when no_data_found then
+			null;
+		END;
+		--------------------END PARTS-----------------
+END;
+---- END NAVEED
+
+
+COMMIT;
+		
+		
+--:system.message_level := '0';		
+
+
+-------------------------------------------------------------------------------------------------------------
+END;
+
+
+if nvl(FLAG_PER_INSERT_,'N')!='Y' then ---- update 
+	
+	
+	
+declare 
+
+CURSOR C IS 
+
+	select distinct req_id from WORK_JOB_REQS_temp where job_no=JM_JOB_NO_;
+
+	req_id_ varchar2(3000);
+	v_header varchar(32767);
+  R C%ROWTYPE;
+    
+BEGIN	
+ 
+   v_header := '<table border=1 BORDERCOLOR=onions><center>
+                                <tr style=''background:white''>
+                                <td width=500><p><b> Approved Requisition No</b></p></td>
+                                </tr>
+                                </center></table>
+                            <table border=1>
+                              </tr>';
+	
+/*cursor open*/
+	OPEN C;
+	--================= 
+  	
+	--================	
+ 		
+	LOOP
+	 FETCH C INTO R;               ----cursor fetch/read
+	 EXIT WHEN C%NOTFOUND;	
+	 			
+	 			req_id_:=req_id_ ||
+                           '<tr><center>
+                           <td width=500> <p>' ||  r.req_id  ||'</p></td>
+                           </center>
+                            </tr>';
+    				 
+		 END LOOP;
+ 
+   req_id_:= v_header ||req_id_ ||' </table> ';
+ 
+ 	 begin
+  		send_email_html('it@hha.com.sa','ws_requisition_'||substr(JM_JOB_NO_,1,3)||'@hha.com.sa','Estimate Approved- Jobcard No: '||JM_JOB_NO_,'
+   
+     Estimate Approved- Jobcard No: '||JM_JOB_NO_
+      ||req_id_);
+     
+		 end;
+ 
+	CLOSE C;
+end ;
+--:system.message_level:=25;
+delete from WORK_JOB_REQS_temp where job_no=JM_JOB_NO_;
+commit;
+--:system.message_level:=0;
+
+									elsif FLAG_PER_INSERT_='Y' then -----------for insert record-----
+
+
+
+declare 
+
+CURSOR C IS 
+
+	select distinct req_id from WORK_JOB_REQS_temp where job_no=JM_JOB_NO_;
+
+	req_id_ varchar2(3000);
+	 v_header varchar(32767);
+  R C%ROWTYPE;
+    
+BEGIN	
+ 
+ 
+   v_header := '<table border=1 BORDERCOLOR=onions><center>
+                                <tr style=''background:white''>
+                                <td width=500><p><b> Estimate Requisition Created </b></p></td>
+                                </tr>
+                                </center></table>
+                            <table border=1>
+                              </tr>';
+	
+/*cursor open*/
+	OPEN C;
+	--================= 
+  	
+	--================	
+ 
+		
+	LOOP
+	 FETCH C INTO R;               ----cursor fetch/read
+	 EXIT WHEN C%NOTFOUND;	
+	 			
+	 			req_id_:=req_id_ ||
+                           '<tr><center>
+                           <td width=500> <p>' ||  r.req_id  ||'</p></td>
+                           </center>
+                            </tr>';
+    				 
+		 END LOOP;
+ 
+   req_id_:= v_header ||req_id_ ||' </table> ';
+ 
+ 	 begin
+  		send_email_html('it@hha.com.sa','ws_requisition_'||substr(JM_JOB_NO_,1,3)||'@hha.com.sa','Estimate Requisition Created- Jobcard No: '||JM_JOB_NO_,'
+   
+     Estimate Requisition Created- Jobcard No: '||JM_JOB_NO_
+      ||req_id_);
+     
+		 end;
+ 
+	CLOSE C;
+end ;
+--:system.message_level:=25;
+delete from WORK_JOB_REQS_temp where job_no=JM_JOB_NO_;
+commit;
+--:system.message_level:=0;
+
+end if;
+--:FLAG_PER_INSERT:=null;
+
+
+--GO_BLOCK('WORK_JOB_MCC'); 
+--HIDE_VIEW('CANVAS48'); 
+end;
+/]]></n0:source>
+		</n0:createOracleProcedure>
+	</changeSet>
+</databaseChangeLog>

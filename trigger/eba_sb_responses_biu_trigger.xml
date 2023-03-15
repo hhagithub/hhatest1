@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="221737239daa08db9b760806cea4da4f9fce4575" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleTrigger objectName="EBA_SB_RESPONSES_BIU" objectType="TRIGGER" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE TRIGGER "HHA_PROD"."EBA_SB_RESPONSES_BIU" 
+    before insert or update on eba_sb_responses
+    for each row
+begin
+    if :new.started_date is not null and 
+       :new.completed_date is not null 
+    then
+       if :new.started_date != :old.started_date or 
+          :old.started_date is null or
+          :new.completed_date != :old.completed_date or 
+          :old.completed_date is null 
+       then
+          :new.duration_mins := (to_date(to_char(:new.completed_date,'DD-MON-YYYY HH24:MI:SS'),'DD-MON-YYYY HH24:MI:SS') - 
+                                 to_date(to_char(:new.started_date,'DD-MON-YYYY HH24:MI:SS'),'DD-MON-YYYY HH24:MI:SS'))*24*60;
+       end if;
+    else
+        if :new.duration_mins is not null 
+        then
+           :new.duration_mins := null;
+        end if;
+    end if;
+end;
+
+/
+/
+ALTER TRIGGER "HHA_PROD"."EBA_SB_RESPONSES_BIU" ENABLE;]]></n0:source>
+		</n0:createOracleTrigger>
+	</changeSet>
+</databaseChangeLog>

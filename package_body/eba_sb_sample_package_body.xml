@@ -1,0 +1,430 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="878fe85cf7775ecc44689baa4ce77e0e4145f7cc" author="(HHA_PROD)-Generated"     >
+		<n0:createOraclePackageBody objectName="EBA_SB_SAMPLE" objectType="PACKAGE_BODY" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE PACKAGE BODY "HHA_PROD"."EBA_SB_SAMPLE" 
+is
+    procedure install_completed_survey
+    is
+    begin
+        -- A short sample survey
+        insert into eba_sb_surveys (id, row_key, name, type, notes, state, start_date, target_date, completed_date, target_respondents, tags, mins_to_complete)
+            values (
+                2,
+                'AAAA',
+                'Product satisfaction Toaster-2000',
+                'RANDOM-SAMPLE',
+                'Short sample product satisfaction survey about the Toaster-2000.
+        The random sample will come from people that have filled out their product
+        registration.',
+                'COMPLETE',
+                sysdate-14,
+                sysdate+12,
+                sysdate+11,
+                15,
+                'sample',
+                5
+            );
+        insert into eba_sb_questionnaires (id, survey_id, row_key, title, lang, description, prolog, epilog, style_skin_name)
+            values (
+                1,
+                2,
+                'AAAA',
+                'Toaster-2000 Survey',
+                'en',
+                'Sample survey',
+                '<p>Thanks for purchasing an ACME Appliance Toaster-2000. This short survey will let us know how
+        we are doing and help us to continue bringing great products to market.</p><p>Your answers
+        are confidential and not associated with you. We combine your responses with those of others to get
+        an overall picture of customer opinions about our products.</p><p>We know
+        your time is valuable. This short survey should take no more than 5 minutes.</p>',
+                '<p>Thanks for taking your time to complete this survey.</p>',
+                'Default'
+            );
+        begin
+            eba_sb.init_questionnaire_strings(1, 'en');
+        end;
+        insert into eba_sb_sections (id, questionnaire_id, section_seq, title, prolog)
+            values (
+                101, 1, 1, 'Demographic Information', '<p>Please tell about yourself. Providing this
+        information helps us know our customers better and will not be associated with any identifying information.</p>');
+        insert into eba_sb_sections (id, questionnaire_id, section_seq, title, prolog)
+            values (
+                103, 1, 2, 'Purchasing and Use', '<p>Please tell us about your shopping experience and how you plan to use the toaster.</p>');
+        insert into eba_sb_sections (id, questionnaire_id, section_seq, title, prolog)
+            values (
+                106, 1, 3, 'Satisfaction', '<p>Please tell us how you feel about Toaster-2000.</p>');
+        insert into eba_sb_questions (id, questionnaire_id, question_seq, question_number, section_id,
+                                      question, priority, exclude, category, type, na_label, other_label, min, max, required)
+            values (
+                100, 1, 10, 1, 101,
+                'What is your age?',
+                1, 'N', 'ATTRIBUTE', 'RANGE', 'I''d rather not say', NULL, NULL, NULL, 'Y');
+        insert into eba_sb_answers (id, question_id, answer_seq, text, value)
+            values (500, 100, 1, 'Under 25', 1);
+        insert into eba_sb_answers (id, question_id, answer_seq, text, value)
+            values (501, 100, 2, '25 to 35', 2);
+        insert into eba_sb_answers (id, question_id, answer_seq, text, value)
+            values (502, 100, 3, '36 to 45', 3);
+        insert into eba_sb_answers (id, question_id, answer_seq, text, value)
+            values (503, 100, 4, 'Over 45', 4);
+        insert into eba_sb_questions (id, questionnaire_id, question_seq, question_number, section_id,
+                                      question, priority, exclude, category, type, na_label, other_label, min, max, required)
+            values (
+                110, 1, 20, 2, 101,
+                'What is your gender?',
+                1, 'N', 'ATTRIBUTE', 'SINGLE', 'I''d rather not say', null, null, null, 'Y');
+        insert into eba_sb_answers (id, question_id, answer_seq, text, value)
+            values (504, 110, 1, 'Male', 1);
+        insert into eba_sb_answers (id, question_id, answer_seq, text, value)
+            values (505, 110, 2, 'Female', 2);
+        insert into eba_sb_questions (id, questionnaire_id, question_seq, question_number, section_id,
+                                      question, priority, exclude, category, type, na_label, other_label, min, max, required)
+            values (
+                120, 1, 30, 3, 101,
+                'What is your Postal code?',
+                1, 'N', 'ATTRIBUTE', 'TEXT', null, null, 5, 5, 'N');
+        insert into eba_sb_questions (id, questionnaire_id, question_seq, question_number, section_id,
+                                      question, priority, exclude, category, type, na_label, other_label, min, max, required)
+            values (
+                130, 1, 40, 4, 101,
+                'How many people including yourself are in your family?',
+                2, 'N', 'ATTRIBUTE', 'NUMBER', null, null, 0, 40, 'N');
+        insert into eba_sb_questions (id, questionnaire_id, question_seq, question_number, section_id,
+                                      question, priority, exclude, category, type, na_label, other_label, min, max, required)
+            values (
+                140, 1, 10, 5, 103,
+                'Where did you purchase the toaster?',
+                1, 'N', 'ATTRIBUTE', 'SINGLE', null, 'Other (please specify)', 0, 80, 'Y');
+        insert into eba_sb_answers (id, question_id, answer_seq, text, value)
+            values (506, 140, 1, 'Appliance Town', 1);
+        insert into eba_sb_answers (id, question_id, answer_seq, text, value)
+            values (507, 140, 2, 'City Appliance', 2);
+        insert into eba_sb_answers (id, question_id, answer_seq, text, value)
+            values (508, 140, 3, 'Kitchen Stuff', 3);
+        insert into eba_sb_answers (id, question_id, answer_seq, text, value)
+            values (509, 140, 4, 'I received it as a gift', 4);
+        insert into eba_sb_questions (id, questionnaire_id, question_seq, question_number, section_id,
+                                      question, priority, exclude, category, type, na_label, other_label, min, max, required, skip_condition)
+            values (
+                145, 1, 15, 14, 103,
+                'What factors influenced your choice to purchase the toaster?',
+                1, 'N', 'ATTRIBUTE', 'MULTIPLE', 'Not applicable', 'Other (please specify)', null, null, 'Y', '5 == 4');
+        insert into eba_sb_answers (id, question_id, answer_seq, text, value)
+            values (510, 145, 1, 'Overall value', 1);
+        insert into eba_sb_answers (id, question_id, answer_seq, text, value)
+            values (511, 145, 2, 'Cost', 2);
+        insert into eba_sb_answers (id, question_id, answer_seq, text, value)
+            values (512, 145, 3, 'Sale or other promotion', 3);
+        insert into eba_sb_answers (id, question_id, answer_seq, text, value)
+            values (513, 145, 4, 'Features', 4);
+        insert into eba_sb_answers (id, question_id, answer_seq, text, value)
+            values (514, 145, 5, 'Recommendation', 5);
+        insert into eba_sb_questions (id, questionnaire_id, question_seq, question_number, section_id,
+                                      question, priority, exclude, category, type, na_label, other_label, min, max, required, skip_condition)
+            values (
+                150, 1, 20, 6, 103,
+                'How satisfied are you with your shopping experience?',
+                1, 'N', 'ATTITUDE', 'RANGE', 'Not applicable', null, null, null, 'Y', '5 == 4');
+        -- copy answers from satisfaction
+        insert into eba_sb_answers(question_id, answer_seq, text, value) select 150, answer_seq, text, value from eba_sb_answers where question_id = 2015;
+        insert into eba_sb_questions (id, questionnaire_id, question_seq, question_number, section_id,
+                                      question, priority, exclude, category, type, na_label, other_label, min, max, required)
+            values (
+                160, 1, 30, 7, 103,
+                'What is the primary use for your toaster (choose from 1 to 3)?',
+                1, 'N', 'ATTRIBUTE', 'MULTIPLE', null, null, 1, 3, 'Y');
+        insert into eba_sb_answers (id, question_id, answer_seq, text, value)
+            values (515, 160, 1, 'Toast or bagels', 1);
+        insert into eba_sb_answers (id, question_id, answer_seq, text, value)
+            values (516, 160, 2, 'Frozen waffles', 2);
+        insert into eba_sb_answers (id, question_id, answer_seq, text, value)
+            values (517, 160, 3, 'Frozen dinners', 3);
+        insert into eba_sb_answers (id, question_id, answer_seq, text, value)
+            values (518, 160, 4, 'Reheating leftovers', 4);
+        insert into eba_sb_answers (id, question_id, answer_seq, text, value)
+            values (519, 160, 5, 'Baking cookies', 5);
+        insert into eba_sb_questions (id, questionnaire_id, question_seq, question_number, section_id,
+                                      question, priority, exclude, category, type, na_label, other_label, min, max, required)
+            values (
+                170, 1, 10, 8, 106,
+                'How would you rate the style and attractiveness of the Toaster-2000?',
+                1, 'N', 'BELIEF', 'RANGE', null, null, 0, 3, 'Y');
+        -- copy answers from qality
+        insert into eba_sb_answers(question_id, answer_seq, text, value) select 170, answer_seq, text, value from eba_sb_answers where question_id = 2009;
+        insert into eba_sb_questions (id, questionnaire_id, question_seq, question_number, section_id,
+                                      question, priority, exclude, category, type, na_label, other_label, min, max, required)
+            values (
+                180, 1, 20, 9, 106,
+                'How strongly do you agree with the statement "The controls and features of the Toaster-2000 are easy to understand and use"?',
+                1, 'N', 'ATTITUDE', 'RANGE', null, null, null, null, 'Y');
+        -- copy answers from agreement
+        insert into eba_sb_answers(question_id, answer_seq, text, value) select 180, answer_seq, text, value from eba_sb_answers where question_id = 2001;
+        insert into eba_sb_questions (id, questionnaire_id, question_seq, question_number, section_id,
+                                      question, priority, exclude, category, type, na_label, other_label, min, max, required)
+            values (
+                190, 1, 30, 10, 106,
+                'How would you rate your overall satisfaction with Toaster-2000?',
+                1, 'N', 'ATTITUDE', 'RANGE', null, null, null, null, 'Y');
+        -- copy answers from satisfaction
+        insert into eba_sb_answers(question_id, answer_seq, text, value) select 190, answer_seq, text, value from eba_sb_answers where question_id = 2015;
+        insert into eba_sb_questions (id, questionnaire_id, question_seq, question_number, section_id,
+                                      question, priority, exclude, category, type, na_label, other_label, min, max, required)
+            values (
+                200, 1, 40, 11, 106,
+                'What do you like best about the Toaster-2000?',
+                1, 'N', 'ATTITUDE', 'OPEN', null, null, null, 500, 'N');
+        insert into eba_sb_questions (id, questionnaire_id, question_seq, question_number, section_id,
+                                      question, priority, exclude, category, type, na_label, other_label, min, max, required)
+            values (
+                210, 1, 50, 12, 106,
+                'What could make Toaster-2000 better?',
+                1, 'N', 'ATTITUDE', 'OPEN', null, null, null, 500, 'N');
+        -- Email
+        insert into eba_sb_emails (id, survey_id, type, name, subject, message)
+            values(1, 2, 'REQUEST', 'Invitation', 'Please take the Toaster-2000 survey',
+                to_clob('Thanks for registering your Toaster-2000 product. Please take a moment to fill out our 
+        product satisfaction survey using the following link.<br />' || chr(13) || chr(10) ||
+        '<a href="#URL#">Toaster-2000 Survey</a><br />' || chr(13) || chr(10) || 
+        'If the link doesn''t work you can paste the following URL into your browser address bar.<br />' || chr(13) || chr(10) || 
+        '#URL#<br />' || chr(13) || chr(10) || 'Thank you in advance!<br />Sincerely, ACME Appliance'));
+        insert into eba_sb_emails (id, survey_id, type, name, subject, message)
+            values(2, 2, 'THANKS', 'Thank You Letter', 'Thanks for completing the survey!',
+                to_clob('Thanks for taking your valuable time to fill out the Toaster-2000 survey.<br />' || chr(13) || chr(10) ||
+                    'We look forward to delivering more great kitchen appliances for you in the future. <br />Sincerely, ACME Appliance'));
+        -- Responses
+        insert into eba_sb_responses (id, survey_id, delivered, started_date, completed_date)
+            values('VUOFJUVLFDOGYPEQ',2,'N',sysdate-5,sysdate-1);
+        insert into eba_sb_responses (id, survey_id, delivered, started_date, completed_date)
+            values('XGHIVMZPBCWVJUOS',2,'N','','');
+        insert into eba_sb_responses (id, survey_id, delivered, started_date, completed_date)
+            values('RSYSQUPMRNNHBMWH',2,'N',sysdate-5,sysdate-1);
+        insert into eba_sb_responses (id, survey_id, delivered, started_date, completed_date)
+            values('TDDNCVBWXLATOKDX',2,'N','','');
+        insert into eba_sb_responses (id, survey_id, delivered, started_date, completed_date)
+            values('VMYPKTCPUUPXZWWV',2,'N','','');
+        insert into eba_sb_responses (id, survey_id, delivered, started_date, completed_date)
+            values('GZIMQQOPEYLFFSKN',2,'N','','');
+        insert into eba_sb_responses (id, survey_id, delivered, started_date, completed_date)
+            values('AMWMFZWNYTKBSYSD',2,'N',sysdate-4,sysdate-1);
+        insert into eba_sb_responses (id, survey_id, delivered, started_date, completed_date)
+            values('LIFFBSNALKVQMNCV',2,'N',sysdate-2,sysdate-1);
+        insert into eba_sb_responses (id, survey_id, delivered, started_date, completed_date)
+            values('HMJFVSJFTTNIPGTP',2,'N','','');
+        insert into eba_sb_responses (id, survey_id, delivered, started_date, completed_date)
+            values('GNZHILHGJNWURPVM',2,'N','','');
+        insert into eba_sb_responses (id, survey_id, delivered, started_date, completed_date)
+            values('YECOQGFHGNIUDWGE',2,'N','','');
+        insert into eba_sb_responses (id, survey_id, delivered, started_date, completed_date)
+            values('EMZIUAREKWYWULZE',2,'N','','');
+        insert into eba_sb_responses (id, survey_id, delivered, started_date, completed_date)
+            values('NQGUONZEZXJTOUWT',2,'N','','');
+        insert into eba_sb_responses (id, survey_id, delivered, started_date, completed_date)
+            values('IDEYCXHJAAKKSELT',2,'N',sysdate-3,sysdate-1);
+        insert into eba_sb_responses (id, survey_id, delivered, started_date, completed_date)
+            values('EPORJGIEKJCJUOXT',2,'N','','');
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(1,'VUOFJUVLFDOGYPEQ',1,3,null);
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(2,'VUOFJUVLFDOGYPEQ',2,1,null);
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(3,'VUOFJUVLFDOGYPEQ',3,null,'55555');
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(4,'VUOFJUVLFDOGYPEQ',4,4,null);
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(5,'VUOFJUVLFDOGYPEQ',5,1,null);
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(6,'VUOFJUVLFDOGYPEQ',14,2,null);
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(7,'VUOFJUVLFDOGYPEQ',14,null,'Color');
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(8,'VUOFJUVLFDOGYPEQ',6,1,null);
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(9,'VUOFJUVLFDOGYPEQ',7,2,null);
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(10,'VUOFJUVLFDOGYPEQ',8,2,null);
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(11,'VUOFJUVLFDOGYPEQ',9,2,null);
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(12,'VUOFJUVLFDOGYPEQ',10,1,null);
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(13,'VUOFJUVLFDOGYPEQ','11',null,null);
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(14,'VUOFJUVLFDOGYPEQ','12',null,null);
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(21,'RSYSQUPMRNNHBMWH',1,0,null);
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(22,'RSYSQUPMRNNHBMWH',2,0,null);
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(23,'RSYSQUPMRNNHBMWH',3,null,null);
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(24,'RSYSQUPMRNNHBMWH',4,null,null);
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(25,'RSYSQUPMRNNHBMWH',5,1,null);
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(26,'RSYSQUPMRNNHBMWH',14,2,null);
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(27,'RSYSQUPMRNNHBMWH',6,1,null);
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(28,'RSYSQUPMRNNHBMWH',7,1,null);
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(29,'RSYSQUPMRNNHBMWH',7,2,null);
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(30,'RSYSQUPMRNNHBMWH',8,2,null);
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(31,'RSYSQUPMRNNHBMWH',9,2,null);
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(32,'RSYSQUPMRNNHBMWH',10,1,null);
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(33,'RSYSQUPMRNNHBMWH','11',null,'It makes the best toast I have ever had');
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(34,'RSYSQUPMRNNHBMWH','12',null,'It could be a little wider to fit more pizza slices');
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(41,'AMWMFZWNYTKBSYSD',1,0,null);
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(42,'AMWMFZWNYTKBSYSD',2,2,null);
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(43,'AMWMFZWNYTKBSYSD',3,null,null);
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(44,'AMWMFZWNYTKBSYSD',4,5,null);
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(45,'AMWMFZWNYTKBSYSD',5,2,null);
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(46,'AMWMFZWNYTKBSYSD',14,3,null);
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(47,'AMWMFZWNYTKBSYSD',6,2,null);
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(48,'AMWMFZWNYTKBSYSD',7,2,null);
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(49,'AMWMFZWNYTKBSYSD',7,4,null);
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(50,'AMWMFZWNYTKBSYSD',8,2,null);
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(51,'AMWMFZWNYTKBSYSD',9,3,null);
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(52,'AMWMFZWNYTKBSYSD',10,1,null);
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(53,'AMWMFZWNYTKBSYSD','11',null,null);
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(54,'AMWMFZWNYTKBSYSD','12',null,'It would look better if it were green.');
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(61,'LIFFBSNALKVQMNCV',1,0,null);
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(62,'LIFFBSNALKVQMNCV',2,0,null);
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(63,'LIFFBSNALKVQMNCV',3,null,null);
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(64,'LIFFBSNALKVQMNCV',4,2,null);
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(65,'LIFFBSNALKVQMNCV',5,2,null);
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(66,'LIFFBSNALKVQMNCV',14,3,null);
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(67,'LIFFBSNALKVQMNCV',6,2,null);
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(68,'LIFFBSNALKVQMNCV',7,1,null);
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(69,'LIFFBSNALKVQMNCV',7,2,null);
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(70,'LIFFBSNALKVQMNCV',8,1,null);
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(71,'LIFFBSNALKVQMNCV',9,1,null);
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(72,'LIFFBSNALKVQMNCV',10,1,null);
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(73,'LIFFBSNALKVQMNCV','11',null,null);
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(74,'LIFFBSNALKVQMNCV','12',null,null);
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(81,'IDEYCXHJAAKKSELT',1,2,null);
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(82,'IDEYCXHJAAKKSELT',2,2,null);
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(83,'IDEYCXHJAAKKSELT',3,null,null);
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(84,'IDEYCXHJAAKKSELT',4,null,null);
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(85,'IDEYCXHJAAKKSELT',5,null,'Appliance Barn');
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(86,'IDEYCXHJAAKKSELT',14,2,null);
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(87,'IDEYCXHJAAKKSELT',6,2,null);
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(88,'IDEYCXHJAAKKSELT',7,2,null);
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(90,'IDEYCXHJAAKKSELT',8,2,null);
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(91,'IDEYCXHJAAKKSELT',9,2,null);
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(92,'IDEYCXHJAAKKSELT',10,1,null);
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(93,'IDEYCXHJAAKKSELT','11',null,null);
+        insert into eba_sb_question_responses (id, response_id, question_number, value, value_text)
+            values(94,'IDEYCXHJAAKKSELT','12',null,null);
+    end install_completed_survey;
+    procedure remove_completed_survey
+    is
+    begin
+        delete from eba_sb_surveys where id = 2; -- this delete cascades to all other associated data in other tables
+    end remove_completed_survey;
+    procedure install_design_survey
+    is
+        l_retval number;
+    begin
+        -- Create the new survey record
+        insert into eba_sb_surveys (id, row_key, name, type, notes, state, start_date, target_date, completed_date, target_respondents, tags, mins_to_complete)
+            values (
+                3,
+                null,
+                'Product satisfaction Toaster-2000 (Copy)',
+                'RANDOM-SAMPLE',
+                'Short sample product satisfaction survey about the Toaster-2000.
+        The random sample will come from people that have filled out their product
+        registration.',
+                'DESIGN',
+                null,
+                null,
+                null,
+                15,
+                'sample',
+                5
+            );
+        -- Copy the questionnaire
+        l_retval := eba_sb.copy_questionnaire(
+            p_questionnaire_id => 1,
+            p_new_title        => 'Toaster-2000 Survey',
+            p_dst_survey_id    => 3
+        );
+        -- Copy the email records too
+        insert into eba_sb_emails (survey_id, name, type, is_current, subject, message, send_after_days)
+        select 3, name, type, is_current, subject, message, send_after_days
+          from eba_sb_emails where survey_id = 2;
+    end install_design_survey;
+    procedure remove_design_survey
+    is
+    begin
+        delete from eba_sb_surveys where id = 3; -- this delete cascades to all other associated data in other tables
+    end remove_design_survey;
+    procedure install
+    is
+    begin
+        install_completed_survey;
+        install_design_survey;
+    end install;
+    procedure remove
+    is
+    begin
+        remove_completed_survey;
+        remove_design_survey;
+    end remove;
+end eba_sb_sample;
+/]]></n0:source>
+		</n0:createOraclePackageBody>
+	</changeSet>
+</databaseChangeLog>

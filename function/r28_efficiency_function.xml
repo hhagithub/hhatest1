@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="e896aaa94df4e930fb473ef389b9f1fecaefe74d" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="R28_EFFICIENCY" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."R28_EFFICIENCY" (wj_emp_no_ varchar2,starttime_ date,endtime_ date) return Number is 
+
+abc varchar2(50);
+
+V_IN_OUT_ONLY_INV NUMBER;
+
+begin
+V_IN_OUT_ONLY_INV :=0 ;
+
+V_IN_OUT_ONLY_INV :=nvl(R28_IN_OUT_ONLY_INV(wj_emp_no_,TRUNC(starttime_),TRUNC(endtime_)) ,0);
+--RETURN (R28_sold_cig_mnt(wj_emp_no_,TRUNC(starttime_),TRUNC(endtime_)));
+
+IF NVL(V_IN_OUT_ONLY_INV,0)> 0 THEN
+return V_IN_OUT_ONLY_INV;
+      SELECT 
+    (round((((NVL(R28_sold_cig_mnt(wj_emp_no_,TRUNC(starttime_),TRUNC(endtime_)) ,0)/(V_IN_OUT_ONLY_INV)))*100),2))
+
+ --(((NVL(R28_sold_cig_mnt(wj_emp_no_,TRUNC(starttime_),TRUNC(endtime_)) ,0))/NVL(V_IN_OUT_ONLY_INV,0))*100)
+
+      INTO ABC 
+      FROM DUAL;
+      RETURN ABC;
+ELSE
+      RETURN 0;
+END IF;
+exception when others then return (0);
+end;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

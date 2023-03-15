@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="41d5a6d909a9784e2f7c1d4adf75e2fe9c975e0d" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleTrigger objectName="SAMCO_TRAINING_MODULE_DETAIL_T1" objectType="TRIGGER" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE TRIGGER "HHA_PROD"."SAMCO_TRAINING_MODULE_DETAIL_T1" 
+BEFORE
+insert on "SAMCO_TRAINING_MODULE_DETAIL"
+for each row
+DECLARE
+V_LINE NUMBER;
+V_MOD VARCHAR2(20);
+begin
+IF :NEW.MOD_REF_NO IS NOT NULL THEN 
+SELECT MODULE_ID INTO V_MOD FROM SAMCO_TRAINING_MODULE_MASTER WHERE REF_NO = :NEW.MOD_REF_NO;
+:NEW.MODULE_ID := V_MOD;
+END IF;
+IF :NEW.LINE_NO IS NULL THEN
+   SELECT NVL(MAX(LINE_NO),0) + 1 INTO V_LINE
+   FROM SAMCO_TRAINING_MODULE_DETAIL WHERE MODULE_ID = NVL(:NEW.MODULE_ID,V_MOD);
+   :NEW.LINE_NO := V_LINE;
+END IF;
+
+IF :NEW.IS_ACTIVE IS NULL THEN
+   :NEW.IS_ACTIVE := 'Y';
+END IF;
+
+end;
+
+/
+/
+ALTER TRIGGER "HHA_PROD"."SAMCO_TRAINING_MODULE_DETAIL_T1" ENABLE;]]></n0:source>
+		</n0:createOracleTrigger>
+	</changeSet>
+</databaseChangeLog>

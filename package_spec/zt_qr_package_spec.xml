@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="fcc733b986726028b182dfd4375dec98e4ef235f" author="(HHA_PROD)-Generated"     >
+		<n0:createOraclePackageSpec objectName="ZT_QR" objectType="PACKAGE_SPEC" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE PACKAGE "HHA_PROD"."ZT_QR" wrapped
+a000000
+b2
+abcd
+abcd
+abcd
+abcd
+abcd
+abcd
+abcd
+abcd
+abcd
+abcd
+abcd
+abcd
+abcd
+abcd
+abcd
+9
+4a7 1c2
+Zd9cYb3gNa+Oz5HgJrgJPDBiZ/Qwg9eJAEhqfHQC2sGOgyXhTKOO6TdZiVnV5tLq8mWsVjS1
+YsUFDbaxKWkwJknWz4/4zufarHs3YFL65KHhJdEJabSO5vOTjICsXw2VspEwaPSS2+5M9Wf8
+59KS5EyiUWfY4fPlfqwPvfzkaZvlisq3rcdlH3aSsxvfIoxgq46uB0Re0KzCfXlWaueohEvn
+hyG05i2TkcVTaUuVy81iJdgQvpuwtwjsqkty5g/YVRw1uuRToQVJpvTQMZP/ymJIDBUC6FR2
+NApJxk5VbCLiTRrwxqCX4kQTuBqURr7IH5c5vnsZtWCdtqD1Uu+LXdoqyYbtmpa2t50UyW7i
+N96nyKVzef1KUoESLIS6GzNbGWwLrMu+KnjBdOVX0kK0F6sFmbTWapTM/X5eKN+NSZnS1866
+e4ocvKZ6qdFM
+/]]></n0:source>
+		</n0:createOraclePackageSpec>
+	</changeSet>
+</databaseChangeLog>

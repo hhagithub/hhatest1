@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="b49265ca12153b069fd1333b91f59cb310df7caa" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="IQ_PUSHAPPT" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."IQ_PUSHAPPT" (apptno number, loc varchar2) return varchar2 is
+token_string   varchar2(4000);
+l_reqBody      CLOB;
+l_response     CLOB;
+l_xml          xmltype;
+json_body      VARCHAR2(4000);
+l_Status       VARCHAR2(200);
+
+begin
+token_string := getIQtoken('https://hha'||loc||'.iq-motive.com:10004/api/Auth/login', loc);
+
+apex_web_service.g_request_headers.delete();
+apex_web_service.g_request_headers(1).name  := 'Authorization';
+apex_web_service.g_request_headers(1).value := 'Bearer '||token_string;
+apex_web_service.g_request_headers(2).name  := 'Content-Type';
+apex_web_service.g_request_headers(2).value := 'application/json; charset=utf-8';
+--apex_web_service.g_request_headers(3).name := 'Content-Length';
+--apex_web_service.g_request_headers(3).value := '';
+
+BEGIN
+
+SELECT JOB INTO l_reqBody 
+FROM 
+(
+    SELECT REPLACE(JOB,'"tasks":null','"tasks":[]') AS JOB
+    FROM (
+          select JSON_OBJECT 
+          (
+          'appointmentRef' is to_char(AP_APPOINT_NO),
+          'datetime'       is to_char(AP_APPOINT_DATE,'dd-mm-rrrr hh24:mi'),
+          'customerName'   is AP_CUSTOMER_NAME,
+          'customerPhone'  is AP_MOBILE_NO,
+          'tasks'          is '',
+          'vehicleId'      is AP_CHASSIS_NO
+          ) AS JOB
+          from work_appointment
+          where AP_APPOINT_NO = apptno
+         ) 
+);
+
+json_body  := substr(l_reqBody, 1, 32767);
+
+l_response := apex_web_service.make_rest_request(p_url           => 'https://hha'||loc||'.iq-motive.com:10004/api/dms',
+                                                 p_http_method   => 'POST',
+                                                 p_body          => to_clob(json_body),
+                                                 p_wallet_path   => 'file:/u01/app/oracle/product/12.2.0/dbhome_1/wallet',
+                                                 p_wallet_pwd    => 'welcome1'
+                                             );
+
+l_Status := apex_web_service.g_status_code;
+
+IF l_Status = '200' THEN
+   RETURN '200-Success';
+ELSIF l_Status = '400' THEN
+   RETURN '409-Bad Request';
+ELSIF l_Status = '409' THEN
+   RETURN '409-Conflict';   
+ELSE  
+   RETURN 'Error: '||l_Status;
+END IF;   
+
+EXCEPTION 
+  WHEN NO_DATA_FOUND THEN
+  RETURN SQLERRM;
+  WHEN OTHERS THEN
+  RETURN SQLERRM;
+END;
+end;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

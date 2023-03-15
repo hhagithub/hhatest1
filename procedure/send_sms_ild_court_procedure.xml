@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="8049ac099a90fbb35645c9da30f9de76c9b91606" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleProcedure objectName="SEND_SMS_ILD_COURT" objectType="PROCEDURE" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "HHA_PROD"."SEND_SMS_ILD_COURT" 
+(
+--MOBILE NO
+MOBILE_1 IN CHAR,
+-- SMS TO BE SENT
+UDF10_1 IN CHAR,
+-- MODULE NO IN UDF1
+UDF1_1 IN CHAR,
+--ANY DESCRIPTION
+UDF2_1 IN CHAR)
+ is
+--
+-- To modify this template, edit file PROC.TXT in TEMPLATE
+-- directory of SQL Navigator
+--
+-- Purpose: Briefly explain the functionality of the procedure
+--
+-- MODIFICATION HISTORY
+-- Person      Date    Comments
+-- ---------   ------  -------------------------------------------
+--   variable_name                 datatype;
+   -- Declare program variables as shown above
+    msg_text_result VARCHAR2(2000);
+     msg_text_result_sms VARCHAR2(2000);
+ msg_RETURN_sms VARCHAR2(2);
+
+
+BEGIN
+/*
+  msg_text_result := SEND_SMS_MOB(MOBILE_1,'HHA',UDF10_1);
+
+ if instr(LTRIM(RTRIM(UPPER(NVL(msg_text_result,'0')))),'SUCCESS') > 0 then
+ msg_RETURN_sms := 2;
+
+--   return result_;
+ELSE
+   msg_RETURN_sms := '';
+end if;
+*/
+----INSERT INTO SMS_LIVE (TEMPLATE_ID,MOBILE,UDF10,INVDATE,UDF1,UDF2,UDF7,STATUS) VALUES('MANS',MOBILE_1,UDF10_1,to_char(sysdate,'dd/mm/rrrr hh24:mi:ss'),UDF1_1,UDF2_1,nvl(msg_text_result,'Problem Found in by pass'),msg_RETURN_sms);
+INSERT INTO SMS_LIVE (TEMPLATE_ID,MOBILE,UDF10,INVDATE,UDF1,UDF2) VALUES('ILD',MOBILE_1,UDF10_1,to_char(sysdate,'dd/mm/rrrr hh24:mi:ss'),UDF1_1,UDF2_1);
+COMMIT;
+
+EXCEPTION
+    WHEN OTHERS THEN
+        NULL ;
+END; -- Procedure SEND_SMS
+
+
+/*   (
+--MOBILE NO
+MOBILE_1 IN char,
+-- SMS TO BE SENT
+UDF10_1 IN char,
+-- MODULE NO IN UDF1
+UDF1_1 IN char,
+--ANY DESCRIPTION
+UDF2_1 IN char)
+ is
+--
+-- To modify this template, edit file PROC.TXT in TEMPLATE
+-- directory of SQL Navigator
+--
+-- Purpose: Briefly explain the functionality of the procedure
+--
+-- MODIFICATION HISTORY
+-- Person      Date    Comments
+-- ---------   ------  -------------------------------------------
+--   variable_name                 datatype;
+   -- Declare program variables as shown above
+BEGIN
+
+INSERT INTO SMS_LIVE (TEMPLATE_ID,MOBILE,UDF10,INVDATE,UDF1,UDF2) VALUES('MANS',MOBILE_1,UDF10_1,to_char(sysdate,'dd/mm/rrrr hh24:mi:ss'),UDF1_1,UDF2_1);
+COMMIT;
+
+EXCEPTION
+    WHEN OTHERS THEN
+        NULL ;
+END; -- Procedure SEND_SMS
+*/
+/]]></n0:source>
+		</n0:createOracleProcedure>
+	</changeSet>
+</databaseChangeLog>

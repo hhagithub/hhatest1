@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="5615a648c3c828e169e0c2c0960bacc02a06efe9" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleProcedure objectName="IQ_PUSHJOBCARDS" objectType="PROCEDURE" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "HHA_PROD"."IQ_PUSHJOBCARDS" is
+token_string   varchar2(4000);
+l_reqBody      CLOB;
+l_response     CLOB;
+json_body      VARCHAR2(4000);
+l_Status       VARCHAR2(4000);
+
+begin
+
+FOR C IN (SELECT JM_JOB_NO,jm_location
+          FROM work_job_master
+          WHERE trunc(JM_JOB_DATE) = trunc(SYSDATE)-1 -- INTERVAL '200' MINUTE
+          and NVL(jm_status,88) = 1
+          and jm_location in ('229','521','481')
+          and JM_SUPL_CODE = '01'
+  --and jm_location in ('229')
+  --AND JM_JOB_NO = '481178987'
+  )
+LOOP
+
+--INSERT INTO IQ_JOBS(JOBNO) VALUES(C.JM_JOB_NO);
+--COMMIT;
+
+token_string := getIQtoken('https://hha'||c.jm_location||'.iq-motive.com:10004/api/Auth/login', c.jm_location);
+
+apex_web_service.g_request_headers.delete();
+apex_web_service.g_request_headers(1).name := 'Authorization';
+apex_web_service.g_request_headers(1).value := 'Bearer '||token_string;
+apex_web_service.g_request_headers(2).name := 'Content-Type';
+apex_web_service.g_request_headers(2).value := 'application/json; charset=utf-8';
+--apex_web_service.g_request_headers(3).name := 'Content-Length';
+--apex_web_service.g_request_headers(3).value := '';
+
+BEGIN
+
+declare temp number;
+begin
+select distinct 1 into temp
+from work_job_details ji
+where ji_job_no = c.jm_job_no;
+-----tasks found
+SELECT JOB INTO l_reqBody
+FROM
+(
+       SELECT JSON_OBJECT(
+            'appointmentref' is to_char(j.jm_appointment_no),
+            'dmsid'          is to_char(j.jm_job_no),
+            'woType'         is (select JT_TYPE_DESCRIPTION from work_job_type t where t.jt_job_type = j.jm_job_type),
+            'description'    is '',
+            'remarks'        is j.jm_remarks,
+            'vehicleId'      is j.jm_chassis_no,
+            'licensePlate'   is j.jm_plate_no,
+            'engineCode'     is (select distinct v.veh_type_desc from vehicle_stock v where chassis_no = j.jm_chassis_no and v.new_used_flag = 'N'),
+            'mileage'        is nvl(j.jm_speedometer_reading,0),
+            'carType'        is (select distinct m.fin_code from vehicle_stock v, models m where v.serial_no=m.mod_code and chassis_no = j.jm_chassis_no and v.new_used_flag = 'N'),
+            'yearOfBuild'    is Nvl((select nvl(v.vm_model_year,0) from work_vehicle_master v where v.vm_chassis_no = j.jm_chassis_no),0),
+            'preferedMechanic'     is '',
+            'preferedReceptionist' is j.jm_service_advisor,
+            'customerCity'         is j.jm_city,
+            'customerName'         is j.jm_customer_name,
+            'customerAddress'      is j.jm_customer_add1||j.jm_customer_add2,
+            'customerPhone'        is j.jm_mobile,
+            'tasks' VALUE (
+               SELECT JSON_ARRAYAGG(
+                      JSON_OBJECT(
+                         'duration' VALUE Round((floor(ji.STD_TIME)*60)+(mod(ji.STD_TIME,floor(ji.STD_TIME))*60),0),
+                         'code'     VALUE ji.ji_operation_id,
+                         'name'     VALUE ji.ji_operation_descr))
+                         from work_job_master jj , work_job_details ji
+                         where jj.jm_job_no = ji.ji_job_no(+)
+                         and NVL(jj.jm_status,88) = 1
+                         and jj.jm_job_no = c.jm_job_no
+                               )ABSENT ON NULL) job
+
+       FROM work_job_master j
+       WHERE j.jm_job_no = c.jm_job_no
+
+);
+exception when no_data_found then
+----tasks not found
+SELECT JOB INTO l_reqBody
+FROM
+(
+    SELECT REPLACE(JOB,'"tasks":null','"tasks":[]') AS JOB
+    FROM (
+            SELECT JSON_OBJECT
+            (
+            'appointmentref' is to_char(j.jm_appointment_no),
+            'dmsid'          is to_char(j.jm_job_no),
+            'woType'         is (select JT_TYPE_DESCRIPTION from work_job_type t where t.jt_job_type = j.jm_job_type),
+            'description'    is '',
+            'remarks'        is j.jm_remarks,
+            'vehicleId'      is j.jm_chassis_no,
+            'licensePlate'   is j.jm_plate_no,
+            'engineCode'     is (select distinct v.veh_type_desc from vehicle_stock v where chassis_no = j.jm_chassis_no and v.new_used_flag = 'N' AND ROWNUM = 1),
+            'mileage'        is nvl(j.jm_speedometer_reading,0),
+            'carType'        is (select distinct m.fin_code from vehicle_stock v, models m where v.serial_no=m.mod_code and chassis_no = j.jm_chassis_no and v.new_used_flag = 'N' AND ROWNUM = 1),
+            'yearOfBuild'    is Nvl((select nvl(v.vm_model_year,0) from work_vehicle_master v where v.vm_chassis_no = j.jm_chassis_no AND ROWNUM = 1),0),
+            'preferedMechanic'     is '',
+            'preferedReceptionist' is j.jm_service_advisor,
+            'customerCity'         is j.jm_city,
+            'customerName'         is j.jm_customer_name,
+            'customerAddress'      is j.jm_customer_add1||j.jm_customer_add2,
+            'customerPhone'        is j.jm_mobile,
+            'tasks'                is ''
+            --ABSENT ON NULL
+            ) AS JOB
+
+           FROM work_job_master j
+           WHERE j.jm_job_no = c.jm_job_no
+           and NVL(j.jm_status,88) = 1
+      )
+
+);
+end;
+
+
+json_body  := substr(l_reqBody, 1, 32767);
+
+l_response := apex_web_service.make_rest_request(p_url           => 'https://hha'||c.jm_location||'.iq-motive.com:10004/api/dms',
+                                                 p_http_method   => 'PUT',
+                                                 p_body          => to_clob(json_body),
+                                                 p_wallet_path   => 'file:/u01/app/oracle/product/12.2.0/dbhome_1/wallet',
+                                                 p_wallet_pwd    => 'welcome1'
+                                                );
+
+l_Status := apex_web_service.g_status_code;
+
+IF l_Status = '200' THEN
+   begin
+     update work_job_master w
+     set w.IQ_DATA_FLAG = 'Y'
+     where w.JM_JOB_NO = c.JM_JOB_NO;
+     commit;
+   end;
+END IF;
+--UPDATE IQ_JOBS SET STATUS = l_Status WHERE JOBNO = C.JM_JOB_NO;
+--COMMIT;
+
+/*
+IF l_Status = '200' THEN
+   RETURN '200-Success';
+ELSIF l_Status = '400' THEN
+   RETURN '409-Bad Request';
+ELSIF l_Status = '409' THEN
+   RETURN '409-Conflict';
+ELSIF l_Status = '500' THEN
+   RETURN '500-Internal Server Error';
+ELSE
+   RETURN 'Error: '||l_Status;
+END IF;
+
+EXCEPTION
+  WHEN NO_DATA_FOUND THEN
+  RETURN SQLERRM;
+  WHEN OTHERS THEN
+  RETURN SQLERRM;
+*/
+END;
+END LOOP;
+end;
+/]]></n0:source>
+		</n0:createOracleProcedure>
+	</changeSet>
+</databaseChangeLog>

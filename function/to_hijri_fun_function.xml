@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="fce1d438af3cba84b650f80c18119acf1b8b4f18" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="TO_HIJRI_FUN" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."TO_HIJRI_FUN" (gdate   date) RETURN VARCHAR2 AS
+HDATE VARCHAR2(100);
+BEGIN
+ SELECT LTRIM(TO_CHAR(HIJ_YEAR)||'/'||LTRIM(TO_CHAR(HIJ_MONTH,'00'))||'/'||
+        SUBSTR(TO_CHAR(TO_NUMBER(TO_CHAR(GDATE,'J')) -
+               TO_NUMBER(TO_CHAR(GREG_DATE,'J')) + 1, '00'),2,2))
+ INTO   HDATE
+ FROM   DATES
+ WHERE  GREG_DATE = (SELECT MAX(GREG_DATE)
+                       FROM DATES
+                      WHERE GREG_DATE <= GDATE);
+
+                      RETURN HDATE;
+END;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

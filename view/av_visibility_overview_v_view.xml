@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="a5dfb173a4673df7481e533f3e3efa8a499fd951" author="(HHA_PROD)-Generated"     >
+		<n0:createSxmlObject objectName="AV_VISIBILITY_OVERVIEW_V" objectType="VIEW" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  <VIEW xmlns="http://xmlns.oracle.com/ku" version="1.0">
+   <SCHEMA>HHA_PROD</SCHEMA>
+   <NAME>AV_VISIBILITY_OVERVIEW_V</NAME>
+   <COL_LIST>
+      <COL_LIST_ITEM>
+         <NAME>APP_ID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>APP_NAME</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>VISIBILTY_NAME</NAME>
+      </COL_LIST_ITEM>
+   </COL_LIST>
+   <SUBQUERY>select aaa.application_id            app_id
+      ,aaa.application_name          app_name
+      ,aaa.authorization_scheme_name visibilty_name
+from apex_application_authorization aaa
+union all
+select aa.application_id app_id
+      ,aa.application_name app_name
+      ,'condition' visibilty_name
+from apex_applications aa
+</SUBQUERY>
+</VIEW>]]></n0:source>
+		</n0:createSxmlObject>
+	</changeSet>
+</databaseChangeLog>

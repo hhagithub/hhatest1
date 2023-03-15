@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="bfd904a9c4260f075e0a2e01fffd39810f6eea8d" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleDbLink objectName="TO_APPHHA.HHA.LOCAL" objectType="DB_LINK" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE DATABASE LINK "TO_APPHHA.HHA.LOCAL"
+   CONNECT TO "APPHHA" IDENTIFIED BY VALUES ':1'
+   USING '(DESCRIPTION = (ADDRESS_LIST = (ADDRESS = (PROTOCOL = TCP)(HOST=hha-myhijaz6)(PORT=1521))) (CONNECT_DATA = (SID = myappi)))';]]></n0:source>
+		</n0:createOracleDbLink>
+	</changeSet>
+</databaseChangeLog>

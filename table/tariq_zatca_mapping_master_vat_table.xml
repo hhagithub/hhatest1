@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="2da84c087ab6f9d82dd269d1c77782822463507e" author="(HHA_PROD)-Generated"     >
+		<n0:createSxmlObject objectName="TARIQ_ZATCA_MAPPING_MASTER_VAT" objectType="TABLE" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  <TABLE xmlns="http://xmlns.oracle.com/ku" version="1.0">
+   <SCHEMA>HHA_PROD</SCHEMA>
+   <NAME>TARIQ_ZATCA_MAPPING_MASTER_VAT</NAME>
+   <RELATIONAL_TABLE>
+      <COL_LIST>
+         <COL_LIST_ITEM>
+            <NAME>INVOICE_NUMBER</NAME>
+            <DATATYPE>VARCHAR2</DATATYPE>
+            <LENGTH>20</LENGTH>
+         </COL_LIST_ITEM>
+         <COL_LIST_ITEM>
+            <NAME>VATCODE</NAME>
+            <DATATYPE>VARCHAR2</DATATYPE>
+            <LENGTH>10</LENGTH>
+         </COL_LIST_ITEM>
+         <COL_LIST_ITEM>
+            <NAME>VAT_TAXABLE_AMT</NAME>
+            <DATATYPE>NUMBER</DATATYPE>
+         </COL_LIST_ITEM>
+         <COL_LIST_ITEM>
+            <NAME>CURR_VAT_TAXABLE_AMT</NAME>
+            <DATATYPE>VARCHAR2</DATATYPE>
+            <LENGTH>20</LENGTH>
+         </COL_LIST_ITEM>
+         <COL_LIST_ITEM>
+            <NAME>VAT_CAT_TAX_AMT</NAME>
+            <DATATYPE>NUMBER</DATATYPE>
+         </COL_LIST_ITEM>
+         <COL_LIST_ITEM>
+            <NAME>CURR_VAT_CAT_TAX_AMT</NAME>
+            <DATATYPE>VARCHAR2</DATATYPE>
+            <LENGTH>20</LENGTH>
+         </COL_LIST_ITEM>
+         <COL_LIST_ITEM>
+            <NAME>VAT_CAT_CODE</NAME>
+            <DATATYPE>VARCHAR2</DATATYPE>
+            <LENGTH>20</LENGTH>
+         </COL_LIST_ITEM>
+         <COL_LIST_ITEM>
+            <NAME>VAT_CAT_RATE</NAME>
+            <DATATYPE>NUMBER</DATATYPE>
+         </COL_LIST_ITEM>
+         <COL_LIST_ITEM>
+            <NAME>TAX_EXEMPT_CODE</NAME>
+            <DATATYPE>VARCHAR2</DATATYPE>
+            <LENGTH>20</LENGTH>
+         </COL_LIST_ITEM>
+         <COL_LIST_ITEM>
+            <NAME>TAX_EXEMPT_REASON</NAME>
+            <DATATYPE>VARCHAR2</DATATYPE>
+            <LENGTH>200</LENGTH>
+         </COL_LIST_ITEM>
+      </COL_LIST>
+      <PHYSICAL_PROPERTIES>
+         <HEAP_TABLE>
+            <SEGMENT_ATTRIBUTES>
+               <SEGMENT_CREATION_DEFERRED></SEGMENT_CREATION_DEFERRED>
+               <PCTFREE>10</PCTFREE>
+               <PCTUSED>40</PCTUSED>
+               <INITRANS>1</INITRANS>
+               <TABLESPACE>USERS</TABLESPACE>
+               <LOGGING>Y</LOGGING>
+            </SEGMENT_ATTRIBUTES>
+            <COMPRESS>N</COMPRESS>
+         </HEAP_TABLE>
+      </PHYSICAL_PROPERTIES>
+   </RELATIONAL_TABLE>
+</TABLE>]]></n0:source>
+		</n0:createSxmlObject>
+	</changeSet>
+</databaseChangeLog>

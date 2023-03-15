@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="a6687e41b5364e53fcc8799dd4d49bb54b3ea295" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="R28_STDCASH" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."R28_STDCASH" (WJ_EMP_NO_ VARCHAR2,STARTTIME_ DATE,ENDTIME_ DATE) return number is
+--3 ext C hrs.
+--abcd number(10,2);
+abcd number;--varchar2(20);
+begin
+  select     round((nvl(Sum(wj_end_time-wj_start_time),0)*24),2 )     
+       
+       
+       /*
+          LPAD(floor(sum(((to_char(wj_end_time,'hh24')*60 +to_number(to_char(wj_end_time,'mi')))
+            -
+       (to_char(wj_start_time,'hh24')*60 + to_number(to_char(wj_start_time,'mi')))))/60),2,0)||':'||
+      LPAD(mod(sum(((to_char(wj_end_time,'hh24')*60 +to_number(to_char(wj_end_time,'mi')))
+            -
+       (to_char(wj_start_time,'hh24')*60 + to_number(to_char(wj_start_time,'mi'))))),60),2,0) 
+  */
+    into abcd
+    from work_job_time 
+   where wj_end_time is not null
+     --and WJ_OVER_TIME = '2'
+     and trunc(wj_start_time) BETWEEN  trunc(STARTTIME_) AND trunc(ENDTIME_)
+     and wj_emp_no = WJ_EMP_NO_
+     and WJ_OVER_TIME is not null
+     and WJ_JOB_TYPE  in('01','02','12','91','92')
+     AND TRUNC(WJ_START_TIME) = TRUNC(WJ_END_TIME);
+--group by trunc(wj_start_time),WJ_EMP_NO;
+return (abcd);
+exception when others then return null;
+
+end;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

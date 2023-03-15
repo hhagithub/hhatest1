@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="9c43f488f979007e4876bc91a9c7106e9f19be05" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleProcedure objectName="PROC_ASTON_MARTIN_INCENTIVE" objectType="PROCEDURE" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "HHA_PROD"."PROC_ASTON_MARTIN_INCENTIVE" (P_PERIOD VARCHAR2)
+IS
+ V_TOT_BUDGET_AMT NUMBER := 0;
+ V_TOT_TECH NUMBER := 0;
+ V_Target_60 NUMBER := 0;
+
+ V_NARRATION VARCHAR2(2000);
+BEGIN
+  FOR LOC IN (Select distinct WT_LOCATION,WT_EMP_NO from work_team_details  where WT_SECTION in ('01','02') AND  ASTON_MARTIN_FLAG = 'Y') LOOP
+      V_TOT_BUDGET_AMT := 0 ;
+      V_TOT_TECH := 0 ;
+      V_Target_60 := 0 ;
+    
+        SELECT round(WB_TOTAL_BUDGET/350) INTO V_TOT_BUDGET_AMT -- Total Busdget Amount -- A
+        FROM work_budget_amounts
+        WHERE WB_PERIOD = P_PERIOD  --'202104'
+        and WB_LOCATION = LOC.WT_LOCATION
+        and nvl(franchise,'99')  = '07';
+       -- and WB_SECTION = LOC.WT_SECTION;    ---ADD
+
+        SELECT count(*) INTO V_TOT_TECH ---- Total Number of Technicans
+        From work_team_details
+        WHERE WT_SECTION in ('01','02')
+        and WT_LOCATION = LOC.WT_LOCATION
+        AND  ASTON_MARTIN_FLAG = 'Y';
+        --AND WT_SECTION = LOC.WT_SECTION;   --ADD
+
+        V_Target_60 := round((V_TOT_BUDGET_AMT / V_TOT_TECH * 60 ) / 100,2) ;   --Formula Target 60%
+
+
+      V_NARRATION := V_NARRATION || ' (LOC:= '||LOC.WT_LOCATION || ')';
+      V_NARRATION := V_NARRATION || ' (EMP_NO:= '||LOC.WT_EMP_NO || ')';
+      V_NARRATION := V_NARRATION || ' (TOT_BUDGET_AMT:= '||V_TOT_BUDGET_AMT || ')';
+      V_NARRATION := V_NARRATION || ' (TOT_TECH:= '||V_TOT_TECH || ')';
+      V_NARRATION := V_NARRATION || ' (Target_60:= '||V_Target_60 || ')';
+        --FOR EP IN (SELECT WT_EMP_NO From work_team_details WHERE WT_SECTION in ('01','02') and WT_LOCATION = LOC.WT_LOCATION   and ASTON_MARTIN_FLAG = 'Y')
+          BEGIN
+            UPDATE work_prod_summery
+            SET PS_ASTON_TARGET_60 = V_Target_60 ,   --Formula Target 60%
+            PS_ASTON_TECH_ACHIEVED = round((PS_ALL_SOLD / V_Target_60) *100,2)  --V_PS_ASTON_TECH_ACHIEVED
+            WHERE  PS_LOCATION = LOC.WT_LOCATION
+            AND PS_MONTH_YEAR = (SELECT SUBSTR(P_PERIOD,5,2)||SUBSTR(P_PERIOD,1,4)  FROM DUAL)  ---CONVERT 202201 TO 012022;
+            AND PS_EMP_NO = LOC.WT_EMP_NO;   --ADD
+          EXCEPTION WHEN NO_DATA_FOUND THEN
+            NULL;
+            WHEN OTHERS THEN
+            NULL;
+          END;
+          
+          dbms_output.put_line('EMP_NO:='|| LOC.WT_EMP_NO ||'   Target_60:='|| V_Target_60  );
+  END LOOP;
+
+    commit;
+    dbms_output.put_line(' Procedure Successful ');
+EXCEPTION
+     WHEN others THEN
+  dbms_output.put_line(' SQL Error Msg='||SQLERRM);
+
+END;
+/]]></n0:source>
+		</n0:createOracleProcedure>
+	</changeSet>
+</databaseChangeLog>

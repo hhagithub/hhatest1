@@ -1,0 +1,2283 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="0524cb4e8cad83cc695030d7a9a030f32b8966a7" author="(HHA_PROD)-Generated"     >
+		<n0:createOraclePackageBody objectName="EBA_SB" objectType="PACKAGE_BODY" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE PACKAGE BODY "HHA_PROD"."EBA_SB" as
+    c_crlf              constant varchar2(2) := chr(13) || chr(10);
+    c_xml_datetime_fmt  constant varchar2(40) := 'YYYY-MM-DD"T"HH24:MI:SS.FFTZH:TZM';
+    -------------------------------------------------------------------------
+    -- Generates a unique Identifier
+    -------------------------------------------------------------------------
+    function gen_id
+        return number
+    is
+        l_id  number;
+    begin
+        select to_number(sys_guid(), 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
+          into l_id
+          from dual;
+    
+        return l_id;
+    end gen_id;
+    -------------------------------------------------------------------------
+    -- Gets the current user's authorization level. Depends on the following:
+    --  * If access control is currently disabled, returns highest level of 3.
+    --  * If access control is enabled, but user is not in list, returns 0
+    --  * If access control is enabled and user is in list, returns their
+    --    access level.
+    -------------------------------------------------------------------------
+    function get_authorization_level (
+        p_username             varchar2)
+        return number
+    is
+        l_access_level_id       eba_sb_users.access_level_id%type := 0;  -- default to lowest privilege.
+        l_account_locked        eba_sb_users.account_locked%type;
+    begin
+        -- If the user isn't authenticated, they have no privilege.
+        if not apex_authentication.is_authenticated then
+            return 0;
+        end if;
+        -- If access control is disabled, default to highest privilege
+        if eba_sb_fw.get_preference_value('ACCESS_CONTROL_ENABLED') = 'N' then
+            return 3;
+        else
+            -- Query for user's access level, throws no_data_found if no user
+            select access_level_id,
+                   account_locked
+              into l_access_level_id,
+                   l_account_locked
+              from eba_sb_users
+             where username = p_username;
+            -- Check if user's account is locked, return 0 (no privilege), otherwise stick
+            -- with their level.
+            if l_account_locked = 'Y' then
+                return 0;
+            end if;
+            -- Overwrite user access level 1 with access level 2 if access control scope is PUBLIC_CONTRIBUTE
+            if l_access_level_id = 1 and eba_sb_fw.get_preference_value('ACCESS_CONTROL_SCOPE') = 'PUBLIC_CONTRIBUTE' then
+                return 2;
+            end if;            
+        end if;
+        return l_access_level_id;
+    exception
+        when no_data_found then
+            -- If no user exists with passed username, do a final check if reader access is set to any authenticated user
+            if eba_sb_fw.get_preference_value('ACCESS_CONTROL_SCOPE') = 'PUBLIC_CONTRIBUTE' then
+                return 2;
+            elsif eba_sb_fw.get_preference_value('ACCESS_CONTROL_SCOPE') = 'PUBLIC_READONLY' then
+                return 1;
+            else
+                return 0;
+            end if;           
+    end get_authorization_level;
+    -------------------------------------------------------------------------
+    -- Return true if p_input is a number and false otherwise
+    -------------------------------------------------------------------------
+    function is_number(p_input varchar2)
+        return boolean
+    is
+      l_value number;
+    begin
+      l_value := to_number(p_input);
+      return true;
+    exception
+        when value_error then
+          return false;
+    end is_number;
+    -------------------------------------------------------------------------
+    -- Adds p_count survey responses for survey given by p_survey_id.
+    -- If p_email_addresses is not null then it is a list of email addresses
+    -- one per line and each one is associated with a response. The number
+    -- of email addresses overrides p_count.
+    -------------------------------------------------------------------------
+    procedure add_responses (
+        p_survey_id            number,
+        p_count                pls_integer,
+        p_email_addresses      varchar2)
+    is
+        l_count         number;
+        i               number;
+        l_random_id     varchar2(16);
+        l_email         varchar2(2000) := null;
+        l_addrs         apex_application_global.vc_arr2;
+    begin
+        i := 1;
+        l_count := p_count;
+        if p_email_addresses is not null then
+            l_addrs := apex_util.string_to_table(p_email_addresses, chr(13) || chr(10));
+            l_count := l_addrs.count;
+            -- last line may end with crlf
+            if l_addrs(l_addrs.count) is null then
+                l_count := l_count - 1;
+            end if;
+        end if;
+        <<for_each_response>>
+        while i <= l_count loop
+            begin
+                l_random_id := dbms_random.string('U', 16);
+                if p_email_addresses is not null then
+                    l_email := l_addrs(i);
+                end if;
+                insert into eba_sb_responses (id, survey_id, email_addr) values (l_random_id, p_survey_id, l_email);
+                i := i + 1;
+            exception
+                when dup_val_on_index then
+                    null; -- ignore the error and try again
+            end;
+        end loop for_each_response;
+        commit;
+    end add_responses;
+    -------------------------------------------------------------------------
+    -- Adds one response for survey given by p_survey_id and returns the 
+    -- added response id
+    -------------------------------------------------------------------------
+    function add_response (
+        p_survey_id            number)
+        return varchar2
+    is
+        i               number;
+        l_random_id     varchar2(16);
+    begin
+        i := 1;
+        while i <= 1 loop
+            begin
+                l_random_id := dbms_random.string('U', 16);
+                insert into eba_sb_responses (id, survey_id) values (l_random_id, p_survey_id);
+                i := i + 1;
+            exception
+                when dup_val_on_index then
+                    null; -- ignore the error and try again
+            end;
+        end loop;
+        return l_random_id;
+    end add_response;
+    -------------------------------------------------------------------------
+    -- Makes a copy of a questionnaire along with all of its sections, questions, 
+    -- and answers. The copy gets a new title. The new questionnaire can optionally
+    -- be attached to a survey. A new description is optional.
+    -- Returns the id of the new questionnaire
+    -------------------------------------------------------------------------
+    function copy_questionnaire(
+        p_questionnaire_id     number,
+        p_new_title            varchar2,
+        p_new_description      varchar2 default null,
+        p_new_lang             varchar2 default null,
+        p_dst_survey_id        number   default null,
+        p_survey_row_key       varchar2 default null )
+        return number
+    is
+        l_new_questionnaire_id number;
+        l_new_section_id       number;
+        l_new_question_id      number;
+        l_type                 eba_sb_questionnaires.type%type;
+        l_description          eba_sb_questionnaires.description%type;
+        l_lang                 eba_sb_questionnaires.lang%type;
+        l_prolog               eba_sb_questionnaires.prolog%type;
+        l_epilog               eba_sb_questionnaires.epilog%type;
+        l_finish_url           eba_sb_questionnaires.finish_url%type;
+        l_finish_label         eba_sb_questionnaires.finish_label%type;
+        l_navigation           eba_sb_questionnaires.navigation%type;
+        l_n_sections           eba_sb_questionnaires.number_sections%type;
+        l_n_questions          eba_sb_questionnaires.number_questions%type;
+        l_logo_url               eba_sb_questionnaires.logo_url%type;
+        l_logo_alt               eba_sb_questionnaires.logo_alt%type;
+        l_style_skin_name        eba_sb_questionnaires.style_skin_name%type;
+    begin
+        -- create new questionnaire
+        select type, description, lang, prolog, epilog, finish_url, finish_label, navigation, number_sections, number_questions, logo_url, logo_alt, style_skin_name
+            into l_type, l_description, l_lang, l_prolog, l_epilog, l_finish_url, l_finish_label, l_navigation, l_n_sections, l_n_questions, l_logo_url, l_logo_alt, l_style_skin_name
+            from eba_sb_questionnaires
+            where id = p_questionnaire_id;
+        if p_new_description is not null then
+            l_description := p_new_description;
+        end if;
+        if p_new_lang is not null then
+            l_lang := p_new_lang;
+        end if;
+        if p_dst_survey_id is not null then
+            l_type := 'NORMAL';
+        end if;
+        if l_type = 'NORMAL' and p_dst_survey_id is null then
+            l_type := 'TEMPLATE';
+        end if;
+        insert into eba_sb_questionnaires (survey_id, row_key, type, title, description, lang, prolog, epilog, finish_url,
+                finish_label, navigation, number_sections, number_questions, logo_url, logo_alt, style_skin_name)
+            values (p_dst_survey_id, p_survey_row_key, l_type, p_new_title, l_description, l_lang, l_prolog, l_epilog, l_finish_url,
+                l_finish_label, l_navigation, l_n_sections, l_n_questions, l_logo_url, l_logo_alt, l_style_skin_name)
+            returning id into l_new_questionnaire_id;
+        -- copy strings - copy from source quesstionnaire even if new lang is given?
+        insert into eba_sb_strings (lang_code, questionnaire_id, key, text)
+            select lang_code, l_new_questionnaire_id, key, text
+                from eba_sb_strings
+                where questionnaire_id = p_questionnaire_id;
+        -- copy each section
+        <<for_each_section>>
+        for cs in (select id, section_seq, title, notes, tags, prolog, epilog, skip_condition
+            from eba_sb_sections
+            where questionnaire_id = p_questionnaire_id)
+        loop
+            insert into eba_sb_sections (questionnaire_id, section_seq, title, notes, tags, prolog, epilog, skip_condition)
+                values (l_new_questionnaire_id, cs.section_seq, cs.title, cs.notes, cs.tags, cs.prolog, cs.epilog, cs.skip_condition)
+                returning id into l_new_section_id;
+            -- copy each question in section
+            <<for_each_question>>
+            for cq in (select id, question_number, question_seq, question, priority,
+                            exclude, category, type, na_label, other_label, min, max, required, skip_condition, tags
+                from eba_sb_questions
+                where questionnaire_id = p_questionnaire_id and section_id = cs.id)
+            loop
+                insert into eba_sb_questions (questionnaire_id, section_id, question_number, question_seq, question, priority,
+                            exclude, category, type, na_label, other_label, min, max, required, skip_condition, tags)
+                    values (l_new_questionnaire_id, l_new_section_id, cq.question_number, cq.question_seq, cq.question, cq.priority,
+                            cq.exclude, cq.category, cq.type, cq.na_label, cq.other_label, cq.min, cq.max, cq.required, cq.skip_condition, cq.tags)
+                    returning id into l_new_question_id;
+                -- copy answers
+                insert into eba_sb_answers(question_id, answer_seq, text, value, tags)
+                    select l_new_question_id, answer_seq, text, value, tags
+                    from eba_sb_answers
+                    where question_id = cq.id;
+            end loop for_each_question;
+        end loop for_each_section;
+        return l_new_questionnaire_id;
+    end copy_questionnaire;
+    -------------------------------------------------------------------------
+    -- Copies the questions given by the ids in p_questions array into the
+    -- questionnaire given by p_questionnaire_id at the given section, p_section_id.
+    -------------------------------------------------------------------------
+    procedure copy_questions(
+                p_questions         apex_application_global.vc_arr2,
+                p_questionnaire_id  number,
+                p_section_id        number)
+    is
+        l_src_question_id  number;
+        l_dst_question_id  number;
+        l_max_qn           number;
+        l_max_seq           number;
+        l_read_only        varchar2(1);
+    begin
+        select case 
+              when state is null then 'N'
+              when state = 'DESIGN' then 'N'
+              else 'Y'
+              end into l_read_only
+            from eba_sb_questionnaires q left outer join eba_sb_surveys s on s.id = q.survey_id 
+            where q.id = p_questionnaire_id;
+        if l_read_only = 'Y' then
+            raise_application_error(-20001, apex_lang.message('QE_V_READ_ONLY'));
+        end if;
+        select max(question_number) into l_max_qn
+            from eba_sb_questions where questionnaire_id = p_questionnaire_id;
+        select max(question_seq) into l_max_seq
+            from eba_sb_questions where questionnaire_id = p_questionnaire_id and
+                section_id = p_section_id;
+        for i in 1..p_questions.count loop
+            l_src_question_id := p_questions(i);
+            for cq in (select id, question_number, question, priority,
+                           exclude, category, type, na_label, other_label, min, max, required, skip_condition, tags
+                         from eba_sb_questions
+                         where id = l_src_question_id
+                         order by question_seq)
+            loop
+              insert into eba_sb_questions (questionnaire_id, section_id, question_number, question_seq, question, priority,
+                        exclude, category, type, na_label, other_label, min, max, required, skip_condition, tags)
+                values (p_questionnaire_id, p_section_id, l_max_qn + i, l_max_seq + (i * 10), cq.question, cq.priority,
+                        cq.exclude, cq.category, cq.type, cq.na_label, cq.other_label, cq.min, cq.max, cq.required, cq.skip_condition, cq.tags)
+                returning id into l_dst_question_id;
+            
+              -- copy answers
+              insert into eba_sb_answers(question_id, answer_seq, text, value, tags)
+                select l_dst_question_id, answer_seq, text, value, tags
+                  from eba_sb_answers
+                  where question_id = cq.id;
+            end loop;
+        end loop;
+    end copy_questions;
+    -------------------------------------------------------------------------
+    -- When a new language is created use this procedure
+    -- to initialize default strings for the given language.
+    -------------------------------------------------------------------------
+    procedure init_default_strings(
+        p_lang                 varchar2 default null)
+    is
+    begin
+        delete from eba_sb_strings where lang_code = p_lang;
+        insert into eba_sb_strings (lang_code, key) values (p_lang, 'JAVASCRIPT_REQUIRED');
+        insert into eba_sb_strings (lang_code, key) values (p_lang, 'CHECK_NA_CONFLICT');
+        insert into eba_sb_strings (lang_code, key) values (p_lang, 'CHECK_NUM_RANGE');
+        insert into eba_sb_strings (lang_code, key) values (p_lang, 'CHECK_NUM_MIN');
+        insert into eba_sb_strings (lang_code, key) values (p_lang, 'CHECK_NUM_MAX');
+        insert into eba_sb_strings (lang_code, key) values (p_lang, 'CHECK_NUM');
+        insert into eba_sb_strings (lang_code, key) values (p_lang, 'CHECK_CHOICE_RANGE');
+        insert into eba_sb_strings (lang_code, key) values (p_lang, 'CHECK_CHOICE_MIN');
+        insert into eba_sb_strings (lang_code, key) values (p_lang, 'CHECK_CHOICE_MAX');
+        insert into eba_sb_strings (lang_code, key) values (p_lang, 'CHECK_CHOICE_NUM');
+        insert into eba_sb_strings (lang_code, key) values (p_lang, 'CHECK_INPUT_LEN_MAX');
+        insert into eba_sb_strings (lang_code, key) values (p_lang, 'CHECK_INPUT_LEN_MIN');
+        insert into eba_sb_strings (lang_code, key) values (p_lang, 'CHECK_INPUT_LEN');
+        insert into eba_sb_strings (lang_code, key) values (p_lang, 'CHECK_SELECTION_REQUIRED');
+        insert into eba_sb_strings (lang_code, key) values (p_lang, 'CHECK_INPUT_REQUIRED');
+        insert into eba_sb_strings (lang_code, key) values (p_lang, 'CORRECT_ERRORS');
+        insert into eba_sb_strings (lang_code, key) values (p_lang, 'BTN_PREV');
+        insert into eba_sb_strings (lang_code, key) values (p_lang, 'BTN_NEXT');
+        insert into eba_sb_strings (lang_code, key) values (p_lang, 'BTN_SUBMIT');
+    end init_default_strings;
+    -------------------------------------------------------------------------
+    -- When a new questionnaire is created use this procedure
+    -- to initialize all the strings for the given language.
+    -------------------------------------------------------------------------
+    procedure init_questionnaire_strings(
+        p_questionnaire_id     number,
+        p_lang                 varchar2 default null)
+    is
+    begin
+        insert into eba_sb_strings (lang_code, questionnaire_id, key, text)
+            select lang_code, p_questionnaire_id, key, text
+                from eba_sb_strings
+                where questionnaire_id is null and lang_code = p_lang;
+    end init_questionnaire_strings;
+    -- local helpers
+    function encode(text varchar2)
+        return varchar2
+    is
+    begin
+        return apex_escape.html(text);
+    end encode;
+    function lookup_string(
+        p_questionnaire_id    number,
+        p_lang                varchar2,
+        p_key                 varchar2,
+        p_0                   varchar2 default null,
+        p_1                   varchar2 default null)
+        return varchar2
+    is
+        l_msg   varchar2(4000);
+    begin
+        for c1 in (select text 
+                    from eba_sb_strings
+                    where questionnaire_id = p_questionnaire_id and lang_code = p_lang and key = p_key)
+        loop
+             if instr(c1.text,'%') > 0 then
+                 l_msg := c1.text;
+                 l_msg := regexp_replace(l_msg, '([^%])%0', '\1' || encode(p_0));
+                 l_msg := regexp_replace(l_msg, '([^%])%1', '\1' || encode(p_1));
+                 l_msg := replace(l_msg, '%%', '%');
+                 return l_msg;
+             end if;
+             return c1.text;
+        end loop;
+        return encode(p_key);
+    end lookup_string;
+    -------------------------------------------------------------------------
+    -- Assign question ids (question_number) to each question starting
+    -- at 1 and increasing by 1 according to the question_seq
+    -- exclude questons are numbered last.
+    -- The intent is to have the question id (question_number) match
+    -- the number that would be displayed when the questionnare is filled
+    -- out and formating options number_sections = N and number_questions = Y
+    -------------------------------------------------------------------------
+    procedure reorder_question_ids(
+        p_questionnaire_id     number)
+    is
+        l_id      number := 1;
+        l_max   number;
+    begin
+        select max(question_number) into l_max
+            from eba_sb_questions
+            where questionnaire_id = p_questionnaire_id;
+        update eba_sb_questions
+            set question_number = l_max + question_number
+            where questionnaire_id = p_questionnaire_id;
+        for c1 in (
+            select q.id
+                from eba_sb_questions q, eba_sb_sections s
+                where q.section_id = s.id and q.questionnaire_id = p_questionnaire_id
+                order by decode(q.exclude, 'N', 1, 'Y', 2), s.section_seq, q.question_seq)
+        loop
+            update eba_sb_questions
+                set question_number = l_id 
+                where id = c1.id;
+            l_id := l_id + 1;
+        end loop;
+    end reorder_question_ids;
+    -------------------------------------------------------------------------
+    -- Generates HTML page for the survey questionnaire. This is the web page
+    -- that the survey participants (respondents) will fill out. It is a simple,
+    -- light weight, single page web app.
+    -------------------------------------------------------------------------
+    procedure render_questionnaire(
+        p_app_id               number,
+        p_questionnaire_id     number,
+        p_key                  varchar2)
+    is
+        l_q_id                 number;
+        l_survey_id            number;
+        l_survey_state         eba_sb_surveys.state%type := null;
+        l_title                eba_sb_questionnaires.title%type;
+        l_lang                 eba_sb_questionnaires.lang%type;
+        l_q_prolog             eba_sb_questionnaires.prolog%type;
+        l_q_epilog             eba_sb_questionnaires.epilog%type;
+        l_finish_label         eba_sb_questionnaires.finish_label%type;
+        l_finish_url           eba_sb_questionnaires.finish_label%type;
+        l_navigation           eba_sb_questionnaires.navigation%type;
+        l_n_sections           eba_sb_questionnaires.number_sections%type;
+        l_n_questions          eba_sb_questionnaires.number_questions%type;
+        l_logo_url             eba_sb_questionnaires.logo_url%type;
+        l_logo_alt             eba_sb_questionnaires.logo_alt%type;
+        l_style_skin_name      eba_sb_questionnaires.style_skin_name%type;
+        l_number_sections      boolean;
+        l_number_questions     boolean;
+        l_section_num          number := null;
+        l_question_num         number := 1;
+        l_answer_num           number := 1;
+        l_first_section        boolean := true;
+        l_question_text        varchar2(4100); -- leave room for auto numbering
+        l_text_size            number := 40;
+        l_id                   varchar2(200);
+        l_id_a                 varchar2(200);
+        l_name                 varchar2(200);
+        l_input_type           varchar2(20);
+        l_input_class          varchar2(20);
+        l_max                  number;
+        l_required             varchar2(200);
+        l_validation           varchar2(32767) := '';
+        l_css_text             varchar2(32767 char);
+        l_ndx1                 number;
+        l_ndx2                 number;
+        l_skip_src             varchar(255);
+        l_skip_op              varchar(4);
+        l_skip_answer          varchar(255);
+        type mapstr2str is table of varchar2(4000) index by varchar2(32);
+        l_skip_rules           mapstr2str;
+        l_rule_key             varchar(32);
+        l_inline               blob;
+        l_out                  clob;
+        l_blob                 blob;
+        l_warn                 integer;
+        l_src_offset           integer := 1;
+        l_dst_offset           integer := 1;
+        l_lang_ctx             integer := sys.dbms_lob.default_lang_ctx;
+        procedure write(text varchar2)
+        is
+            l_size number;
+        begin
+            l_size := length(text);
+            sys.dbms_lob.writeappend(l_out, l_size, text);
+        end;
+        procedure write(data blob)
+        is
+            l_warn                 integer;
+            l_src_offset           integer := 1;
+            l_dst_offset           integer := sys.dbms_lob.getlength(l_out);
+            l_lang_ctx             integer := sys.dbms_lob.default_lang_ctx;
+        begin
+            -- THINK should blob be opened and closed? like in blob_to_clob in flowu
+            -- THINK is default_csid the right way to convert to the default charset? blob_to_clob does it differently
+            sys.dbms_lob.converttoclob(l_out, data,
+                sys.dbms_lob.lobmaxsize, l_dst_offset, l_src_offset,
+                sys.dbms_lob.default_csid, l_lang_ctx, l_warn);
+        end;
+    begin
+        select id, survey_id, title, lang, prolog, epilog, number_sections, number_questions,
+                finish_label, finish_url, navigation, logo_url, logo_alt, style_skin_name
+            into l_q_id, l_survey_id, l_title, l_lang, l_q_prolog, l_q_epilog, l_n_sections, l_n_questions,
+                l_finish_label, l_finish_url, l_navigation, l_logo_url, l_logo_alt, l_style_skin_name
+            from eba_sb_questionnaires
+            where id = p_questionnaire_id;
+        l_number_sections := l_n_sections = 'Y';
+        l_number_questions := l_n_questions = 'Y';
+        if l_survey_id is not null then
+            select state into l_survey_state from eba_sb_surveys where id = l_survey_id;
+        end if;
+        -- init output buffer
+        sys.dbms_lob.createtemporary(l_out, false, sys.dbms_lob.session);
+        write('<!DOCTYPE html>' || c_crlf || '<html  class="' ||
+            l_style_skin_name || '" lang="' || encode(l_lang) || '">' || c_crlf || '<head>' ||
+            c_crlf || '<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">' ||
+            c_crlf || '<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">' ||
+            c_crlf || '<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">' ||
+            c_crlf || '<title>' || l_title || '</title>' || c_crlf);
+        write('<style type="text/css">' || c_crlf);
+        -- Exception handling required for APEX 5
+        begin
+            select blob_content into l_inline from apex_application_files where flow_id = p_app_id and filename = 'questionnaireInline.css';
+        exception
+            when no_data_found then
+                select file_content into l_inline from apex_application_static_files where application_id = p_app_id and file_name = 'questionnaireInline.css';
+        end;
+        if sys.dbms_lob.getlength(l_inline) < 32767 then
+            -- beware use of non-public APEX utility functions
+            l_css_text := wwv_flow_utilities.clob_to_varchar2(wwv_flow_utilities.blob_to_clob(l_inline));
+            l_css_text := replace(l_css_text, '#APP_IMAGES#', v('FLOW_IMAGES'));
+            write(l_css_text);
+        else
+            -- not likely or desired
+            write(l_inline);
+        end if;
+        -- Add skin css
+        begin
+            -- Exception handling required for APEX 5
+            begin
+                select blob_content into l_inline from apex_application_files where flow_id = p_app_id and filename = 'questionnaire_skin_' || l_style_skin_name || '.css';
+            exception
+                when no_data_found then
+                    select file_content into l_inline from apex_application_static_files where application_id = p_app_id and file_name = 'questionnaire_skin_' || l_style_skin_name || '.css';
+            end;
+            if sys.dbms_lob.getlength(l_inline) < 32767 then
+                -- beware use of non-public APEX utility functions
+                l_css_text := wwv_flow_utilities.clob_to_varchar2(wwv_flow_utilities.blob_to_clob(l_inline));
+                l_css_text := replace(l_css_text, '#APP_IMAGES#', v('FLOW_IMAGES'));
+                write(l_css_text);
+            end if;
+        exception when no_data_found then
+            wwv_flow.debug('Warning: Skin "' || l_style_skin_name || '" not found - ignored.');
+            l_style_skin_name := '';
+            null; -- ignore this
+        end;
+        write('</style>' || c_crlf);
+        write('</head><body>' || c_crlf ||
+            '<noscript>' || encode(lookup_string(p_questionnaire_id, l_lang, 'JAVASCRIPT_REQUIRED')) || '</noscript>' || c_crlf);
+        write('<div id="m" class="questionnaire' ||
+            case
+              when l_navigation = 'PAGE_SECTION' then ' paged'
+              when l_navigation = 'PAGE_QUESTION' then ' q_paged'
+              -- conditional navigation cases don't add a class because it is done in javascript
+              else '' end || '"><h1>');
+        if l_logo_url is not null then
+            write('<img src="' || l_logo_url || '" alt="' || l_logo_alt || '">');
+        end if;
+        write(l_title || '</h1>' || c_crlf);
+        if (l_navigation != 'PAGE_NONE') then
+            write('<div id="progress"><span id="progressLabel">0%</span><div></div></div>' || c_crlf);
+        end if;
+        write('<form id="f" method="post">' || c_crlf || '<div id="vp">' || c_crlf);
+        if l_q_prolog is not null then
+            -- prolog is trusted content
+            write('<div class="section prolog">' || l_q_prolog || '</div>' || c_crlf);
+        end if;
+        <<for_each_section>>
+        for cs in (
+            select id, title, epilog, prolog
+                from eba_sb_sections where questionnaire_id = l_q_id
+                order by section_seq)
+        loop
+            -- skip conditions for sections currently not supported
+            if cs.title is not null then
+                if not l_first_section then
+                   -- close previous section
+                    write('</div>' || c_crlf);
+                    l_section_num := l_section_num + 1;
+                end if;
+                write('<div class="section">');
+            else
+                if l_first_section then
+                    -- need to create the first section even if it has no title
+                    write('<div class="section">');
+                end if;
+            end if;
+            l_first_section := false;
+            if cs.title is not null then
+                if l_section_num is null then
+                    l_section_num := 1;
+                end if;
+                write('<h2>' || case l_number_sections when true then to_char(l_section_num) || '. ' end || encode(cs.title) || '</h2>' || c_crlf);
+                if l_number_sections then
+                    l_question_num := 1;
+                end if;
+            end if;
+            if cs.prolog is not null then
+                -- prolog is trusted content
+                write(cs.prolog || c_crlf);
+            end if;
+            write('<ul>' || c_crlf);
+            <<for_each_question>>
+            for cq in (select id, question_number, question, type, na_label, other_label, min, max, required, skip_condition
+                from eba_sb_questions
+                where questionnaire_id = l_q_id and section_id = cs.id and exclude = 'N'
+                order by question_seq)
+            loop
+                -- gather up validation data
+                l_validation := l_validation || '"' || to_char(cq.question_number) || '":{';
+                l_id := 'q' || to_char(cq.question_number);
+                l_question_text := encode(cq.question);
+                if cq.required = 'Y' then
+                    l_required := 'required aria-required="true" ';
+                    l_question_text := '<span class="required">*</span> ' || l_question_text;
+                    l_validation := l_validation || 'required:true,';
+                else
+                    l_required := '';
+                end if;
+                if l_number_questions then
+                    l_question_text := case when l_number_sections and l_section_num is not null then to_char(l_section_num) || '.' end || to_char(l_question_num) || '. ' || l_question_text;
+                end if;
+                if cq.min is not null then
+                    l_validation := l_validation || 'min:' || cq.min || ',';
+                end if;
+                if cq.max is not null then
+                    l_validation := l_validation || 'max:' || cq.max || ',';
+                end if;
+                -- skip conditions
+                if cq.skip_condition is not null then
+                    l_ndx1 := instr(cq.skip_condition, ' ', 1, 1);
+                    l_ndx2 := instr(cq.skip_condition, ' ', 1, 2);
+                    if l_ndx1 > 0 and l_ndx2 > 0 then
+                        l_skip_src := substr(cq.skip_condition, 1, l_ndx1 - 1);
+                        l_skip_op := substr(cq.skip_condition, l_ndx1 + 1, 2);
+                        l_skip_answer := substr(cq.skip_condition, l_ndx2 + 1);
+                        if not l_skip_rules.exists(l_skip_src) then
+                            l_skip_rules(l_skip_src) := 'function(value){' || c_crlf;
+                        end if;
+                        l_skip_rules(l_skip_src) := l_skip_rules(l_skip_src) ||
+                            'skipQuestionIf(' || cq.question_number || ',' || 
+                            case when l_skip_op = '==' then 'answerEqual' else 'answerNotEqual' end || '(value, "' || l_skip_answer || '"));' || c_crlf;
+                    end if;
+                end if;
+                l_validation := l_validation || 'type:"' || cq.type || '",';
+                if cq.type = 'MULTIPLE' and cq.na_label is not null then
+                    l_validation := l_validation || 'naMsg:"' || 
+                        apex_javascript.escape(lookup_string(p_questionnaire_id, l_lang, 'CHECK_NA_CONFLICT', cq.na_label)) || '",';
+                end if;
+                l_validation := l_validation || 'msg:"' || apex_javascript.escape(
+                    case 
+                    when cq.type = 'NUMBER' and cq.min is not null and cq.max is not null then
+                        lookup_string(p_questionnaire_id, l_lang, 'CHECK_NUM_RANGE', cq.min, cq.max)
+                    when cq.type = 'NUMBER' and cq.min is null and cq.max is not null then
+                        lookup_string(p_questionnaire_id, l_lang, 'CHECK_NUM_MAX', cq.max)
+                    when cq.type = 'NUMBER' and cq.min is not null and cq.max is null then
+                        lookup_string(p_questionnaire_id, l_lang, 'CHECK_NUM_MIN', cq.min)
+                    when cq.type = 'NUMBER' and cq.min is null and cq.max is null then
+                        lookup_string(p_questionnaire_id, l_lang, 'CHECK_NUM')
+                    when cq.type = 'MULTIPLE' and cq.max = cq.min then
+                        lookup_string(p_questionnaire_id, l_lang, 'CHECK_CHOICE_NUM', cq.min)
+                    when cq.type = 'MULTIPLE' and cq.min is not null and cq.max is not null then
+                        lookup_string(p_questionnaire_id, l_lang, 'CHECK_CHOICE_RANGE', cq.min, cq.max)
+                    when cq.type = 'MULTIPLE' and cq.min is null and cq.max is not null then
+                        lookup_string(p_questionnaire_id, l_lang, 'CHECK_CHOICE_MAX', cq.max)
+                    when cq.type = 'MULTIPLE' and cq.min is not null and cq.max is null then
+                        lookup_string(p_questionnaire_id, l_lang, 'CHECK_CHOICE_MIN', cq.min)
+                    when cq.type in ('TEXT', 'OPEN') and cq.max = cq.min then
+                        lookup_string(p_questionnaire_id, l_lang, 'CHECK_INPUT_LEN', cq.min)
+                    when cq.type in ('TEXT', 'OPEN') and cq.min is not null then
+                        lookup_string(p_questionnaire_id, l_lang, 'CHECK_INPUT_LEN_MIN', cq.min) -- there is no range for text because it is not that common and max should be enforced by the control
+                    when cq.type in ('TEXT', 'OPEN') and cq.min is null and cq.max is not null then
+                        lookup_string(p_questionnaire_id, l_lang, 'CHECK_INPUT_LEN_MAX', cq.max) -- this probably doesn't get used unless the length check on textarea is broken
+                    when cq.required = 'Y' and cq.type in ('RANGE', 'SINGLE', 'MULTIPLE') then
+                        lookup_string(p_questionnaire_id, l_lang, 'CHECK_SELECTION_REQUIRED')
+                    when cq.required = 'Y' then
+                        lookup_string(p_questionnaire_id, l_lang, 'CHECK_INPUT_REQUIRED')
+                    else
+                        ''
+                    end) || '"},' || c_crlf;
+                write('<li id="l' || to_char(cq.question_number) || '" class="question">');
+                if cq.type in ('RANGE', 'SINGLE', 'MULTIPLE') then
+                    write('<fieldset><legend>' || l_question_text || '</legend>' || c_crlf);
+                    write('<ul class="answers">' || c_crlf);
+                    l_answer_num := 1;
+                    l_name := l_id || 'a';
+                    if cq.type = 'MULTIPLE' then
+                        l_required := '';
+                    end if;
+                    <<for_each_answer>>
+                    for ca in (select text, value
+                        from eba_sb_answers
+                        where question_id = cq.id
+                        order by answer_seq)
+                    loop
+                        l_id_a := l_id || '_' || l_answer_num;
+                        l_input_type := case cq.type when 'MULTIPLE' then 'checkbox' else 'radio' || ' name="' || l_name || '"' end;
+                        l_input_class := case cq.type when 'MULTIPLE' then 'cb' else 'rb' end;
+                        write('<li><input type=' || l_input_type || ' id="' || l_id_a || '" class="' ||
+                            l_input_class || '" ' || l_required || 'value="' ||
+                            ca.value || '"><span class="icon ' || l_input_class || '"></span><label for="' || l_id_a || '">' || encode(ca.text) || '</label></li>' || c_crlf);
+                        l_answer_num := l_answer_num + 1;
+                    end loop for_each_answer;
+                    if cq.na_label is not null then
+                        l_input_type := case cq.type when 'MULTIPLE' then 'checkbox' else 'radio' || ' name="' || l_name || '"' end;
+                        l_input_class := case cq.type when 'MULTIPLE' then 'cb' else 'rb' end;
+                        write('<li><input type=' || l_input_type || ' id="' || l_id || '_na" class="' ||
+                            l_input_class || '" ' || l_required ||
+                            'value="0"><span class="icon ' || l_input_class || '"></span><label for="' || l_id || '_na">' || encode(cq.na_label) || '</label></li>' || c_crlf);
+                    end if;
+                    if cq.other_label is not null then
+                        write('<li>');
+                        if cq.type != 'MULTIPLE' then
+                            write('<input type=radio name="' || l_name || '" id="' || l_id || '_x" class="rb" ' || l_required ||
+                            'value=""><span class="icon rb"></span><label for="' || l_id || '_x" class="hideMeButHearMe">' || encode(cq.other_label) || '</label>');
+                        end if;
+                        write('<label for="' || l_id || '_other">' || encode(cq.other_label) || '</label>' || c_crlf);
+                        write('<input type=text class="tf" id="' || l_id ||'_other" maxlength=4000 size=' || l_text_size || ' autocomplete="off" value="">');
+                        write('</li>' || c_crlf);
+                    end if;
+                    write('</ul></fieldset>' || c_crlf);
+                else
+                    write('<p><label for="' || l_id || '">' || l_question_text || '</label></p>' || c_crlf);
+                    if cq.max is null then
+                        l_max := 4000;
+                    else
+                        l_max := cq.max;
+                    end if;
+                    case cq.type
+                    when 'OPEN' then
+                        write('<textarea id="' || l_id ||'" ' || l_required || 'maxlength=' || to_char(l_max) ||' cols=40 rows=4></textarea><span class="lenCounter"></span>');
+                    when 'NUMBER' then
+                        write('<input type=text id="' || l_id ||'" class="tf" ' || l_required || 'size=10 autocomplete="off"  value="">');
+                    when 'TEXT' then
+                        write('<input type=text id="' || l_id ||'" class="tf" ' || l_required || 'maxlength=' || to_char(l_max) ||' size=' || l_text_size || ' autocomplete="off" value="">');
+                    end case;
+                end if;
+                write('</li>' || c_crlf);
+                l_question_num := l_question_num + 1;
+            end loop for_each_question;
+            write('</ul>' || c_crlf);
+            if cs.epilog is not null then
+                -- epilog is trusted content
+                write(cs.epilog);
+            end if;
+        end loop for_each_section;
+       -- close last section
+        write('</div>' || c_crlf);
+        write('</div><div id="nav" style="display:none;">');
+        if (l_navigation != 'PAGE_NONE') then
+            write('<button id="prev" type="button"><span><span class="icon larrow"></span>' || lookup_string(p_questionnaire_id, l_lang, 'BTN_PREV') || '</span></button>' ||
+                '<button id="next" class="hot" type="button"><span>' || lookup_string(p_questionnaire_id, l_lang, 'BTN_NEXT') || '<span class="icon rarrow"></span></span></button>');
+        end if;
+        write('<button id="submit" class="hot" type="button"><span>' || lookup_string(p_questionnaire_id, l_lang, 'BTN_SUBMIT') || '</span></button>' ||
+            c_crlf || '</div>' || c_crlf);
+        if l_q_epilog is not null or (l_finish_label is not null and l_finish_url is not null) then
+            -- epilog is trusted content
+            write('<div id="done" class="section epilogue">' || l_q_epilog || c_crlf);
+            if l_finish_label is not null and l_finish_url is not null then
+                write('<div id="finish"><a href="' || encode(l_finish_url) || '">' || encode(l_finish_label) || '</a></div>' || c_crlf);
+            end if;
+            write('</div>' || c_crlf);
+        end if;
+        write('</form></div><script>' || c_crlf);
+        if length(l_validation) > 1 then
+            -- substr is to get rid of trailing ,CRLF
+            write('var validations = {' || c_crlf || substr(l_validation, 1, length(l_validation) - 3) || '};' || c_crlf);
+            write('var validationMsg = "' || 
+                -- apex_javascript.escape is too aggressive about escaping so need this special case for \n
+                replace(apex_javascript.escape(lookup_string(p_questionnaire_id, l_lang, 'CORRECT_ERRORS')), '\u005Cn', '\n') || '";' || c_crlf);
+        end if;
+        write('var navType = "' || l_navigation || '";' || c_crlf);
+        write('var finishURL = ' || case when l_finish_url is not null then '"' || l_finish_url || '"' else 'null' end || ';' || c_crlf);
+        write('var skipRules = {' || c_crlf);
+        -- add rules
+        l_rule_key := l_skip_rules.first;
+        while l_rule_key is not null loop
+            write('  "' || l_rule_key || '": ' || l_skip_rules(l_rule_key) || '}');
+            if l_rule_key != l_skip_rules.last then
+                write(',' || c_crlf);
+            end if;
+            l_rule_key := l_skip_rules.next(l_rule_key);
+        end loop;
+        write('};' || c_crlf);
+        -- Exception handling required for APEX 5
+        begin
+            select blob_content into l_inline from apex_application_files where flow_id = p_app_id and filename = 'questionnaireInline.js';
+        exception
+            when no_data_found then
+                select file_content into l_inline from apex_application_static_files where application_id = p_app_id and file_name = 'questionnaireInline.js';
+        end;
+        write(l_inline);
+        write('</script>' || c_crlf);
+        write('</body></html>' || c_crlf);
+        -- persist the page
+        sys.dbms_lob.createtemporary(l_blob, false, sys.dbms_lob.session);
+        sys.dbms_lob.converttoblob(l_blob, l_out, sys.dbms_lob.lobmaxsize,
+            l_dst_offset, l_src_offset, NLS_CHARSET_ID('UTF8'), l_lang_ctx, l_warn);
+        delete from eba_sb_pages where key = p_key;
+        insert into eba_sb_pages (key, questionnaire_id, last_updated, page_content)
+          values (p_key, l_q_id, current_timestamp, l_blob);
+        sys.dbms_lob.freetemporary(l_out);
+        sys.dbms_lob.freetemporary(l_blob);
+    end render_questionnaire;
+    -------------------------------------------------------------------------
+    -- Generates HTML for a readonly view of the questionnaire
+    -- optionally displaying results for a specific response
+    -- excluded questions are not shown
+    -------------------------------------------------------------------------
+    procedure show_questions_ro(
+        p_questionnaire_id          number, 
+        p_response_id               varchar2 default null,
+        p_include_question_numbers  boolean default false,
+        p_include_ids               boolean default false)
+    is
+        l_q_id                 number;
+        l_title                eba_sb_questionnaires.title%type;
+        l_lang                 eba_sb_questionnaires.lang%type;
+        l_class                varchar2(20);
+        l_last_level           number := 0;
+        l_label                varchar2(4000);
+        l_special_answers      varchar2(4000);
+        l_untitled_section     varchar2(1000) := apex_lang.message('QE_UNTITLED_SECTION');
+        l_question_answers     varchar2(4000);
+        l_question_answer_text varchar2(4000);
+        l_question_number      number := 1; -- the order not the id
+    begin
+        begin
+            select id, title, lang into l_q_id, l_title, l_lang
+            from eba_sb_questionnaires
+            where id = p_questionnaire_id;
+        exception when no_data_found then
+            sys.htp.prn(apex_lang.message('NO_SURVEY_DATA'));
+            return;
+        end;
+        -- TODO consider adding expand collapse support?
+        sys.htp.prn('<div id="questionnaire" lang="' || l_lang || '"><ul><li class="questionnaire">' || encode(l_title) || '</li>');
+        for c1 in (
+            select id, label, ntype, seq, pid, value, other, na, qtype, level from (
+                (select s.id id, s.title label, 's' ntype, s.section_seq seq, null pid, null value, null other, null na, null qtype
+                    from eba_sb_sections s where s.questionnaire_id = l_q_id)
+                union
+                (select q.id id, q.question label, 'q' ntype, q.question_seq seq, q.section_id pid, question_number value, other_label other, na_label na, type qtype
+                    from eba_sb_questions q where q.questionnaire_id = l_q_id and q.exclude = 'N')
+                union
+                (select a.id id, a.text label, 'a' ntype, a.answer_seq seq, a.question_id pid, value, null other, null na, null qtype
+                    from eba_sb_answers a join eba_sb_questions q2 on a.question_id = q2.id where q2.questionnaire_id = l_q_id)
+                )
+                connect by nocycle prior id = pid
+                start with pid is null
+                order siblings by seq asc
+            ) loop
+            if l_last_level < c1.level then
+                sys.htp.prn('<ul>');
+            elsif l_last_level > c1.level then
+                if l_special_answers is not null then
+                    sys.htp.prn(l_special_answers);
+                    l_special_answers := '';
+                end if;
+                if l_last_level - 1 > c1.level then
+                    sys.htp.prn('</ul>');
+                end if;
+                sys.htp.prn('</ul>');
+            elsif c1.level = 2 and l_special_answers is not null then
+                -- this is a rare case where there are other or na choices but no other answers
+                sys.htp.prn('<ul>' || l_special_answers || '</ul>');
+                l_special_answers := '';
+            end if;
+            l_class :=
+                case c1.ntype
+                when 's' then 'section'
+                when 'q' then 'question'
+                when 'a' then 'answer'
+                end;
+            l_label := encode(c1.label);
+            if c1.ntype = 'q' and p_include_question_numbers then
+                l_label := '<span class="question_number">Q' || l_question_number || '.</span> ' || l_label;
+                l_question_number := l_question_number + 1;
+            end if;
+            if p_include_ids and c1.value is not null then
+                l_label := l_label || ' <span class="label_num">(' || encode(c1.value) || ')</span>';
+            end if;
+            if p_response_id is not null then
+                if c1.ntype = 'q' then
+                    l_question_answers := ':';
+                    l_question_answer_text := '';
+                    for c2 in (
+                          select to_char(value) value, value_text
+                            from eba_sb_question_responses
+                            where response_id = p_response_id and question_number = c1.value
+                    ) loop
+                        if c2.value_text is not null then
+                            l_question_answer_text := c2.value_text;
+                        end if;
+                        if c2.value is not null then
+                            if c1.qtype = 'NUMBER' then
+                                -- treat it like a text input
+                                l_question_answer_text := c2.value;
+                            else
+                                l_question_answers := l_question_answers || c2.value || ':';
+                            end if;
+                        end if;
+                    end loop;
+                    if c1.qtype in ('OPEN', 'TEXT', 'NUMBER') and l_question_answer_text is not null then
+                        l_label := l_label || ' <span class="selected' || 
+                                    case when c1.qtype = 'OPEN' then ' open_response' else '' end || 
+                                    '">' || encode(l_question_answer_text) || '</span>';
+                    end if;
+                    l_special_answers := '';
+                    if c1.na is not null then
+                        l_special_answers := l_special_answers || '<li class="answer' ||
+                            case when instr(l_question_answers, ':0:') > 0 then
+                                ' selected'
+                            else
+                                ''
+                            end ||
+                            '">' || c1.na || '</li>' || c_crlf;
+                    end if;
+                    if c1.other is not null then
+                        l_special_answers := l_special_answers || '<li class="answer">' || 
+                            c1.other || case
+                            when l_question_answer_text is not null then
+                                ' <span class="selected">' || encode(l_question_answer_text) || '</span>'
+                            else ''
+                            end || '</li>' || c_crlf;
+                    end if;
+                end if;
+                if c1.ntype = 'a' then
+                    if instr(l_question_answers, ':' || c1.value ||':') > 0 then
+                        l_class := l_class || ' selected';
+                    end if;
+                end if;
+            end if;
+            if l_label is null and c1.ntype = 's' then
+                l_label := l_untitled_section;
+            end if;
+            sys.htp.prn('<li class="' || l_class || '">' || l_label || '</li>' || c_crlf);
+            l_last_level := c1.level;
+        end loop;
+        if l_last_level > 1 then
+            if l_special_answers is not null then
+                sys.htp.prn(l_special_answers);
+                l_special_answers := '';
+            end if;
+            if l_last_level - 1 > 1 then
+                sys.htp.prn('</ul>');
+            end if;
+            sys.htp.prn('</ul>');
+        elsif l_special_answers is not null then
+            -- this is a rare case where there are other or na choices but no other answers
+            sys.htp.prn('<ul>' || l_special_answers || '</ul>');
+            l_special_answers := '';
+        end if;
+        sys.htp.prn('</ul></ul></div>');
+    end show_questions_ro;
+    -------------------------------------------------------------------------
+    -- Generates HTML for an editiable view of the questionnaire
+    -------------------------------------------------------------------------
+    procedure show_questions(
+        p_questionnaire_id     number)
+    is
+        l_q_id                 number;
+        l_q_ver                eba_sb_questionnaires.row_version_number%type;
+        l_title                eba_sb_questionnaires.title%type;
+        l_lang                 eba_sb_questionnaires.lang%type;
+        l_class                varchar2(200);
+        l_last_level           number := 0;
+        l_label                varchar2(4000);
+        l_msg_add_question     varchar2(1000) := apex_lang.message('QE_MSG_ADD_QUESTION');
+        l_msg_add_section      varchar2(1000) := apex_lang.message('QE_MSG_ADD_SECTION');
+        l_untitled_section     varchar2(1000) := apex_lang.message('QE_UNTITLED_SECTION');
+        l_btn_move_down        varchar2(1000) := apex_lang.message('QE_BTN_MOVE_DOWN');
+        l_btn_move_up          varchar2(1000) := apex_lang.message('QE_BTN_MOVE_UP');
+        l_btn_delete           varchar2(1000) := apex_lang.message('QE_BTN_DELETE');
+        l_btn_edit             varchar2(1000) := apex_lang.message('QE_BTN_EDIT');
+        l_btn_disclose         varchar2(1000) := apex_lang.message('QE_BTN_DISCLOSE');
+        l_dialog_close         varchar2(1000) := apex_lang.message('QE_DIALOG_CLOSE');
+        l_dialog_leaving       varchar2(1000) := apex_lang.message('QE_DIALOG_LEAVING');
+        l_disclose_btn varchar2(1000) :=
+            '<button class="disclose" type="button" title="' || l_btn_disclose || '"><span class="hideMeButHearMe">' || l_btn_disclose || '</span></button>';
+        l_ctrls varchar2(2000) := '<span class="ctrls">' ||
+            '<button type="button" class="edit" title="' || l_btn_edit || '"><span class="icon edit"></span><span class="hideMeButHearMe">' || l_btn_edit || '</span></button>' ||
+            '<button type="button" class="delete" title="' || l_btn_delete || '"><span class="icon delete"></span><span class="hideMeButHearMe">' || l_btn_delete || '</span></button>' ||
+            '<button type="button" class="up" title="' || l_btn_move_up || '"><span class="icon up"></span><span class="hideMeButHearMe">' || l_btn_move_up || '</span></button>' ||
+            '<button type="button" class="down" title="' || l_btn_move_down || '"><span class="icon down"></span><span class="hideMeButHearMe">' || l_btn_move_down || '</span></button>' ||
+            '</span>';
+    begin
+        begin
+            select id, row_version_number, title, lang into l_q_id, l_q_ver, l_title, l_lang
+              from eba_sb_questionnaires
+              where id = p_questionnaire_id;
+        exception when no_data_found then
+          sys.htp.prn(apex_lang.message('NO_SURVEY_DATA'));
+          return;
+        end;
+        sys.htp.prn('<div id="questionnaireTemplate" style="display: none"><ul>');
+        sys.htp.prn('<li id="qq0" class="x" data-ntype="x" data-seq="0" data-ver="1"><div class="row">');
+        sys.htp.prn('<span class="leaf"></span>');
+        sys.htp.prn('<span class="label"></span>' || l_ctrls || '</div></li>');
+        sys.htp.prn('</ul></div>');
+        sys.htp.prn('<div id="questionnaire" lang="' || l_lang || '"><ul><li id="qr' || l_q_id ||
+            '" class="questionnaire" data-ntype="r" data-ver="' || l_q_ver || '"><div class="row selected">' ||
+            '<span class="label">' || encode(l_title) || '</span><span class="ctrls">' ||
+            '<button type="button" class="edit" title="Edit"><span class="icon edit"></span><span class="hideMeButHearMe">Edit</span></button>' ||
+            '</span></div>');
+        for c1 in (
+            select id, ver, label, ntype, seq, qtype, exclude, priority, num, pid, level, connect_by_isleaf from (
+                (select s.id id, s.row_version_number ver, s.title label, 's' ntype, s.section_seq seq,
+                        null qtype, null exclude, null priority, null num, null pid
+                    from eba_sb_sections s where s.questionnaire_id = l_q_id)
+                union
+                (select q.id id, q.row_version_number ver, q.question label, 'q' ntype, q.question_seq seq,
+                        q.type qtype, q.exclude, q.priority, q.question_number num, q.section_id pid
+                    from eba_sb_questions q where q.questionnaire_id = l_q_id)
+                union
+                (select a.id id, a.row_version_number ver, a.text label, 'a' ntype, a.answer_seq seq,
+                        null qtype, null exclude, null priority, a.value num, a.question_id pid
+                    from eba_sb_answers a join eba_sb_questions q2 on a.question_id = q2.id where q2.questionnaire_id = l_q_id)
+                )
+                connect by nocycle prior id = pid
+                start with pid is null
+                order siblings by seq asc
+            ) loop
+            if l_last_level < c1.level then
+                sys.htp.prn('<ul>');
+            elsif l_last_level > c1.level then
+                sys.htp.prn('</ul></li>');
+                if l_last_level - 1 > c1.level then
+                    sys.htp.prn('</ul></li>');
+                end if;
+            end if;
+            l_class :=
+                case c1.ntype
+                when 's' then 'section'
+                when 'q' then 'question'
+                when 'a' then 'answer'
+                end;
+            if c1.exclude = 'Y' then
+                l_class := l_class || ' exclude';
+            end if;
+            l_label := c1.label;
+            if l_label is null and c1.ntype = 's' then
+                l_label := l_untitled_section;
+            end if;
+            if c1.num is not null then
+              l_label := encode(l_label) || ' <span class="label_num">(' || c1.num || ')</span>';
+            end if;
+            sys.htp.prn('<li id="q' || c1.ntype || c1.id || '" class="' || l_class || '" data-ntype="' || c1.ntype ||
+                '" data-seq="' || c1.seq || '" data-ver="' || c1.ver || '"');
+            if c1.ntype = 'a' then
+                sys.htp.prn(' data-value="' || c1.num || '"');
+            end if;
+            sys.htp.prn('><div class="row">');
+            if (c1.ntype = 's' or (c1.ntype = 'q' and (c1.qtype = 'MULTIPLE' or c1.qtype = 'SINGLE' or c1.qtype = 'RANGE'))) and c1.connect_by_isleaf = 0 then
+                sys.htp.prn(l_disclose_btn);
+            else
+                sys.htp.prn('<span class="leaf"></span>');
+            end if;
+            sys.htp.prn('<span class="label' || 
+                case when c1.label is null and c1.ntype = 's' then ' untitled' else null end || '">' || 
+                l_label || '</span>' || l_ctrls || '</div>');
+            l_last_level := c1.level;
+        end loop;
+        while l_last_level > 1 loop
+            sys.htp.prn('</ul></li>');
+            l_last_level := l_last_level - 1;
+        end loop;
+        sys.htp.prn('</ul></li></ul></div>');
+        sys.htp.prn('<script type="text/javascript">
+var g_disclose_label="' || l_btn_disclose || '",
+  g_add_section_msg="' || l_msg_add_section || '",
+  g_add_question_msg="' || l_msg_add_question || '",
+  g_untitled_section_label="' || l_untitled_section || '",
+  g_dialog_close="' || l_dialog_close || '",
+  g_dialog_leaving="' || l_dialog_leaving || '";
+</script>');
+    end show_questions;
+    -------------------------------------------------------------------------
+    -- Used to format email messages
+    -- On input
+    --   p_message is the HTML email message
+    --   p_plain_message is not used
+    -- On output
+    --   p_message is wrapped with html, head and body tags if it doesn't 
+    --   already have a body tag
+    --   p_plain_message is a plain text copy of p_message with tags removed and break (br)
+    --   and closing paragraph tags replaced with new lines.
+    --   both have the #URL# token replaced with the survey URL p_url
+    -------------------------------------------------------------------------
+    procedure format_message_bodys(
+        p_message in out nocopy varchar2,
+        p_plain_message in out nocopy varchar2,
+        p_url in varchar2 default null)
+    is
+        l_index number;
+        l_legal varchar2(4000) := eba_sb_fw.get_preference_value('EMAIL_FOOTER');
+    begin
+        -- substitute the survey url if any
+        if p_url is not null then
+            p_message := replace(p_message, '#URL#', p_url);
+        end if;
+        -- Add in the legal footer text if provided.
+        if l_legal != 'N/A' then
+            p_message := p_message||'<br>'||l_legal;
+        end if;
+        
+        -- turn the message into a plain text message for non HTML enabled mail readers
+        p_plain_message := p_message;
+        l_index := regexp_instr(p_plain_message, '<body', 1, 1, 0, 'i');
+        if l_index > 0 then
+            p_plain_message := substr(p_plain_message, l_index);
+        end if;
+        l_index := regexp_instr(p_plain_message, '</body', 1, 1, 0, 'i');
+        if l_index > 0 then
+            p_plain_message := substr(p_plain_message, 1, l_index - 1);
+        end if;
+        -- remove tags and replace breaks and paragraph endings with a new line
+        p_plain_message := regexp_replace(p_plain_message, '<br[^>]*>|</p>', chr(13) || chr(10), 1, 0, 'i');
+        p_plain_message := regexp_replace(p_plain_message, '<[^>]*>', '', 1, 0, 'i');
+        -- wrap the message if needed
+        if regexp_instr(p_message, '<body', 1, 1, 0, 'i') = 0 then
+            p_message := '<html><head></head><body>' || p_message || '</body></html>';
+        end if;
+    end format_message_bodys;
+    -------------------------------------------------------------------------
+    -- Repeating scheduled procedure to manage survey state transitions
+    -- and email sending
+    -------------------------------------------------------------------------
+    procedure survey_job(
+        p_ws_id in number default null,
+        p_app_id in varchar2,
+        p_email_only in boolean default false)
+    is
+        l_from                 varchar2(2000);
+        l_reply_to             varchar2(2000);
+        l_email_id             number;
+        l_respondent_id        number;
+        l_base_date            date;
+        l_message              varchar2(32767 char);
+        l_plain_message        varchar2(32767 char);
+        l_questionnaire_key    eba_sb_questionnaires.row_key%type;
+        l_url                  varchar2(2000);
+    begin
+        if p_ws_id is not null then
+            apex_util.set_security_group_id(p_security_group_id => p_ws_id);
+        end if;
+        if not p_email_only then
+            -- check for transition survey to complete
+            for c1 in (
+                select s.id, s.auto_complete
+                    from eba_sb_surveys s,
+                        (select survey_id, count(*) total_responses, count(completed_date) completed_responses
+                            from eba_sb_responses
+                            group by survey_id) r
+                    where r.survey_id = s.id and
+                        s.state = 'ACTIVE' and (s.target_date is not null or s.target_percent is not null) and
+                        (s.target_date <= current_timestamp or s.target_percent <= round((r.completed_responses / r.total_responses) * 100, 0))
+                ) loop
+                if c1.auto_complete = 'Y' then
+                    update eba_sb_surveys set state = 'COMPLETE', completed_date = current_timestamp where id = c1.id;
+                    commit;
+                    -- TODO else consider adding a notification
+                end if;
+            end loop;
+        end if;
+        -- check for emails to send
+        l_reply_to := eba_sb_fw.get_preference_value('EMAIL_REPLY_TO');
+        l_from := eba_sb_fw.get_preference_value('EMAIL_FROM');
+        if l_from = 'none' then
+            -- sending email is not configured
+            return;
+        end if;
+        if l_reply_to = 'none' then
+            l_reply_to := null;
+        end if;
+        -- look for responses that may need email sent
+        for c2 in (select r.id, r.survey_id, r.email_addr, r.completed_date, s.start_date,
+                        case when r.request_email_sent is null then 'REQUEST'
+                             when r.request_email_sent is not null and r.completed_date is null and r.reminder_email_sent is null then 'REMINDER'
+                             when r.completed_date is not null and r.thanks_email_sent is null then 'THANKS'
+                        end email_type
+                    from eba_sb_responses r, eba_sb_surveys s
+                    where r.survey_id = s.id and s.state in ('TEST', 'ACTIVE') and r.email_addr is not null
+                        and (r.request_email_sent is null or
+                            (r.request_email_sent is not null and r.completed_date is null and r.reminder_email_sent is null) or
+                            (r.completed_date is not null and r.thanks_email_sent is null))
+            ) loop
+            l_base_date := case when c2.completed_date is not null then c2.completed_date when c2.start_date is not null then c2.start_date else current_timestamp end;
+            -- look for an email to send
+            for c3 in (select id, subject, message
+                        from eba_sb_emails
+                        where survey_id = c2.survey_id and type = c2.email_type and current_timestamp >= l_base_date + send_after_days and is_current = 'Y'
+                ) loop
+                begin
+                    select row_key into l_questionnaire_key from eba_sb_questionnaires where survey_id = c2.survey_id;
+                    begin
+                        select id into l_respondent_id from eba_sb_respondents where upper(email) = upper(c2.email_addr);
+                    exception
+                        when no_data_found then
+                            l_respondent_id := null;
+                    end;
+                    l_url := wwv_flow_mail.get_instance_url() || 'f?p=' || p_app_id || ':Q::' || l_questionnaire_key || ':::code:' || c2.id;
+                    -- beware use of non-public APEX utility functions
+                    l_message := wwv_flow_utilities.clob_to_varchar2(c3.message);
+                    -- The #RESPONDENT_ID# replacement below is used for the opt out link and will occur when the email was queued from 
+                    -- the correspondence method of sending emails.
+                    -- Thank You and Reminder Emails are the only types that are sent via this job from the correspondence method
+                    l_message := replace(l_message, '#RESPONDENT_ID#', l_respondent_id);
+                    l_plain_message := l_message;
+                    format_message_bodys(l_message, l_plain_message, l_url);
+    
+                    -- Send the email
+                    l_email_id := apex_mail.send(
+                        p_to        => c2.email_addr,
+                        p_from      => l_from,
+                        p_subj      => c3.subject,
+                        p_body      => l_plain_message,
+                        p_body_html => l_message,
+                        p_replyto   => l_reply_to
+                    );
+                    case c2.email_type
+                    when 'REQUEST' then
+                        update eba_sb_responses
+                            set delivered = 'Y', request_email_sent = current_timestamp
+                            where id = c2.id;
+                    when 'REMINDER' then
+                        update eba_sb_responses
+                            set reminder_email_sent = current_timestamp
+                            where id = c2.id;
+                    when 'THANKS' then
+                        update eba_sb_responses
+                            set thanks_email_sent = current_timestamp
+                            where id = c2.id;
+                    end case;
+                exception when others then
+                    -- TODO log this failure
+                    null;
+                end;
+                -- Store a copy in the history table.
+                insert into eba_sb_email_hist
+                    ( subject, sent_time, sent_by, sent_to, cc, bcc, message, survey_id, community_id, respondent_id )
+                values (
+                    c3.subject,
+                    sysdate,
+                    'survey_job',
+                    c2.email_addr,
+                    null,
+                    null,
+                    l_message,
+                    c2.survey_id,
+                    null,
+                    l_respondent_id
+                );
+            end loop;
+        end loop;
+        -- Now that the emails are queued up - send them
+        apex_mail.push_queue();
+        commit;
+    end survey_job;
+    function questionnaire_to_xml(p_id number)
+        return XMLType
+    is
+        l_xml XMLType;
+    begin
+        select xmlelement("Questionnaire",
+                xmlattributes(
+                    qn.row_key as "id",
+                    qn.title as "title",
+                    qn.type as "type",
+                    qn.lang as "lang"
+                ),
+                xmlelement("Description", qn.description),
+                xmlelement("Prolog", qn.prolog),
+                xmlelement("Epilog", qn.epilog),
+                xmlelement("Options", 
+                    xmlattributes(
+                        qn.finish_label as "finishLabel",
+                        qn.finish_url as "finishURL",
+                        qn.number_sections as "numberSections",
+                        qn.number_questions as "numberQuestions",
+                        qn.navigation as "navigation",
+                        qn.logo_url as "logoURL",
+                        qn.logo_alt as "logoAlt",
+                        qn.style_skin_name as "skin"
+                    )
+                ),
+                xmlelement("Strings",
+                    (select
+                        xmlagg(xmlelement("String",
+                            xmlattributes(
+                                t.key as "key"
+                            ),
+                            t.text
+                        ) )
+                        from eba_sb_strings t
+                        where  t.questionnaire_id = qn.id
+                    )
+                ),
+                (select
+                        xmlagg(xmlelement("Section",
+                            xmlattributes(
+                                x.title as "title",
+                                x.skip_condition as "skipCondition"
+                            ),
+                            xmlelement("Notes", x.notes),
+                            xmlelement("Tags", x.tags),
+                            xmlelement("Prolog", x.prolog),
+                            xmlelement("Epilog", x.epilog),
+                            (select
+                                    xmlagg(xmlelement("Question", 
+                                        xmlattributes(
+                                            q.question_number as "number",
+                                            q.priority as "priority",
+                                            q.exclude as "exclude",
+                                            q.category as "category",
+                                            q.type as "type",
+                                            q.na_label as "naLabel",
+                                            q.other_label as "otherLabel",
+                                            q.min as "min",
+                                            q.max as "max",
+                                            q.required as "required",
+                                            q.skip_condition as "skipCondition"
+                                        ),
+                                        xmlelement("Text", q.question),
+                                        xmlelement("Tags", q.tags),
+                                        (select
+                                                xmlagg(xmlelement("Answer",
+                                                    xmlattributes(
+                                                        a.value as "value"
+                                                    ),
+                                                    xmlelement("Text", a.text),
+                                                    xmlelement("Tags", a.tags)
+                                                ) order by a.answer_seq )
+                                            from eba_sb_answers a
+                                            where a.question_id = q.id
+                                        )
+                                    ) order by q.question_seq )
+                                from eba_sb_questions q
+                                where q.questionnaire_id = qn.id and q.section_id = x.id
+                            )
+                        ) order by x.section_seq )
+                    from eba_sb_sections x
+                    where x.questionnaire_id = qn.id
+                )
+            )
+            into l_xml
+            from eba_sb_questionnaires qn
+            where id = p_id;
+        return l_xml;
+    end;
+    procedure return_xml_blob(p_xml_data in out nocopy blob, p_file_name varchar2)
+    is
+        l_content_length number;
+    begin
+        l_content_length := sys.dbms_lob.getlength(p_xml_data);
+        sys.htp.init;
+        sys.owa_util.mime_header ('text/xml', false, 'utf-8');
+        sys.htp.p('Cache-Control: no-cache');
+        sys.htp.p('expires: 0');
+        sys.htp.p('Pragma: no-cache');
+        sys.htp.p('Content-length: ' || l_content_length);
+        sys.htp.p('Content-Disposition: attachment; filename=' ||
+              wwv_flow_utilities.escape_url (
+                  p_url => p_file_name,
+                  p_url_charset => 'utf-8'));
+        sys.owa_util.http_header_close;
+        sys.wpg_docload.download_file(p_xml_data);
+        apex_application.stop_apex_engine;
+    end return_xml_blob;
+    -------------------------------------------------------------------------
+    -- Export the survey given by p_survey_id as XML.
+    -- This sends a response so it should only be called from a page process.
+    -- The suggested name for the download file is given by p_file_name.
+    -------------------------------------------------------------------------
+    procedure export_survey(
+        p_survey_id in number,
+        p_file_name in varchar2)
+    is
+        l_buf blob;
+    begin
+        select xmlserialize(document
+                xmlelement("Survey", 
+                    xmlattributes(
+                        '1' as "version", -- to assist in future upgrade cases
+                        s.row_key as "id",
+                        s.name as "name",
+                        s.type as "type",
+                        s.state as "state",
+                        s.mins_to_complete as "mins_to_complete",
+                        s.target_respondents as "targetRespondents",
+                        s.target_date as "targetDate",
+                        s.target_percent as "targetPercent",
+                        s.auto_complete as "autoComplete",
+                        s.start_date as "startDate",
+                        s.completed_date as "completeDate"
+                    ),
+                    xmlelement("Notes", s.notes),
+                    xmlelement("Tags", s.tags),
+                    questionnaire_to_xml(qn.id),
+                    xmlelement("Emails",
+                        (select
+                            xmlagg(xmlelement("Email", 
+                                xmlattributes(
+                                    e.name as "name",
+                                    e.type as "type",
+                                    e.is_current as "isCurrent",
+                                    e.subject as "subject",
+                                    e.send_after_days as "sendAfterDays"
+                                ),
+                                xmlelement("Message", e.message)
+                            ) order by e.name )
+                            from eba_sb_emails e
+                            where e.survey_id = p_survey_id
+                        )
+                    ),
+                    xmlelement("Responses", 
+                        (select
+                            xmlagg(xmlelement("Response",
+                                xmlattributes(
+                                    r.id as "id",
+                                    r.delivered as "delivered",
+                                    r.population_segment as "populationSegment",
+                                    r.started_date as "startedDate",
+                                    r.completed_date as "completedDate"
+                                ),
+                                (select
+                                    xmlagg(xmlelement("Question",
+                                        xmlattributes(
+                                            qr.question_number as "number",
+                                            qr.value as "value",
+                                            qr.value_text as "valueText"
+                                        )
+                                    ) )
+                                    from eba_sb_question_responses qr
+                                    where response_id = r.id
+                                )
+                            ) order by r.id )
+                            from eba_sb_responses r
+                            where r.survey_id = p_survey_id
+                        )
+                    )
+                )
+                as blob
+                encoding 'utf-8'
+                version '1.0'
+                indent size = 4) -- it seems that indent is ignored when returning as a blob - why is that?
+            into l_buf
+            from eba_sb_surveys s, eba_sb_questionnaires qn
+            where qn.survey_id = s.id and s.id = p_survey_id;
+        return_xml_blob(l_buf, p_file_name);
+    end export_survey;
+    -------------------------------------------------------------------------
+    -- Export the template given by p_questionnaire_id as XML.
+    -- This sends a response so it should only be called from a page process.
+    -- The suggested name for the download file is given by p_file_name.
+    -------------------------------------------------------------------------
+    procedure export_template(
+        p_questionnaire_id in number,
+        p_file_name in varchar2)
+    is
+        l_buf blob;
+    begin
+        select xmlserialize(document
+                questionnaire_to_xml(p_questionnaire_id)
+                as blob
+                encoding 'utf-8'
+                version '1.0'
+                indent size = 4) -- it seems that indent is ignored when returning as a blob - why is that?
+            into l_buf
+            from dual;
+        return_xml_blob(l_buf, p_file_name);
+    end export_template;
+    function get_element_text(p_node in dbms_xmldom.domnode)
+        return varchar2
+    is
+        l_node              dbms_xmldom.domnode := null;
+        l_text              varchar2(4000) := '';
+    begin
+        l_node := dbms_xmldom.getfirstchild(p_node);
+        while not dbms_xmldom.isnull(l_node) loop
+            if dbms_xmldom.getnodetype(l_node) = dbms_xmldom.text_node then
+                l_text := l_text || dbms_xmldom.getnodevalue(l_node);
+            end if;
+            l_node := dbms_xmldom.getnextsibling(l_node);
+        end loop;
+        return l_text;
+    end get_element_text;
+    procedure parse_emails(
+        p_node      in dbms_xmldom.domelement,
+        p_survey_id in number)
+    is
+        l_attrs             dbms_xmldom.domnamednodemap;
+        l_attr              dbms_xmldom.domnode;
+        l_value             varchar2(4000);
+        l_node              dbms_xmldom.domnode := null;
+        l_nodes             dbms_xmldom.domnodelist;
+        l_c_nodes           dbms_xmldom.domnodelist;
+        l_row               eba_sb_emails%rowtype := null;
+    begin
+        l_nodes := dbms_xmldom.getchildrenbytagname(p_node, 'Email');
+        for i in 0..dbms_xmldom.getlength(l_nodes) - 1 loop
+            l_node := dbms_xmldom.item(l_nodes, i);
+            l_attrs := dbms_xmldom.getattributes(l_node);
+            for i in 0..dbms_xmldom.getlength(l_attrs) - 1 loop
+                l_attr := dbms_xmldom.item(l_attrs, i);
+                l_value := dbms_xmldom.getnodevalue(l_attr);
+                case lower(dbms_xmldom.getnodename(l_attr))
+                when 'name' then
+                    l_row.name := l_value;
+                when 'type' then
+                    l_row.type := l_value;
+                when 'iscurrent' then
+                    l_row.is_current := l_value;
+                when 'subject' then
+                    l_row.subject := l_value;
+                when 'sendafterdays' then
+                    l_row.send_after_days := to_number(l_value);
+                else
+                    null;
+                end case;
+            end loop;
+            if l_row.name is null or l_row.type is null or l_row.send_after_days is null or l_row.is_current is null then
+                raise_application_error(-20001, apex_lang.message('IMPORT_MISSING_ATTR', 'Email', 'name, type, sendAfterDays, subject, isCurrent'));
+            end if;
+            l_c_nodes := dbms_xmldom.getchildrenbytagname(dbms_xmldom.makeelement(l_node), 'Message');
+            if dbms_xmldom.getlength(l_c_nodes) >= 1 then
+                l_row.message := get_element_text(dbms_xmldom.item(l_c_nodes, 0));
+            end if;
+            l_row.survey_id := p_survey_id;
+            insert into eba_sb_emails values l_row;
+        end loop;
+    end parse_emails;
+    procedure parse_responses(
+        p_node      in dbms_xmldom.domelement,
+        p_survey_id in number)
+    is
+        l_attrs             dbms_xmldom.domnamednodemap;
+        l_attr              dbms_xmldom.domnode;
+        l_value             varchar2(4000);
+        l_node              dbms_xmldom.domnode := null;
+        l_nodes             dbms_xmldom.domnodelist;
+        l_q_node            dbms_xmldom.domnode := null;
+        l_q_nodes           dbms_xmldom.domnodelist;
+        l_row               eba_sb_responses%rowtype := null;
+        l_q_row             eba_sb_question_responses%rowtype := null;
+    begin
+        l_nodes := dbms_xmldom.getchildrenbytagname(p_node, 'Response');
+        for i in 0..dbms_xmldom.getlength(l_nodes) - 1 loop
+            l_node := dbms_xmldom.item(l_nodes, i);
+            l_attrs := dbms_xmldom.getattributes(l_node);
+            l_row := null;
+            for i in 0..dbms_xmldom.getlength(l_attrs) - 1 loop
+                l_attr := dbms_xmldom.item(l_attrs, i);
+                l_value := dbms_xmldom.getnodevalue(l_attr);
+                case lower(dbms_xmldom.getnodename(l_attr))
+                when 'id' then
+                    l_row.id := l_value;
+                when 'delivered' then
+                    l_row.delivered := l_value;
+                when 'populationsegment' then
+                    l_row.population_segment := l_value;
+                when 'starteddate' then
+                    l_row.started_date := to_timestamp_tz(l_value, c_xml_datetime_fmt);
+                when 'completeddate' then
+                    l_row.completed_date := to_timestamp_tz(l_value, c_xml_datetime_fmt);
+                else
+                    null;
+                end case;
+            end loop;
+            if l_row.id is null then
+                raise_application_error(-20001, apex_lang.message('IMPORT_MISSING_ATTR', 'Response', 'id'));
+            end if;
+            l_row.survey_id := p_survey_id;
+            begin
+                insert into eba_sb_responses values l_row;
+            exception
+                when dup_val_on_index then
+                    raise_application_error(-20001, apex_lang.message('IMPORT_DUP_RESPONSE', l_row.id));
+            end;
+            l_q_nodes := dbms_xmldom.getchildrenbytagname(dbms_xmldom.makeelement(l_node), 'Question');
+            for i in 0..dbms_xmldom.getlength(l_q_nodes) - 1 loop
+                l_q_node := dbms_xmldom.item(l_q_nodes, i);
+                l_attrs := dbms_xmldom.getattributes(l_q_node);
+                l_q_row := null;
+                for i in 0..dbms_xmldom.getlength(l_attrs) - 1 loop
+                    l_attr := dbms_xmldom.item(l_attrs, i);
+                    l_value := dbms_xmldom.getnodevalue(l_attr);
+                    case lower(dbms_xmldom.getnodename(l_attr))
+                    when 'number' then
+                        l_q_row.question_number := to_number(l_value);
+                    when 'value' then
+                        l_q_row.value := l_value;
+                    when 'valuetext' then
+                        l_q_row.value_text := l_value;
+                    else
+                        null;
+                    end case;
+                end loop;
+                if l_q_row.question_number is null then
+                    raise_application_error(-20001, apex_lang.message('IMPORT_MISSING_ATTR', 'Response/Question', 'number'));
+                end if;
+                l_q_row.response_id := l_row.id;
+                insert into eba_sb_question_responses values l_q_row;
+            end loop;
+        end loop;
+    end parse_responses;
+    procedure parse_question(
+        p_node             in dbms_xmldom.domelement,
+        p_questionnaire_id in number, 
+        p_section_id       in number, 
+        p_seq              in number)
+    is
+        l_attrs             dbms_xmldom.domnamednodemap;
+        l_attr              dbms_xmldom.domnode;
+        l_value             varchar2(4000);
+        l_node              dbms_xmldom.domnode := null;
+        l_nodes             dbms_xmldom.domnodelist;
+        l_a_nodes           dbms_xmldom.domnodelist;
+        l_q_row             eba_sb_questions%rowtype := null;
+        l_a_row             eba_sb_answers%rowtype := null;
+        l_question_id       eba_sb_questions.id%type;
+        l_answer_seq        number;
+    begin
+        l_attrs := dbms_xmldom.getattributes(dbms_xmldom.makenode(p_node));
+        l_q_row.category := 'ATTRIBUTE';
+        l_q_row.exclude := 'N';
+        l_q_row.required := 'N';
+        l_q_row.priority := 3;
+        for i in 0..dbms_xmldom.getlength(l_attrs) - 1 loop
+            l_attr := dbms_xmldom.item(l_attrs, i);
+            l_value := dbms_xmldom.getnodevalue(l_attr);
+            case lower(dbms_xmldom.getnodename(l_attr))
+            when 'number' then
+                l_q_row.question_number := to_number(l_value);
+            when 'priority' then
+                l_q_row.priority := to_number(l_value);
+            when 'exclude' then
+                l_q_row.exclude := l_value;
+            when 'category' then
+                l_q_row.category := l_value;
+            when 'type' then
+                l_q_row.type := l_value;
+            when 'nalabel' then
+                l_q_row.na_label := l_value;
+            when 'otherlabel' then
+                l_q_row.other_label := l_value;
+            when 'min' then
+                l_q_row.min := to_number(l_value);
+            when 'max' then
+                l_q_row.max := to_number(l_value);
+            when 'required' then
+                l_q_row.required := l_value;
+            when 'skipcondition' then
+                l_q_row.skip_condition := l_value;
+            else
+                null;
+            end case;
+        end loop;
+        if l_q_row.question_number is null or l_q_row.type is null then
+            raise_application_error(-20001, apex_lang.message('IMPORT_MISSING_ATTR', 'Question', 'number, type'));
+        end if;
+        l_nodes := dbms_xmldom.getchildrenbytagname(p_node, 'Text');
+        if dbms_xmldom.getlength(l_nodes) >= 1 then
+            l_q_row.question := get_element_text(dbms_xmldom.item(l_nodes, 0));
+        else
+            raise_application_error(-20001, apex_lang.message('IMPORT_MISSING_ELEMENT', 'Question', 'Text'));
+        end if;
+        l_nodes := dbms_xmldom.getchildrenbytagname(p_node, 'Tags');
+        if dbms_xmldom.getlength(l_nodes) >= 1 then
+            l_q_row.tags := get_element_text(dbms_xmldom.item(l_nodes, 0));
+        end if;
+        l_q_row.questionnaire_id := p_questionnaire_id;
+        l_q_row.section_id := p_section_id;
+        l_q_row.question_seq := p_seq;
+        insert into eba_sb_questions values l_q_row
+            returning id into l_question_id;
+        l_answer_seq := 10;
+        l_nodes := dbms_xmldom.getchildrenbytagname(p_node, 'Answer');
+        for i in 0..dbms_xmldom.getlength(l_nodes) - 1 loop
+            l_node := dbms_xmldom.item(l_nodes, i);
+            l_answer_seq := l_answer_seq + 10;
+            l_a_row := null;
+            l_attrs := dbms_xmldom.getattributes(l_node);
+            for i in 0..dbms_xmldom.getlength(l_attrs) - 1 loop
+                l_attr := dbms_xmldom.item(l_attrs, i);
+                l_value := dbms_xmldom.getnodevalue(l_attr);
+                case lower(dbms_xmldom.getnodename(l_attr))
+                when 'value' then
+                    l_a_row.value := to_number(l_value);
+                else
+                    null;
+                end case;
+            end loop;
+            if l_a_row.value is null then
+                raise_application_error(-20001, apex_lang.message('IMPORT_MISSING_ATTR', 'Answer', 'value'));
+            end if;
+            l_a_nodes := dbms_xmldom.getchildrenbytagname(dbms_xmldom.makeelement(l_node), 'Text');
+            if dbms_xmldom.getlength(l_a_nodes) >= 1 then
+                l_a_row.text := get_element_text(dbms_xmldom.item(l_a_nodes, 0));
+            else
+                raise_application_error(-20001, apex_lang.message('IMPORT_MISSING_ELEMENT', 'Answer', 'Text'));
+            end if;
+            l_a_nodes := dbms_xmldom.getchildrenbytagname(dbms_xmldom.makeelement(l_node), 'Tags');
+            if dbms_xmldom.getlength(l_a_nodes) >= 1 then
+                l_a_row.tags := get_element_text(dbms_xmldom.item(l_a_nodes, 0));
+            end if;
+            l_a_row.question_id := l_question_id;
+            l_a_row.answer_seq := l_answer_seq;
+            insert into eba_sb_answers values l_a_row;
+        end loop;
+    end parse_question;
+    procedure parse_section(p_node in dbms_xmldom.domelement,
+        p_questionnaire_id in number, p_seq in number)
+    is
+        l_attrs             dbms_xmldom.domnamednodemap;
+        l_attr              dbms_xmldom.domnode;
+        l_value             varchar2(4000);
+        l_node              dbms_xmldom.domnode := null;
+        l_nodes             dbms_xmldom.domnodelist;
+        l_row               eba_sb_sections%rowtype := null;
+        l_section_id        eba_sb_sections.id%type;
+        l_question_seq      number;
+    begin
+        l_attrs := dbms_xmldom.getattributes(dbms_xmldom.makenode(p_node));
+        for i in 0..dbms_xmldom.getlength(l_attrs) - 1 loop
+            l_attr := dbms_xmldom.item(l_attrs, i);
+            l_value := dbms_xmldom.getnodevalue(l_attr);
+            case lower(dbms_xmldom.getnodename(l_attr))
+            when 'title' then
+                l_row.title := l_value;
+            when 'skipCondition' then
+                l_row.skip_condition := l_value;
+            else
+                null;
+            end case;
+        end loop;
+        l_nodes := dbms_xmldom.getchildrenbytagname(p_node, 'Notes');
+        if dbms_xmldom.getlength(l_nodes) >= 1 then
+            l_row.notes := get_element_text(dbms_xmldom.item(l_nodes, 0));
+        end if;
+        l_nodes := dbms_xmldom.getchildrenbytagname(p_node, 'Prolog');
+        if dbms_xmldom.getlength(l_nodes) >= 1 then
+            l_row.prolog := get_element_text(dbms_xmldom.item(l_nodes, 0));
+        end if;
+        l_nodes := dbms_xmldom.getchildrenbytagname(p_node, 'Epilog');
+        if dbms_xmldom.getlength(l_nodes) >= 1 then
+            l_row.epilog := get_element_text(dbms_xmldom.item(l_nodes, 0));
+        end if;
+        l_nodes := dbms_xmldom.getchildrenbytagname(p_node, 'Tags');
+        if dbms_xmldom.getlength(l_nodes) >= 1 then
+            l_row.tags := get_element_text(dbms_xmldom.item(l_nodes, 0));
+        end if;
+        l_row.questionnaire_id := p_questionnaire_id;
+        l_row.section_seq := p_seq;
+        insert into eba_sb_sections values l_row
+            returning id into l_section_id;
+        l_question_seq := 10;
+        l_nodes := dbms_xmldom.getchildrenbytagname(p_node, 'Question');
+        for i in 0..dbms_xmldom.getlength(l_nodes) - 1 loop
+            l_node := dbms_xmldom.item(l_nodes, i);
+            l_question_seq := l_question_seq + 10;
+            parse_question(dbms_xmldom.makeelement(l_node), p_questionnaire_id, l_section_id, l_question_seq);
+        end loop;
+    end parse_section;
+    procedure parse_questionnaire(
+        p_node           in dbms_xmldom.domelement,
+        p_survey_id      in number,
+        p_keep_row_key   in boolean   default FALSE,
+        p_survey_row_key in varchar2  default null)
+    is
+        l_el_name           varchar2(200);
+        l_attrs             dbms_xmldom.domnamednodemap;
+        l_attr              dbms_xmldom.domnode;
+        l_value             varchar2(4000);
+        l_node              dbms_xmldom.domnode := null;
+        l_nodes             dbms_xmldom.domnodelist;
+        l_options           dbms_xmldom.domnode;
+        l_row               eba_sb_questionnaires%rowtype := null;
+        l_questionnaire_id  eba_sb_questionnaires.id%type;
+        l_section_seq       number;
+        l_text              eba_sb_strings.text%type;
+        l_key               eba_sb_strings.key%type;
+    begin
+        if p_survey_id is null then
+            l_el_name := dbms_xmldom.getlocalname(p_node);
+            if l_el_name != 'Questionnaire' then
+                raise_application_error(-20001, apex_lang.message('IMPORT_BAD_ROOT', 'Questionnaire'));
+            end if;
+        end if;
+        l_attrs := dbms_xmldom.getattributes(dbms_xmldom.makenode(p_node));
+        for i in 0..dbms_xmldom.getlength(l_attrs) - 1 loop
+            l_attr := dbms_xmldom.item(l_attrs, i);
+            l_value := dbms_xmldom.getnodevalue(l_attr);
+            case lower(dbms_xmldom.getnodename(l_attr))
+            when 'id' then
+                l_row.row_key := l_value;
+            when 'title' then
+                l_row.title := l_value;
+            when 'type' then
+                l_row.type := l_value;
+            when 'lang' then
+                l_row.lang := l_value;
+            else
+                null;
+            end case;
+        end loop;
+        if l_row.title is null or l_row.row_key is null or l_row.type is null or l_row.lang is null then
+            raise_application_error(-20001, apex_lang.message('IMPORT_MISSING_ATTR', 'Questionnaire', 'title, id, type, lang'));
+        end if;
+        -- if associated with survey, use survey row_key
+        -- if template, row_key could be kept or replaced
+        if p_survey_id is not null then
+            l_row.row_key := p_survey_row_key;
+        elsif not p_keep_row_key then
+            l_row.row_key := null;
+        end if;
+        l_nodes := dbms_xmldom.getchildrenbytagname(p_node, 'Description');
+        if dbms_xmldom.getlength(l_nodes) >= 1 then
+            l_row.description := get_element_text(dbms_xmldom.item(l_nodes, 0));
+        end if;
+        l_nodes := dbms_xmldom.getchildrenbytagname(p_node, 'Prolog');
+        if dbms_xmldom.getlength(l_nodes) >= 1 then
+            l_row.prolog := get_element_text(dbms_xmldom.item(l_nodes, 0));
+        end if;
+        l_nodes := dbms_xmldom.getchildrenbytagname(p_node, 'Epilog');
+        if dbms_xmldom.getlength(l_nodes) >= 1 then
+            l_row.epilog := get_element_text(dbms_xmldom.item(l_nodes, 0));
+        end if;
+        l_nodes := dbms_xmldom.getchildrenbytagname(p_node, 'Options');
+        if dbms_xmldom.getlength(l_nodes) >= 1 then
+            l_options := dbms_xmldom.item(l_nodes, 0);
+            l_attrs := dbms_xmldom.getattributes(l_options);
+            for i in 0..dbms_xmldom.getlength(l_attrs) - 1 loop
+                l_attr := dbms_xmldom.item(l_attrs, i);
+                l_value := dbms_xmldom.getnodevalue(l_attr);
+                case lower(dbms_xmldom.getnodename(l_attr))
+                when 'finishlabel' then
+                    l_row.finish_label := l_value;
+                when 'finishurl' then
+                    l_row.finish_url := l_value;
+                when 'numbersections' then
+                    l_row.number_sections := l_value;
+                when 'numberquestions' then
+                    l_row.number_questions := l_value;
+                when 'navigation' then
+                    l_row.navigation := l_value;
+                when 'logourl' then
+                    l_row.logo_url := l_value;
+                when 'logoalt' then
+                    l_row.logo_alt := l_value;
+                when 'skin' then
+                    l_row.style_skin_name := l_value;
+                else
+                    null;
+                end case;
+            end loop;
+        else
+            raise_application_error(-20001, apex_lang.message('IMPORT_MISSING_ELEMENT', 'Questionnaire', 'Options'));
+        end if;
+        if l_row.style_skin_name is null then
+            l_row.style_skin_name := 'Default';
+        end if;
+        l_row.survey_id := p_survey_id;
+        insert into eba_sb_questionnaires values l_row
+            returning id into l_questionnaire_id;
+        init_questionnaire_strings(l_questionnaire_id, l_row.lang);
+        l_nodes := dbms_xmldom.getchildrenbytagname(p_node, 'Strings');
+        if dbms_xmldom.getlength(l_nodes) >= 1 then
+            l_nodes := dbms_xmldom.getchildrenbytagname(dbms_xmldom.makeelement(dbms_xmldom.item(l_nodes, 0)), 'String');
+            for i in 0..dbms_xmldom.getlength(l_nodes) - 1 loop
+                l_node := dbms_xmldom.item(l_nodes, i);
+                l_text := get_element_text(l_node);
+                l_key := dbms_xmldom.getattribute(dbms_xmldom.makeelement(l_node), 'key');
+                update eba_sb_strings set text = l_text
+                    where key = l_key and questionnaire_id = l_questionnaire_id;
+            end loop;
+        end if;
+        l_section_seq := 10;
+        l_nodes := dbms_xmldom.getchildrenbytagname(p_node, 'Section');
+        for i in 0..dbms_xmldom.getlength(l_nodes) - 1 loop
+            l_node := dbms_xmldom.item(l_nodes, i);
+            l_section_seq := l_section_seq + 10;
+            parse_section(dbms_xmldom.makeelement(l_node), l_questionnaire_id, l_section_seq);
+        end loop;
+    end parse_questionnaire;
+    procedure parse_survey(
+        p_root         dbms_xmldom.domelement,
+        p_force_design in boolean,
+        p_new_name     in varchar2,
+        p_keep_row_key in boolean  default FALSE)
+    is
+        l_el_name           varchar2(200);
+        l_attrs             dbms_xmldom.domnamednodemap;
+        l_attr              dbms_xmldom.domnode;
+        l_value             varchar2(4000);
+        l_node              dbms_xmldom.domnode := null;
+        l_el                dbms_xmldom.domelement := null;
+        l_questionnaire_el  dbms_xmldom.domelement := null;
+        l_emails_el         dbms_xmldom.domelement := null;
+        l_responses_el      dbms_xmldom.domelement := null;
+        l_survey_id         eba_sb_surveys.id%type;
+        l_survey_row_key    eba_sb_surveys.row_key%type;
+        l_row               eba_sb_surveys%rowtype := null;
+    begin
+        l_el_name := dbms_xmldom.getlocalname(p_root);
+        if l_el_name != 'Survey' then
+            raise_application_error(-20001, apex_lang.message('IMPORT_BAD_ROOT', 'Survey'));
+        end if;
+        l_attrs := dbms_xmldom.getattributes(dbms_xmldom.makenode(p_root));
+        for i in 0..dbms_xmldom.getlength(l_attrs) - 1 loop
+            l_attr := dbms_xmldom.item(l_attrs, i);
+            l_value := dbms_xmldom.getnodevalue(l_attr);
+            case lower(dbms_xmldom.getnodename(l_attr))
+            when 'id' then
+                l_row.row_key := l_value;
+            when 'name' then
+                l_row.name := l_value;
+            when 'type' then
+                l_row.type := l_value;
+            when 'state' then
+                l_row.state := l_value;
+            when 'mins_to_complete' then
+                l_row.mins_to_complete := l_value;
+            when 'targetrespondents' then
+                l_row.target_respondents := l_value;
+            when 'targetdate' then
+                l_row.target_date := to_timestamp_tz(l_value, c_xml_datetime_fmt);
+            when 'targetpercent' then
+                l_row.target_percent := to_number(l_value);
+            when 'autocomplete' then
+                l_row.auto_complete := l_value;
+            when 'startdate' then
+                l_row.start_date := to_timestamp_tz(l_value, c_xml_datetime_fmt);
+            when 'completedate' then
+                l_row.completed_date := to_timestamp_tz(l_value, c_xml_datetime_fmt);
+            else
+                null;
+            end case;
+        end loop;
+        if l_row.name is null or l_row.row_key is null or l_row.type is null then
+            raise_application_error(-20001, apex_lang.message('IMPORT_MISSING_ATTR', 'Survey', 'name, id, type'));
+        end if;
+        -- row_key could be kept or replaced
+        if not p_keep_row_key then
+            l_row.row_key := null;
+        end if;
+        if p_new_name is not null then
+            l_row.name := p_new_name;
+        end if;
+        if p_force_design then
+            l_row.state := 'DESIGN';
+            l_row.start_date := null;
+            l_row.completed_date := null;
+        end if;
+        l_node := dbms_xmldom.getfirstchild(dbms_xmldom.makenode(p_root));
+        while not dbms_xmldom.isnull(l_node) loop
+            if dbms_xmldom.getnodetype(l_node) = dbms_xmldom.element_node then
+                l_el := dbms_xmldom.makeelement(l_node);
+                case dbms_xmldom.getlocalname(l_el)
+                when 'Tags' then
+                    l_row.tags := get_element_text(l_node);
+                when 'Notes' then
+                    l_row.notes := get_element_text(l_node);
+                when 'Questionnaire' then
+                    l_questionnaire_el := l_el;
+                when 'Emails' then
+                    l_emails_el := l_el;
+                when 'Responses' then
+                    l_responses_el := l_el;
+                else
+                    null;
+                end case;
+            end if;
+            l_node := dbms_xmldom.getnextsibling(l_node);
+        end loop;
+        if dbms_xmldom.isnull(l_questionnaire_el) then
+            raise_application_error(-20001, apex_lang.message('IMPORT_MISSING_ELEMENT', 'Survey', 'Questionnaire'));
+        end if;
+        begin
+            insert into eba_sb_surveys values l_row
+                returning id, row_key into l_survey_id, l_survey_row_key;
+        exception
+            when dup_val_on_index then
+                raise_application_error(-20001, apex_lang.message('IMPORT_DUP_NAME', l_row.name));
+        end;
+        parse_questionnaire(
+           p_node           => l_questionnaire_el, 
+           p_survey_id      => l_survey_id,
+           p_survey_row_key => l_survey_row_key);
+        if not dbms_xmldom.isnull(l_emails_el) then
+            parse_emails(l_emails_el, l_survey_id);
+        end if;
+        if not p_force_design and not dbms_xmldom.isnull(l_responses_el) then
+            parse_responses(l_responses_el, l_survey_id);
+        end if;
+    end parse_survey;
+    -------------------------------------------------------------------------
+    -- Import a survey. The xml data is in p_xml_data blob.
+    -------------------------------------------------------------------------
+    procedure import_survey(
+        p_xml_data     in clob,
+        p_force_design in boolean,
+        p_new_name     in varchar2,
+        p_keep_row_key in boolean  default FALSE)
+    is
+        parser dbms_xmlparser.parser;
+        indomdoc dbms_xmldom.domdocument;
+        root dbms_xmldom.domelement;
+    begin
+        begin
+            parser := dbms_xmlparser.newparser;
+            dbms_xmlparser.parseclob(parser, p_xml_data);
+            indomdoc := dbms_xmlparser.getdocument(parser);
+            root := dbms_xmldom.getdocumentelement(indomdoc);
+            parse_survey(
+               p_root         => root, 
+               p_force_design => p_force_design, 
+               p_new_name     => p_new_name,
+               p_keep_row_key => p_keep_row_key);
+            dbms_xmldom.freedocument(indomdoc);
+            dbms_xmlparser.freeparser(parser);
+        exception
+            when others then
+                dbms_xmldom.freedocument(indomdoc);
+                dbms_xmlparser.freeparser(parser);
+                raise;
+        end;
+    end import_survey;
+    -------------------------------------------------------------------------
+    -- Import a template. The xml data is in p_xml_data blob.
+    -------------------------------------------------------------------------
+    procedure import_template(
+        p_xml_data     in clob,
+        p_keep_row_key in boolean  default FALSE)
+    is
+        parser dbms_xmlparser.parser;
+        indomdoc dbms_xmldom.domdocument;
+        root dbms_xmldom.domelement;
+    begin
+        begin
+            parser := dbms_xmlparser.newparser;
+            dbms_xmlparser.parseclob(parser, p_xml_data);
+            indomdoc := dbms_xmlparser.getdocument(parser);
+            root := dbms_xmldom.getdocumentelement(indomdoc);
+            parse_questionnaire(
+               p_node           => root, 
+               p_survey_id      => null,
+               p_keep_row_key   => p_keep_row_key,
+               p_survey_row_key => null);
+            dbms_xmldom.freedocument(indomdoc);
+            dbms_xmlparser.freeparser(parser);
+        exception
+            when others then
+                dbms_xmldom.freedocument(indomdoc);
+                dbms_xmlparser.freeparser(parser);
+                raise;
+        end;
+    end import_template;
+    -------------------------------------------------------------------------
+    -- Experimental
+    -- Convert text to a questionnaire
+    -- Example text input
+    --   Title
+    --   Section One:
+    --   * Question 1
+    --     choice 1
+    --     choice 2
+    --   * Question 2
+    --   Section Two:
+    --   * Question 3
+    -- Returns the id of the new questionnaire
+    -------------------------------------------------------------------------
+    function text_to_questionnaire(
+        p_text in clob,
+        p_lang varchar2,
+        p_survey_id number default null )
+        return number
+    is
+        l_state             varchar2(1) := 'i';
+        l_title             varchar2(4000) := null;
+        l_section           varchar2(4000);
+        l_question          varchar2(4000);
+        l_text              varchar2(4000);
+        l_questionnaire_id  number := null;
+        l_section_id        number;
+        l_question_id       number;
+        l_q_num             number := 1;
+        l_a_value           number := 1;
+        l_is_q              boolean;
+        l_is_s              boolean;
+        l_is_a              boolean;
+        l_section_seq       number := 10;
+        l_question_seq      number := 10;
+        l_answer_seq        number := 10;
+        l_line              varchar2(4000);
+        l_length            number := length(p_text);
+        l_offset            number := 0;
+        function readline
+            return varchar2
+        is
+            l_len  number;
+            l_start number;
+        begin
+            if l_offset >= l_length then
+                return null;
+            end if;
+            l_start := l_offset + 1;
+            l_offset := instr(p_text, chr(10), l_start);
+            if l_offset = 0 then
+                l_offset := l_length + 1;
+            end if;
+            l_len := l_offset - l_start;
+            return ltrim(rtrim(substr(p_text, l_start, l_len), c_crlf || ' '), chr(13)) || chr(10);
+        end;
+    begin
+        l_text := '';
+        loop
+            l_line := readline;
+            exit when l_line is null;
+            l_line := substr(l_line, 1, length(l_line) - 1);
+            continue when rtrim(l_line) is null; -- skip blank lines
+            l_is_s := regexp_count(l_line, '\:\s*$') > 0;
+            l_is_q := regexp_count(l_line, '^\s*[\*\-]\s+\S+') > 0;
+            l_is_a := regexp_count(l_line, '^\s+\S+') > 0 and not l_is_q;
+            if l_is_s then
+                l_line := regexp_substr(l_line, '\s*([^:]+)', 1, 1, '', 1);
+            end if;
+            if l_is_q then
+                l_line := regexp_substr(l_line, '^\s*[\*\-]\s+(.+)', 1, 1, '', 1);
+            end if;
+            case l_state
+            when 'i' then
+                if l_is_s or l_is_q then
+                    if l_title is null then
+                        l_title := 'title';
+                    end if;
+                    insert into eba_sb_questionnaires (survey_id, type, title, lang, prolog)
+                        values (p_survey_id, case when p_survey_id is null then 'TEMPLATE' else 'NORMAL' end, l_title, p_lang, l_text)
+                        returning id into l_questionnaire_id;
+                    if l_is_s then
+                        l_section := l_line;
+                        l_text := '';
+                        l_state := 's';
+                    else
+                        insert into eba_sb_sections (questionnaire_id, section_seq)
+                            values(l_questionnaire_id, l_section_seq)
+                            returning id into l_section_id;
+                        l_section_seq := l_section_seq + 10;
+                        l_question_seq := 10;
+                        l_question := l_line;
+                        l_state := 'q';
+                    end if;
+                elsif l_title is null then
+                    l_title := l_line;
+                else
+                    l_text := l_text || l_line || ' ';
+                end if;
+            when 's' then
+                if l_is_s or l_is_q then
+                    insert into eba_sb_sections (questionnaire_id, section_seq, title, prolog)
+                        values(l_questionnaire_id, l_section_seq, l_section, l_text)
+                        returning id into l_section_id;
+                    l_section_seq := l_section_seq + 10;
+                    l_question_seq := 10;
+                    if l_is_s then
+                        l_section := l_line;
+                        l_text := '';
+                        l_state := 's';
+                    else
+                        l_question := l_line;
+                        l_state := 'q';
+                    end if;
+                else
+                    l_text := l_text || l_line || ' ';
+                end if;
+            when 'q' then
+                if l_is_s or l_is_q then
+                    insert into eba_sb_questions
+                        (questionnaire_id, section_id, question_number, question_seq, question, priority, exclude, category, type, required)
+                        values (l_questionnaire_id, l_section_id, l_q_num, l_question_seq, l_question, 3, 'N', 'ATTRIBUTE', 'OPEN', 'N')
+                        returning id into l_question_id;
+                    l_question_seq := l_question_seq + 10;
+                    l_q_num := l_q_num + 1;
+                    if l_is_s then
+                        l_section := l_line;
+                        l_text := '';
+                        l_state := 's';
+                    else
+                        l_question := l_line;
+                        l_state := 'q';
+                    end if;
+                elsif l_is_a then
+                    insert into eba_sb_questions
+                        (questionnaire_id, section_id, question_number, question_seq, question, priority, exclude, category, type, required)
+                        values (l_questionnaire_id, l_section_id, l_q_num, l_question_seq, l_question, 3, 'N', 'ATTRIBUTE', 'SINGLE', 'N')
+                        returning id into l_question_id;
+                    l_question_seq := l_question_seq + 10;
+                    l_q_num := l_q_num + 1;
+                    l_a_value := 1;
+                    l_answer_seq := 10;
+                    insert into eba_sb_answers (question_id, answer_seq, text, value)
+                        values (l_question_id, l_answer_seq, ltrim(l_line), l_a_value);
+                    l_a_value := l_a_value + 1;
+                    l_answer_seq := l_answer_seq + 10;
+                    l_state := 'a';
+                end if;
+            when 'a' then
+                if l_is_s then
+                    l_section := l_line;
+                    l_text := '';
+                    l_state := 's';
+                elsif l_is_q then
+                    l_question := l_line;
+                    l_state := 'q';
+                elsif l_is_a then
+                    insert into eba_sb_answers (question_id, answer_seq, text, value)
+                        values (l_question_id, l_answer_seq, ltrim(l_line), l_a_value);
+                    l_a_value := l_a_value + 1;
+                    l_answer_seq := l_answer_seq + 10;
+                end if;
+            else
+                null;
+            end case;
+        end loop;
+        if l_state = 'q' and l_question is not null then
+            insert into eba_sb_questions
+                (questionnaire_id, section_id, question_number, question_seq, question, priority, exclude, category, type, required)
+                values (l_questionnaire_id, l_section_id, l_q_num, l_question_seq, l_question, 3, 'N', 'ATTRIBUTE', 'OPEN', 'N')
+                returning id into l_question_id;
+        end if;
+        if l_state = 's' and l_section is not null then
+            insert into eba_sb_sections (questionnaire_id, section_seq, title, prolog)
+                values(l_questionnaire_id, l_section_seq, l_section, l_text)
+                returning id into l_section_id;
+        end if;
+        return l_questionnaire_id;
+    end;
+ 
+    -------------------------------------------------------------------------
+    -- Purge survey responses older than a set number of months
+    -------------------------------------------------------------------------
+    procedure purge_responses(
+        p_older_than_months in number default null )
+    is
+        l_ts             timestamp with time zone;
+        l_default_months pls_integer := 72;  -- 6 years
+    begin
+        if p_older_than_months <= 0 then 
+            return;
+        end if;
+        if p_older_than_months is null then
+            l_ts := current_timestamp - numtoyminterval( l_default_months, 'month');
+        else
+            l_ts := current_timestamp - numtoyminterval( p_older_than_months, 'month');
+        end if;
+ 
+        delete from eba_sb_responses where
+            started_date < l_ts;
+ 
+    end purge_responses;   
+    -------------------------------------------------------------------------
+    -- Used with the app to display supplemental welcome text
+    -------------------------------------------------------------------------
+    procedure display_supp_welcome (
+       p_app_id             in   number,
+       p_page_id            in   number,
+       p_session_id         in   number,
+       p_replace_or_append  out  varchar2,
+       p_welcome_text       out  varchar2 )
+    as
+    begin
+        
+      for c1 in (
+         select welcome_text, replace_or_append
+           from eba_sb_supp_welcome_text
+          where display_yn = 'Y'
+            and instr(':'||display_on||':',':'||p_page_id||':') > 0
+      ) loop
+         p_replace_or_append := c1.replace_or_append;
+         p_welcome_text      := replace(c1.welcome_text,'#SUPP_PAGE#','f?p='||p_app_id||':48:'||p_session_id);
+      end loop;
+    end display_supp_welcome;
+ 
+end eba_sb;
+/]]></n0:source>
+		</n0:createOraclePackageBody>
+	</changeSet>
+</databaseChangeLog>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="de7ad0ef3d494502689a5eea53278c63b8ceb5ec" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleRefConstraint objectName="EBA_QPOLL_QUES_FK" objectType="REF_CONSTRAINT" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  ALTER TABLE "HHA_PROD"."EBA_QPOLL_QUESTIONS" ADD CONSTRAINT "EBA_QPOLL_QUES_FK" FOREIGN KEY ("POLL_ID")
+	  REFERENCES "HHA_PROD"."EBA_QPOLL_POLLS" ("ID") ON DELETE CASCADE ENABLE;]]></n0:source>
+		</n0:createOracleRefConstraint>
+	</changeSet>
+</databaseChangeLog>

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="df642b4d7bb89bc6f1a8c35a4890224da7d09e47" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleProcedure objectName="HCM_PROBATION_ORPHAN" objectType="PROCEDURE" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "HHA_PROD"."HCM_PROBATION_ORPHAN" is
+
+--FIRST CHECK WHOSE DESCION IS PENDING IN NEXT LEVEL
+/*
+SELECT * FROM hcm_prob_approval aa
+WHERE PA_WHO_APPV_EMP_ROLE = '120029'
+and FINAL_DECESION is null
+AND PA_EMP_NO NOT IN (SELECT PA_EMP_NO FROM hcm_prob_approval aa  WHERE PA_APP_REQ_SEQ = 3 AND APPROVED_REJECTED ='A')
+AND PA_EMP_NO IN (SELECT PA_EMP_NO FROM hcm_prob_approval aa  WHERE PA_APP_REQ_SEQ = 1 AND APPROVED_REJECTED ='A')
+*/
+
+
+/* --FOR HCM APPROVAL_MASTER
+UPDATE 
+(
+SELECT * FROM HCM_APPROVAL_MASTER
+WHERE  SERVICE_CODE = 'BTR' 
+AND ROLE_TYPE_DESC = 'LM'
+AND APPR_FLAG IS NULL
+AND REQ_BY IN (select st_empcd from pastatic p where DIRECT_MANAGER_NUMBER = '120029' )
+AND REQ_BY = '121022'
+)
+
+SET ROLE_TYPE_DESC = 'USER', ROLE_TYPE = '120838'
+*/
+
+
+
+Begin
+    FOR I IN 
+    (
+        
+        select DESC_arb  as Old_Manager_id, DESC_ENG as  new_manager_id 
+        from codes_descriptions
+        where main_code = '302'
+        and MINOR_CODE != 0
+        and VALUE_1 = 1
+
+        union all
+       
+        select PA_WHO_APPV_EMP_ROLE Old_Manager_id , ( select DIRECT_MANAGER_NUMBER from pastatic p where p.st_empcd = aa.PA_WHO_APPV_EMP_ROLE ) new_manager_id
+        from hcm_prob_approval aa
+        where
+        PA_WHO_APPV_EMP_ROLE in (select to_char(st_empcd) from pastatic where st_status > 15 )
+        and PA_EMP_NO in (select to_char(st_empcd) from pastatic where PROB_CHNGD_REG is null and st_status <= '15' )
+        and FINAL_DECESION is null
+        AND PA_EMP_NO NOT IN (SELECT PA_EMP_NO FROM hcm_prob_approval aa  WHERE PA_APP_REQ_SEQ = 3 AND APPROVED_REJECTED ='A')  --HR APPROVED IT AFTER TIME OVER
+        
+) loop
+    Begin
+        update hcm_prob_approval a
+        set PA_WHO_APPV_EMP_ROLE = i.new_manager_id
+        where PA_WHO_APPV_EMP_ROLE =i.Old_Manager_id
+        and APPROVED_REJECTED is null
+        and exists (
+        select 1 from pastatic p
+        where p.st_empcd = a.PA_EMP_NO 
+        and p.PROB_CHNGD_REG is null);
+
+    Exception when No_Data_Found then
+        null;
+        when Others then
+        null;
+    End;
+
+END LOOP;
+end ;
+
+
+/]]></n0:source>
+		</n0:createOracleProcedure>
+	</changeSet>
+</databaseChangeLog>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="bd3ba1db13a051f49e3c56bc3b6da7b15902aa78" author="(HHA_PROD)-Generated"     >
+		<n0:createSxmlObject objectName="SOAP_FR_ITEM" objectType="VIEW" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  <VIEW xmlns="http://xmlns.oracle.com/ku" version="1.0">
+   <SCHEMA>HHA_PROD</SCHEMA>
+   <NAME>SOAP_FR_ITEM</NAME>
+   <COL_LIST>
+      <COL_LIST_ITEM>
+         <NAME>DMSPOSNR</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>OBJECTCODE1</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>OBJECTCODE2</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>OBJECTCODE3</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ACTIVITY</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>VERSION</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>LOCATION</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>CONDITION</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>QUANTITY</NAME>
+      </COL_LIST_ITEM>
+   </COL_LIST>
+   <SUBQUERY>select 
+--&#60;FR_Item>
+'001'   DMSPosNr,
+--&#60;LabourCodeDetails/>
+'192'   ObjectCode1,
+'B'  ObjectCode2,
+'060'   ObjectCode3,
+'391'   Activity,
+'00' Version,
+'LO' Location,
+'00' Condition,
+--&#60;/LabourCodeDetails>
+'3'  Quantity
+--&#60;/FR_Item>
+
+From Dual
+</SUBQUERY>
+</VIEW>]]></n0:source>
+		</n0:createSxmlObject>
+	</changeSet>
+</databaseChangeLog>

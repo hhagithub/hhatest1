@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="7a3f48c8458668c5b8b7eeb584289b45b66598ce" author="(HHA_PROD)-Generated"     >
+		<n0:createSxmlObject objectName="VEH_FTR_DTL" objectType="TABLE" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  <TABLE xmlns="http://xmlns.oracle.com/ku" version="1.0">
+   <SCHEMA>HHA_PROD</SCHEMA>
+   <NAME>VEH_FTR_DTL</NAME>
+   <RELATIONAL_TABLE>
+      <COL_LIST>
+         <COL_LIST_ITEM>
+            <NAME>VEH_MODEL</NAME>
+            <DATATYPE>VARCHAR2</DATATYPE>
+            <LENGTH>20</LENGTH>
+         </COL_LIST_ITEM>
+         <COL_LIST_ITEM>
+            <NAME>FTR_CODE</NAME>
+            <DATATYPE>NUMBER</DATATYPE>
+         </COL_LIST_ITEM>
+         <COL_LIST_ITEM>
+            <NAME>FTR_ENG</NAME>
+            <DATATYPE>VARCHAR2</DATATYPE>
+            <LENGTH>200</LENGTH>
+         </COL_LIST_ITEM>
+         <COL_LIST_ITEM>
+            <NAME>FTR_ARB</NAME>
+            <DATATYPE>VARCHAR2</DATATYPE>
+            <LENGTH>200</LENGTH>
+         </COL_LIST_ITEM>
+         <COL_LIST_ITEM>
+            <NAME>STATUS</NAME>
+            <DATATYPE>CHAR</DATATYPE>
+            <LENGTH>1</LENGTH>
+            <DEFAULT>'Y'</DEFAULT>
+         </COL_LIST_ITEM>
+         <COL_LIST_ITEM>
+            <NAME>FTR_CAT</NAME>
+            <DATATYPE>VARCHAR2</DATATYPE>
+            <LENGTH>20</LENGTH>
+         </COL_LIST_ITEM>
+      </COL_LIST>
+      <FOREIGN_KEY_CONSTRAINT_LIST>
+         <FOREIGN_KEY_CONSTRAINT_LIST_ITEM>
+            <NAME>VEH_FTR_DTL_FK</NAME>
+            <COL_LIST>
+               <COL_LIST_ITEM>
+                  <NAME>VEH_MODEL</NAME>
+               </COL_LIST_ITEM>
+            </COL_LIST>
+            <REFERENCES>
+               <SCHEMA>HHA_PROD</SCHEMA>
+               <NAME>VEH_FTR_MST</NAME>
+               <COL_LIST>
+                  <COL_LIST_ITEM>
+                     <NAME>VEH_MODEL</NAME>
+                  </COL_LIST_ITEM>
+               </COL_LIST>
+            </REFERENCES>
+         </FOREIGN_KEY_CONSTRAINT_LIST_ITEM>
+      </FOREIGN_KEY_CONSTRAINT_LIST>
+      <PHYSICAL_PROPERTIES>
+         <HEAP_TABLE>
+            <SEGMENT_ATTRIBUTES>
+               <SEGMENT_CREATION_DEFERRED></SEGMENT_CREATION_DEFERRED>
+               <PCTFREE>10</PCTFREE>
+               <PCTUSED>40</PCTUSED>
+               <INITRANS>1</INITRANS>
+               <TABLESPACE>USERS</TABLESPACE>
+               <LOGGING>Y</LOGGING>
+            </SEGMENT_ATTRIBUTES>
+            <COMPRESS>N</COMPRESS>
+         </HEAP_TABLE>
+      </PHYSICAL_PROPERTIES>
+   </RELATIONAL_TABLE>
+</TABLE>]]></n0:source>
+		</n0:createSxmlObject>
+	</changeSet>
+</databaseChangeLog>

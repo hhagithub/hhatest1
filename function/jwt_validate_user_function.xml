@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="661d57a9341123bb6783a997825bc6ed940f44e9" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="JWT_VALIDATE_USER" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."JWT_VALIDATE_USER" (user_ varchar2, token_ varchar2, payload_ varchar2) return varchar2 is
+isValid_flag varchar2(1):='F';
+exp number;--expire at
+sub varchar2(20);--user
+iss varchar2(200);--issuer "www.oracle.com"
+prn varchar2(20);
+iat varchar2(20);--issue at
+user varchar2(100);
+page_no varchar2(100);
+
+v_array  apex_application_global.vc_arr2;
+v_string varchar2(4000);
+
+iss_at_ date;
+exp_at_ date;
+begin
+--{"exp":1594720759,"sub":"5914","iss":"www.oracle.com","prn":"5914","iat":1594720159}
+    
+v_array := APEX_UTIL.STRING_TO_TABLE(payload_, ',');
+    
+for i in 1..v_array.count loop
+user :=v_array(i);
+
+if instr(v_array(i),'exp')<>0 then
+   exp := substr(v_array(i),instr(v_array(i),'exp')+5);
+elsif instr(v_array(i),'sub')<>0 then
+   sub := substr(v_array(i),instr(v_array(i),'sub')+6);
+elsif instr(v_array(i),'iss')<>0 then  
+   iss := substr(v_array(i),instr(v_array(i),'iss')+6);
+
+elsif instr(v_array(i),'prn')<>0 then 
+   prn := substr(v_array(i),instr(v_array(i),'prn')+6);
+
+   elsif instr(v_array(i),'Page_no')<>0 then 
+   page_no := substr(v_array(i),instr(v_array(i),'Page_no')+0);
+
+  elsif instr(v_array(i),'user_name')<>0 then 
+   user := substr(v_array(i),instr(v_array(i),'user_name')+0);
+
+
+elsif instr(v_array(i),'iat')<>0 then 
+   iat := substr(v_array(i),instr(v_array(i),'iat')+5, 10); 
+end if;  
+
+--v_string := v_array(i);
+---signature := sys.utl_raw.cast_to_raw(l_jwt_arr(0));
+end loop;
+
+
+SELECT to_date(TO_CHAR(iss_at,'DD-MON-YY HH24:MI:SS'),'dd-mon-yy hh24:mi:ss'),
+       to_date(TO_CHAR(exp_at,'DD-MON-YY HH24:MI:SS'),'dd-mon-yy hh24:mi:ss') into  iss_at_, exp_at_
+FROM 
+( 
+select 
+(timestamp '1970-01-01 00:00:00 GMT' + numtodsinterval(iat, 'SECOND')) at time zone 'Asia/Riyadh' iss_at, 
+(timestamp '1970-01-01 00:00:00 GMT' + numtodsinterval(exp, 'SECOND')) at time zone 'Asia/Riyadh' exp_at --into iss_at_, exp_at_ 
+from dual
+); 
+    
+
+if user_ <> substr(sub,1,instr(sub,'"')-1) then
+   isValid_flag:= 'F';
+elsif exp_at_ is null then
+   isValid_flag:= 'F';   
+elsif exp_at_ < sysdate then
+   isValid_flag:= 'F';
+else   
+   isValid_flag:= 'T';
+end if;  
+  
+return exp||sub||iss||prn||iat||'-'||page_no||user;
+
+exception when others then
+return 'F';  
+end;
+ 
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="863c2e087b793f5f6f9559f481ec2a2b3c90a0ab" author="(HHA_PROD)-Generated"     >
+		<n0:createSxmlObject objectName="ZATCA_MAPPING_MASTER_DETAIL" objectType="VIEW" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  <VIEW xmlns="http://xmlns.oracle.com/ku" version="1.0">
+   <SCHEMA>HHA_PROD</SCHEMA>
+   <NAME>ZATCA_MAPPING_MASTER_DETAIL</NAME>
+   <COL_LIST>
+      <COL_LIST_ITEM>
+         <NAME>BU</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>INVOICE_NUMBER</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>LINE_NO</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>INV_QTY</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>INV_UOM</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>INV_LINE_NET_AMT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>CURR_INV_LINE_NET_AMT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>INV_LINE_ALW_IND</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>INV_LINE_ALW_PERC</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>INV_LINE_ALW_AMT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>INV_LINE_ALW_CURR</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>INV_LINE_BASE_AMT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>INV_LINE_BASE_CURR</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>VAT_LINE_AMT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>CURR_VAT_LINE_AMT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>LINE_AMT_INC_VAT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>CURR_LINE_AMT_INC_VAT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ITEM_NAME</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ITEM_BUYER_IDENT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ITEM_SELLER_IDENT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ITEM_STD_IDENT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ITEM_NET_PRICE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>CURR_ITEM_NET_PRICE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>INV_ITEM_VAT_CAT_CODE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>INV_ITEM_VAT_RATE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>TAX_SCHEME_ID_DTL</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ITEM_PRICE_BASE_QTY</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ITEM_PRICE_BASE_QTY_CODE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ITEM_PRICE_ALW_INDI</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ITEM_PRICE_DISC</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ITEM_PRICE_DISC_CURR</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ITEM_GROSS_PRICE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>CURR_ITEM_GROSS_PRICE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>TAX_EXEMPT_CODE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>TAX_EXEMPT_REASON</NAME>
+      </COL_LIST_ITEM>
+   </COL_LIST>
+   <SUBQUERY>select
+'VSS' BU,
+to_char(d.invoice_number) invoice_number,
+to_char(d.LINE_NO) line_no,--85
+1     inv_qty,--86
+'PCE' inv_uom,--87
+nvl(d.gtp,0) + nvl(d.WARRANTY_CHARGES,0) + nvl(d.SERVICE_CHARGES,0)
++ nvl(d.PROCESS_FEES,0) + NVL(d.INTEREST,0) + NVL(d.TRANSPORT,0) +
+NVL(d.TAMM,0) + NVL(d.ADDITIONAL_OPTIONS,0) inv_line_net_amt,--88
+'SAR' curr_inv_line_net_amt,--89
+cast( null as varchar2(20) )    Inv_Line_Alw_Ind, --90
+cast( null as varchar2(20) )    Inv_Line_Alw_Perc,--91
+cast( null as varchar2(20) )    Inv_Line_Alw_Amt,--92
+'SAR' Inv_Line_Alw_Curr,--93
+cast( null as varchar2(20) )    Inv_Line_Base_Amt,--94
+'SAR' Inv_Line_Base_Curr,--95
+d.vat_percent_amount VAT_line_amt,--96
+'SAR' Curr_VAT_line_amt,--97
+nvl(d.line_net,0) - nvl(d.plate_reg_govt,0) line_amt_inc_vat,--98
+'SAR'      curr_line_amt_inc_vat,--99
+m.mod_desc item_name,--100
+'' ITEM_BUYER_IDENT, --101
+'' ITEM_SELLER_IDENT, --102
+'' ITEM_STD_IDENT, --103
+nvl(d.line_net,0) - nvl(d.plate_reg_govt,0) item_net_price,--104
+'SAR'      curr_item_net_price,--105
+decode(nvl(d.vat_percent_amount,0),0,'O','S') inv_item_vat_cat_code,--106
+decode(nvl(d.vat_percent_amount,0),0,'0',d.vat_percent)  inv_item_vat_rate,--107
+decode(nvl(d.vat_percent_amount,0),0,'','VAT') tax_scheme_id_dtl,--108
+'' ITEM_PRICE_BASE_QTY, --109
+'' ITEM_PRICE_BASE_QTY_CODE, --110
+cast( null as varchar2(20) ) Item_Price_Alw_Indi, --111
+cast( null as varchar2(20) ) Item_Price_Disc,--112
+cast( null as varchar2(20) ) Item_Price_Disc_Curr,--113
+nvl(d.gtp,0) + nvl(d.WARRANTY_CHARGES,0) + nvl(d.SERVICE_CHARGES,0)
++ nvl(d.PROCESS_FEES,0) + NVL(d.INTEREST,0) + NVL(d.TRANSPORT,0) +
+NVL(d.TAMM,0) + NVL(d.ADDITIONAL_OPTIONS,0) item_gross_price, --114
+'SAR' curr_item_gross_price, --115,
+cast( null as varchar2(600) ) tax_exempt_code,
+cast( null as varchar2(600) ) tax_exempt_reason
+from invoice_details@to_appidev.hha.local d, models@to_appidev.hha.local m
+where d.serial_no = m.mod_code
+and d.invoice_number in
+(
+55107302,
+62006434,
+48604960,
+21515436,
+54804730,
+54038555,
+54038556,
+21515439,
+49203940
+)
+
+
+
+UNION ALL
+
+SELECT
+'PARTS' BU,
+invoice_number  ,
+line_no ,--85
+inv_qty ,--86
+inv_uom ,--87
+inv_line_net_amt  ,--88
+curr_inv_line_net_amt ,--89
+inv_line_alw_ind  ,--90
+inv_line_alw_perc ,--91
+inv_line_alw_amt  ,--92
+inv_line_alw_curr ,--93
+inv_line_base_amt ,--94
+inv_line_base_curr  ,--95
+vat_line_amt  ,--96
+curr_vat_line_amt ,--97
+line_amt_inc_vat  ,--98
+curr_line_amt_inc_vat ,--99
+item_name ,--100
+'' ITEM_BUYER_IDENT, --101
+'' ITEM_SELLER_IDENT, --102
+'' ITEM_STD_IDENT, --103
+item_net_price  ,--104
+curr_item_net_price ,--105
+inv_item_vat_cat_code ,--106
+inv_item_vat_rate ,--107
+tax_scheme_id_dtl ,--108
+'' ITEM_PRICE_BASE_QTY, --109
+'' ITEM_PRICE_BASE_QTY_CODE, --110
+item_price_alw_indi ,--111
+item_price_disc ,--112
+item_price_disc_curr  ,--113
+item_gross_price  ,--114
+curr_item_gross_price, --115,
+tax_exempt_code,
+ tax_exempt_reason
+FROM P_ZATCA_MAPPING_MASTER_DETAIL --p_zatca_mapping_master_detail@to_appidev.hha.local
+
+----------PARTS UNION
+
+
+
+--UNION ALL
+
+/*
+UNION ALL
+
+select ----------operations
+'WSS' BU,
+d.ji_job_no,
+d.ji_srl_no,
+1 inv_qty,
+'PCE' inv_uom,
+ROUND((d.JI_OPER_AMOUNT)/(1+((select t.JM_LABOR_VAT_PERC from work_job_master t where t.JM_JOB_NO=d.ji_job_no)/100)),2) inv_line_net_amt,
+'SAR'            curr_inv_line_net_amt,
+ROUND((d.JI_OPER_AMOUNT)/(1+((select t.JM_LABOR_VAT_PERC from work_job_master t where t.JM_JOB_NO=d.ji_job_no)/100))*(select t.JM_LABOR_VAT_PERC from work_job_master t where t.JM_JOB_NO=d.ji_job_no)/100,2) VAT_line_amt,
+'SAR'            Curr_VAT_line_amt,
+ROUND(d.JI_OPER_AMOUNT,2) line_amt_inc_vat,
+'SAR'            curr_line_amt_inc_vat,
+d.JI_OPERATION_DESCR item_name,
+--d.JI_LABOUR_PRICE    item_net_price,
+ROUND((d.JI_OPER_AMOUNT)/(1+((select t.JM_LABOR_VAT_PERC from work_job_master t where t.JM_JOB_NO=d.ji_job_no)/100)),2) item_net_price,
+'SAR'                curr_item_net_price,
+--decode(nvl(d.vat_percent_amount,0),0,'O','S') inv_item_vat_cat_code,
+'S' inv_item_vat_cat_code,
+(select t.JM_LABOR_VAT_PERC from work_job_master t where t.JM_JOB_NO=d.ji_job_no) inv_item_vat_rate,
+'VAT' tax_scheme_id_dtl,
+ROUND((d.JI_OPER_AMOUNT)/(1+((select t.JM_LABOR_VAT_PERC from work_job_master t where t.JM_JOB_NO=d.ji_job_no)/100)),2) item_gross_price,
+'SAR' curr_item_gross_price
+from work_job_details d
+where d.ji_job_no  = '232454806'
+----------parts
+;
+*/
+</SUBQUERY>
+</VIEW>]]></n0:source>
+		</n0:createSxmlObject>
+	</changeSet>
+</databaseChangeLog>

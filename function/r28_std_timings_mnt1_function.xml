@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="9461b2c9a0ed1d32e5e887d31e5afbb33598cdd5" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="R28_STD_TIMINGS_MNT1" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."R28_STD_TIMINGS_MNT1" (wj_location1_ varchar2,WJ_EMP_NO_ VARCHAR2,STARTTIME_ DATE) return Number is
+
+temp number;
+temp2 VARCHAR2(10);
+STD_TIMINGS_MNT NUMBER(10,2);
+
+begin
+
+select DISTINCT nvl(WT_QUICK,'Q') into temp2
+from WORK_TEAM_DETAILS_monthly
+where wt_emp_no = WJ_EMP_NO_
+and TO_CHAR(PERIOD) = TO_CHAR(STARTTIME_,'YYYYMM')
+AND wt_section = '02' AND ROWNUM = 1;
+
+
+
+
+STD_TIMINGS_MNT := R28_STD_TIMINGS_MNT(wj_location1_,WJ_EMP_NO_,STARTTIME_);
+
+
+IF temp2 = 'Q'  then 
+return STD_TIMINGS_MNT * 1;
+ELSIF temp2 = 'S' then
+return STD_TIMINGS_MNT * .85;
+ELSIF temp2 = 'M' then
+return STD_TIMINGS_MNT * .7;
+END IF;
+
+EXCEPTION WHEN others THEN    
+STD_TIMINGS_MNT := R28_STD_TIMINGS_MNT(wj_location1_,WJ_EMP_NO_,STARTTIME_);     
+return STD_TIMINGS_MNT;
+end;
+
+
+
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

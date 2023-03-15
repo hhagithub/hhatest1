@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="53bc067e4db0d7387eeafc602e4854ca570c62ff" author="(HHA_PROD)-Generated"     >
+		<n0:createSxmlObject objectName="VHS_GLOBAL" objectType="TABLE" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  <TABLE xmlns="http://xmlns.oracle.com/ku" version="1.0">
+   <GLOBAL_TEMPORARY></GLOBAL_TEMPORARY>
+   <SCHEMA>HHA_PROD</SCHEMA>
+   <NAME>VHS_GLOBAL</NAME>
+   <RELATIONAL_TABLE>
+      <COL_LIST>
+         <COL_LIST_ITEM>
+            <NAME>VHCID</NAME>
+            <DATATYPE>VARCHAR2</DATATYPE>
+            <LENGTH>200</LENGTH>
+         </COL_LIST_ITEM>
+         <COL_LIST_ITEM>
+            <NAME>VHCITEMID</NAME>
+            <DATATYPE>VARCHAR2</DATATYPE>
+            <LENGTH>200</LENGTH>
+         </COL_LIST_ITEM>
+         <COL_LIST_ITEM>
+            <NAME>ITEMDESCRIPTION</NAME>
+            <DATATYPE>VARCHAR2</DATATYPE>
+            <LENGTH>200</LENGTH>
+         </COL_LIST_ITEM>
+         <COL_LIST_ITEM>
+            <NAME>LABOURTIME</NAME>
+            <DATATYPE>VARCHAR2</DATATYPE>
+            <LENGTH>200</LENGTH>
+         </COL_LIST_ITEM>
+         <COL_LIST_ITEM>
+            <NAME>LABOURPRICE</NAME>
+            <DATATYPE>VARCHAR2</DATATYPE>
+            <LENGTH>200</LENGTH>
+         </COL_LIST_ITEM>
+         <COL_LIST_ITEM>
+            <NAME>TIMESTAMP</NAME>
+            <DATATYPE>VARCHAR2</DATATYPE>
+            <LENGTH>200</LENGTH>
+         </COL_LIST_ITEM>
+         <COL_LIST_ITEM>
+            <NAME>COMMENTS</NAME>
+            <DATATYPE>VARCHAR2</DATATYPE>
+            <LENGTH>200</LENGTH>
+         </COL_LIST_ITEM>
+      </COL_LIST>
+      <ON_COMMIT>DELETE</ON_COMMIT>
+   </RELATIONAL_TABLE>
+</TABLE>]]></n0:source>
+		</n0:createSxmlObject>
+	</changeSet>
+</databaseChangeLog>

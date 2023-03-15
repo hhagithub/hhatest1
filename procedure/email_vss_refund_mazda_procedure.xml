@@ -1,0 +1,577 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="c5dfda9f44b8a1076961440cc329890329d9c266" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleProcedure objectName="EMAIL_VSS_REFUND_MAZDA" objectType="PROCEDURE" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "HHA_PROD"."EMAIL_VSS_REFUND_MAZDA" (ID_ in number,RECEIPT_NO_ in number,action_ in varchar,
+        url_ in VARCHAR,file_ in varchar,account_approval in varchar,account_approved_by in number,form_url_ in varchar2)   IS
+
+
+        v_rows  varchar2(32767);
+        v_rows1  varchar2(32767);
+        v_rows2  varchar2(32767);
+        v_header varchar2(32767);
+        mgr_email varchar2(100);
+        followup_mobile varchar2(200);
+        req_loc_  varchar2(200);
+        logistic_email  varchar2(200);
+        source_email  varchar2(200);
+        account_apprv_email  varchar2(200);
+        log_account_apprv_email  varchar2(200);
+        action_formated varchar2(200);
+
+
+begin
+--              <tr style=''background:#01E4FD''>
+        v_header := '<table border=0>
+                  <td style=''border-style:ridge;  border-color:black; width:100px;''><p><b>Receipt#</b></p></td>
+                  <td style=''border-style:ridge;  border-color:black; width:100px;''><p><b>Receipt Date</b></p></td>
+                  <td style=''border-style:ridge;  border-color:black; width:100px;''><p><b>Payment Mode</b></p></td>
+                  <td style=''border-style:ridge;  border-color:black; width:100px;''><p><b>Receipt Amount</b></p></td>
+                  <td style=''border-style:ridge;  border-color:black; width:100px;''><p><b>Refund Amount</b></p></td>
+                  <td style=''border-style:ridge;  border-color:black; width:100px;''><p><b>Remarks</b></p></td>
+              </tr>';
+
+
+              if action_='Approved' then
+                 action_formated:='<span style='' color:green; font-weight:bold; ''>'||action_||'</span>';
+             elsif action_='Rejected' then
+                action_formated:='<span style='' color:red; font-weight:bold; ''>'||action_||'</span>';
+             else
+                 action_formated:=action_;
+             end if ;
+
+
+
+
+
+ select (select email from users where user_code=LOC_MANAGER_EMP_NO) mgr_email,
+(select BRANCH_DESC_ENG from branches where BRANCH_CODE=REQUESTED_LOC) req_Loc,u.email into mgr_email,req_loc_,source_email
+ from vss_REFUND_Request r,users u where u.user_code=r.cre_by and  ID=ID_;
+
+---logistic email
+select email into logistic_email from users where user_code=
+(select value_1 from codes_descriptions where main_code=177 and MAJOR_CODE=2
+and MINOR_CODE!=0 and rownum=1);
+---logistic email
+
+
+---accont approval email
+select email into log_account_apprv_email from users where user_code=
+(select value_1 from codes_descriptions where main_code=177 and MAJOR_CODE=3
+and MINOR_CODE!=0 and rownum=1);
+---accont approval email
+
+------email on account block receipt----
+if account_approved_by is not null then
+    select email into account_apprv_email from  users where user_code=account_approved_by;
+end if ;
+
+------email on account block receipt----
+
+
+for rec in (
+select RECEIPT_NO_,RECEIPT_DATE_,PAYMENT_MODE,RECEIPT_AMOUNT_,REFUND_AMOUNT,REMARKS,LOC_MANAGER_APPR_FLAG,LOG_APPROVAL_FLAG,
+APPR_REJ_REMARKS_LOC,APPR_REJ_REMARKS_LOG,ACCOUNT_REJ_FLAG,ACCOUNT_REJ_REMARKS,PAYMENT_DONE_BY_ACCOUNT
+from  vss_REFUND_Request where   ID=ID_
+)
+
+ loop
+
+             v_rows  := v_rows ||
+            '<tr>
+              <td style='' border-style:ridge; border-color:black;''> <p>' || rec.RECEIPT_NO_||'</p></td>
+              <td style='' border-style:ridge; border-color:black;''> <p>' || rec.RECEIPT_DATE_||'</p></td>
+              <td style='' border-style:ridge; border-color:black;''> <p>' || rec.PAYMENT_MODE||'</p></td>
+              <td style='' border-style:ridge; border-color:black;''> <p>' || rec.RECEIPT_AMOUNT_||'</p></td>
+              <td style='' border-style:ridge; border-color:black;''> <p>' || rec.REFUND_AMOUNT||'</p></td>
+              <td style='' border-style:ridge; border-color:black;''> <p>' || rec.REMARKS||'</p></td>
+
+            </tr>';
+
+--recp_email
+
+        if nvl(account_approval,null) is null then
+
+                 if nvl(rec.LOC_MANAGER_APPR_FLAG,'N') = 'N' then
+                  send_email_html(source_email,mgr_email,'VSS Refund Request Receipt# '||rec.RECEIPT_NO_ ,'
+                            Refund request '
+                            ||'<br></br>'||v_header ||v_rows1||v_rows||' </table>'||'<br>'||
+                            '<a href="'||file_||'">Click Link for View Documents</a>'||'<br>'||
+                            '<a href="'||'https://adfapps.hha.com.sa'||url_||'">Click here to approve</a>'||'<br>'||
+                            '
+                            Regards,'||'<p></p>'||
+                             req_loc_
+                            );--mgr_email
+                end if;
+
+                if nvl(rec.LOG_APPROVAL_FLAG,'N') = 'N' and nvl(rec.LOC_MANAGER_APPR_FLAG,'N') = 'A' then
+
+                  send_email_html(mgr_email,source_email,'VSS Refund Request Receipt# '||rec.RECEIPT_NO_ ||' ['||action_||']' ,'
+                          Refund request '|| action_formated||' By Location Manager'
+                          ||'<br></br>'||v_header ||v_rows1||v_rows||' </table>'||
+                          '
+                          Regards,'||'<p></p>'||
+                          'Location Manager'||'-'||req_loc_
+                        );
+
+
+                   send_email_html(mgr_email,logistic_email ,'VSS Refund Request Receipt# '||rec.RECEIPT_NO_ ||' ['||action_||']' ,'
+                            Refund request '|| action_formated||' By Location Manager'
+                            ||'<br></br>'||v_header ||v_rows1||v_rows||' </table>'||'<br>'||
+                            '<a href="'||file_||'">Click Link for View Documents</a>'||'<br>'||
+                            '<a href="'||'https://adfapps.hha.com.sa'||url_||'">Click here to approve</a>'||'<br>'||
+                            '
+                            Regards,'||'<p></p>'||
+                            'Location Manager'||'-'||req_loc_
+                  );
+
+                   send_email_html(mgr_email,'ukhan@hha.com.sa' ,'VSS Refund Request Receipt# '||rec.RECEIPT_NO_ ||' ['||action_||']' ,'
+                            Refund request '|| action_formated||' By Location Manager'
+                            ||'<br></br>'||v_header ||v_rows1||v_rows||' </table>'||'<br>'||
+                            '<a href="'||file_||'">Click Link for View Documents</a>'||'<br>'||
+                            '<a href="'||'https://adfapps.hha.com.sa'||url_||'">Click here to approve</a>'||'<br>'||
+                            '
+                            Regards,'||'<p></p>'||
+                            'Location Manager'||'-'||req_loc_
+                  );
+
+                     send_email_html(mgr_email,'aahmed@hha.com.sa' ,'VSS Refund Request Receipt# '||rec.RECEIPT_NO_ ||' ['||action_||']' ,'
+                            Refund request '|| action_formated||' By Location Manager'
+                            ||'<br></br>'||v_header ||v_rows1||v_rows||' </table>'||'<br>'||
+                            '<a href="'||file_||'">Click Link for View Documents</a>'||'<br>'||
+                            '<a href="'||'https://adfapps.hha.com.sa'||url_||'">Click here to approve</a>'||'<br>'||
+                            '
+                            Regards,'||'<p></p>'||
+                            'Location Manager'||'-'||req_loc_
+                  );
+
+
+                         send_email_html(mgr_email,'mazam@hha.com.sa' ,'VSS Refund Request Receipt# '||rec.RECEIPT_NO_ ||' ['||action_||']' ,'
+                            Refund request '|| action_formated||' By Location Manager'
+                            ||'<br></br>'||v_header ||v_rows1||v_rows||' </table>'||'<br>'||
+                            '<a href="'||file_||'">Click Link for View Documents</a>'||'<br>'||
+                            '<a href="'||'https://adfapps.hha.com.sa'||url_||'">Click here to approve</a>'||'<br>'||
+                            '
+                            Regards,'||'<p></p>'||
+                            'Location Manager'||'-'||req_loc_
+                  );
+
+                  --logistic_email
+
+
+
+                end if;
+              ---location manager rejection and email to cordinator-----
+              if nvl(rec.LOG_APPROVAL_FLAG,'N') = 'N' and nvl(rec.LOC_MANAGER_APPR_FLAG,'N') = 'R' then
+
+                send_email_html(mgr_email,source_email,'VSS Refund Request Receipt# '||rec.RECEIPT_NO_ ||' ['||action_||']' ,'
+                          Refund request '|| action_formated||' By Location Manager'
+                          ||'<br></br>'||v_header ||v_rows1||v_rows||' </table>'||'<br>'||
+                          'Rejection Remarks: '||rec.APPR_REJ_REMARKS_LOC||'<br>'||
+                          '
+                          Regards,'||'<p></p>'||
+                          'Location Manager'||'-'||req_loc_
+);
+                end if;
+               ---location manager rejection and email to cordinator-----
+
+                if nvl(rec.LOG_APPROVAL_FLAG,'N') = 'A' and nvl(rec.LOC_MANAGER_APPR_FLAG,'N') = 'A' and nvl(rec.PAYMENT_DONE_BY_ACCOUNT,'N') !='Y' then
+
+                       send_email_html(logistic_email,source_email,'VSS Refund Request Receipt# '||rec.RECEIPT_NO_ ||' ['||action_||']' ,'
+                        Refund request '|| action_formated||' By Logistic'
+                            ||'<br></br>'||v_header ||v_rows1||v_rows||' </table>'||
+                            '
+                            Regards,'||'<p></p>'||
+                            'Mazda Sales Admin Manager'
+                            );--source_email
+
+                       send_email_html(logistic_email,mgr_email,'VSS Refund Request Receipt# '||rec.RECEIPT_NO_ ||' ['||action_||']' ,'
+                        Refund request '|| action_formated||' By Logistic'
+                            ||'<br></br>'||v_header ||v_rows1||v_rows||' </table>'||
+                            '
+                            Regards,'||'<p></p>'||
+                            'Mazda Sales Admin Manager'
+                            );--mgr_email
+
+                            ---account notio email---
+                            send_email_html(logistic_email,log_account_apprv_email ,'VSS Refund Request Receipt# '||rec.RECEIPT_NO_ ||' ['||action_||']' ,'
+                            Refund request '|| action_formated||' By Logistic'
+                            ||'<br></br>'||v_header ||v_rows1||v_rows||' </table>'||'<br>'||
+                            '<a href="'||file_||'">Click Link for View Documents</a>'||'<br>'||
+                            '<a href="'||form_url_||'">Click Link for Print Form</a>'||'<br>'||
+                            '<a href="'||'https://adfapps.hha.com.sa'||url_||'">Click here to ask for more details and rejection or [Payment Processed]</a>'||'<br>'||
+                            '
+                            Regards,'||'<p></p>'||
+                            'Mazda Sales Admin Manager'
+                            );
+
+                           send_email_html(logistic_email,'neissa@hha.com.sa','VSS Refund Request Receipt# '||rec.RECEIPT_NO_ ||' ['||action_||']' ,'
+                            Refund request '|| action_formated||' By Logistic'
+                            ||'<br></br>'||v_header ||v_rows1||v_rows||' </table>'||
+                            '
+                            Regards,'||'<p></p>'||
+                            'Mazda Sales Admin Manager'
+                            );
+
+                            send_email_html(logistic_email,'halaki@hha.com.sa','VSS Refund Request Receipt# '||rec.RECEIPT_NO_ ||' ['||action_||']' ,'
+                            Refund request '|| action_formated||' By Logistic'
+                            ||'<br></br>'||v_header ||v_rows1||v_rows||' </table>'||
+                            '
+                            Regards,'||'<p></p>'||
+                            'Mazda Sales Admin Manager'
+                            );
+
+
+
+                           send_email_html(logistic_email,'smayet@hha.com.sa','VSS Refund Request Receipt# '||rec.RECEIPT_NO_ ||' ['||action_||']' ,'
+                             Refund request '|| action_formated||' By Logistic'
+                            ||'<br></br>'||v_header ||v_rows1||v_rows||' </table>'||
+                            '
+                            Regards,'||'<p></p>'||
+                            'Mazda Sales Admin Manager'
+                            );
+
+                            if substr(RECEIPT_NO_,1,3) between 213 and  441 then
+
+                           send_email_html(logistic_email,'mfityani@hha.com.sa','VSS Refund Request Receipt# '||rec.RECEIPT_NO_ ||' ['||action_||']' ,'
+                             Refund request '|| action_formated||' By Logistic'
+                            ||'<br></br>'||v_header ||v_rows1||v_rows||' </table>'||
+                            '
+                            Regards,'||'<p></p>'||
+                            'Mazda Sales Admin Manager'
+                            );
+
+                            end if ;
+
+                          if substr(RECEIPT_NO_,1,3) between 510  and  622 then
+
+                           send_email_html(logistic_email,'mfityani@hha.com.sa','VSS Refund Request Receipt# '||rec.RECEIPT_NO_ ||' ['||action_||']' ,'
+                             Refund request '|| action_formated||' By Logistic'
+                            ||'<br></br>'||v_header ||v_rows1||v_rows||' </table>'||
+                            '
+                            Regards,'||'<p></p>'||
+                            'Mazda Sales Admin Manager'
+                            );
+
+                            end if ;
+
+                             if substr(RECEIPT_NO_,1,3) between 510 and 553 then
+
+                           send_email_html(logistic_email,'msukkar@hha.com.sa','VSS Refund Request Receipt# '||rec.RECEIPT_NO_ ||' ['||action_||']' ,'
+                             Refund request '|| action_formated||' By Logistic'
+                            ||'<br></br>'||v_header ||v_rows1||v_rows||' </table>'||
+                            '
+                            Regards,'||'<p></p>'||
+                            'Mazda Sales Admin Manager'
+                            );
+
+                            end if ;
+
+                            if substr(RECEIPT_NO_,1,3) between 554 and 622 then
+
+                           send_email_html(logistic_email,'fahad.break@hha.com.sa','VSS Refund Request Receipt# '||rec.RECEIPT_NO_ ||' ['||action_||']' ,'
+                             Refund request '|| action_formated||' By Logistic'
+                            ||'<br></br>'||v_header ||v_rows1||v_rows||' </table>'||
+                            '
+                            Regards,'||'<p></p>'||
+                            'Mazda Sales Admin Manager'
+                            );
+
+                            end if ;
+
+                            if substr(RECEIPT_NO_,1,3) between 481 and  494 then
+
+                           send_email_html(logistic_email,'talsalman@hha.com.sa','VSS Refund Request Receipt# '||rec.RECEIPT_NO_ ||' ['||action_||']' ,'
+                             Refund request '|| action_formated||' By Logistic'
+                            ||'<br></br>'||v_header ||v_rows1||v_rows||' </table>'||
+                            '
+                            Regards,'||'<p></p>'||
+                            'Mazda Sales Admin Manager'
+                            );
+
+                              send_email_html(logistic_email,'istyaquea@hha.com.sa','VSS Refund Request Receipt# '||rec.RECEIPT_NO_ ||' ['||action_||']' ,'
+                             Refund request '|| action_formated||' By Logistic'
+                            ||'<br></br>'||v_header ||v_rows1||v_rows||' </table>'||
+                            '
+                            Regards,'||'<p></p>'||
+                            'Mazda Sales Admin Manager'
+                            );
+
+                            end if ;
+
+
+
+                            ---account notio email---
+
+
+                end if;
+
+                  if nvl(rec.LOG_APPROVAL_FLAG,'N') = 'R' and nvl(rec.LOC_MANAGER_APPR_FLAG,'N') = 'A' then
+                       send_email_html(logistic_email,source_email ,'VSS Refund Request Receipt# '||rec.RECEIPT_NO_ ||' ['||action_||']' ,'
+                        Refund request '|| action_formated||' By Logistic'
+                            ||'<br></br>'||v_header ||v_rows1||v_rows||' </table>'||'<br>'||
+                              'Rejection Remarks: '||rec.APPR_REJ_REMARKS_LOG||'<br>'||
+                            '
+                            Regards,'||'<p></p>'||
+                            'Mazda Sales Admin Manager'
+                            );
+
+                       send_email_html(logistic_email,mgr_email ,'VSS Refund Request Receipt# '||rec.RECEIPT_NO_ ||' ['||action_||']' ,'
+                        Refund request '|| action_formated||' By Logistic'
+                            ||'<br></br>'||v_header ||v_rows1||v_rows||' </table>'||'<br>'||
+                             'Rejection Remarks: '||rec.APPR_REJ_REMARKS_LOG||'<br>'||
+                            '
+                            Regards,'||'<p></p>'||
+                            'Mazda Sales Admin Manager'
+                            );
+                end if;
+      end if;
+
+
+
+        if account_approval is not null then
+
+             send_email_html(account_apprv_email,mgr_email,'VSS Refund Request Receipt# '||rec.RECEIPT_NO_ ||' ['||action_||']' ,'
+                         Refund payment request under process by accounts'
+                            ||'<br></br>'||v_header ||v_rows1||v_rows||' </table>'||'<br>'||
+                            '
+                            Regards,'||'<p></p>'||
+                            'Account Dept.'
+                            );--mgr_email
+
+                 send_email_html(account_apprv_email,source_email ,'VSS Refund Request Receipt# '||rec.RECEIPT_NO_ ||' ['||action_||']' ,'
+                           Refund payment request under process by accounts'
+                            ||'<br></br>'||v_header ||v_rows1||v_rows||' </table>'||'<br>'||
+                            '
+                            Regards,'||'<p></p>'||
+                            'Account Dept.'
+                            );
+
+                     send_email_html('GSOOPPY@HHA.COM.SA','fazalk@hha.com.sa' ,'VSS Refund Request Receipt# '||rec.RECEIPT_NO_ ||' ['||action_||']' ,'
+                              Refund payment request under process by accounts'
+                            ||'<br></br>'||v_header ||v_rows1||v_rows||' </table>'||'<br>'||
+                            '
+                            Regards,'||'<p></p>'||
+                            'Account Dept.'
+                            );--logistic_email
+
+                       send_email_html(account_apprv_email,'smayet@hha.com.sa' ,'VSS Refund Request Receipt# '||rec.RECEIPT_NO_ ||' ['||action_||']' ,'
+                              Refund payment request under process by accounts'
+                            ||'<br></br>'||v_header ||v_rows1||v_rows||' </table>'||'<br>'||
+                            '
+                            Regards,'||'<p></p>'||
+                            'Account Dept.'
+                            );--logistic_email
+
+                       send_email_html(account_apprv_email,'aahmed@hha.com.sa' ,'VSS Refund Request Receipt# '||rec.RECEIPT_NO_ ||' ['||action_||']' ,'
+                              Refund payment request under process by accounts'
+                            ||'<br></br>'||v_header ||v_rows1||v_rows||' </table>'||'<br>'||
+                            '
+                            Regards,'||'<p></p>'||
+                            'Account Dept.'
+                            );--logistic_email
+
+                             send_email_html(account_apprv_email,'mazam@hha.com.sa' ,'VSS Refund Request Receipt# '||rec.RECEIPT_NO_ ||' ['||action_||']' ,'
+                              Refund payment request under process by accounts'
+                            ||'<br></br>'||v_header ||v_rows1||v_rows||' </table>'||'<br>'||
+                            '
+                            Regards,'||'<p></p>'||
+                            'Account Dept.'
+                            );--logistic_email
+
+                               send_email_html(account_apprv_email,'ukhan@hha.com.sa' ,'VSS Refund Request Receipt# '||rec.RECEIPT_NO_ ||' ['||action_||']' ,'
+                              Refund payment request under process by accounts'
+                            ||'<br></br>'||v_header ||v_rows1||v_rows||' </table>'||'<br>'||
+                            '
+                            Regards,'||'<p></p>'||
+                            'Account Dept.'
+                            );--logistic_email
+
+                          if substr(RECEIPT_NO_,1,3) between 213 and  441 then
+                             send_email_html(account_apprv_email,'mfityani@hha.com.sa' ,'VSS Refund Request Receipt# '||rec.RECEIPT_NO_ ||' ['||action_||']' ,'
+                              Refund payment request under process by accounts'
+                            ||'<br></br>'||v_header ||v_rows1||v_rows||' </table>'||'<br>'||
+                            '
+                            Regards,'||'<p></p>'||
+                            'Account Dept.'
+                            );--logistic_email
+                          end if ;
+
+
+                          if substr(RECEIPT_NO_,1,3) between 510  and  622 then
+                             send_email_html(account_apprv_email,'mfityani@hha.com.sa' ,'VSS Refund Request Receipt# '||rec.RECEIPT_NO_ ||' ['||action_||']' ,'
+                              Refund payment request under process by accounts'
+                            ||'<br></br>'||v_header ||v_rows1||v_rows||' </table>'||'<br>'||
+                            '
+                            Regards,'||'<p></p>'||
+                            'Account Dept.'
+                            );--logistic_email
+                          end if ;
+
+
+                             if substr(RECEIPT_NO_,1,3) between 510 and 553 then
+                             send_email_html(account_apprv_email,'msukkar@hha.com.sa' ,'VSS Refund Request Receipt# '||rec.RECEIPT_NO_ ||' ['||action_||']' ,'
+                              Refund payment request under process by accounts'
+                            ||'<br></br>'||v_header ||v_rows1||v_rows||' </table>'||'<br>'||
+                            '
+                            Regards,'||'<p></p>'||
+                            'Account Dept.'
+                            );--logistic_email
+                          end if ;
+
+
+
+                            if substr(RECEIPT_NO_,1,3) between 554 and 622 then
+                             send_email_html(account_apprv_email,'fahad.break@hha.com.sa' ,'VSS Refund Request Receipt# '||rec.RECEIPT_NO_ ||' ['||action_||']' ,'
+                              Refund payment request under process by accounts'
+                            ||'<br></br>'||v_header ||v_rows1||v_rows||' </table>'||'<br>'||
+                            '
+                            Regards,'||'<p></p>'||
+                            'Account Dept.'
+                            );--logistic_email
+                          end if ;
+
+                            if substr(RECEIPT_NO_,1,3) between 481 and  494 then
+                             send_email_html(account_apprv_email,'talsalman@hha.com.sa' ,'VSS Refund Request Receipt# '||rec.RECEIPT_NO_ ||' ['||action_||']' ,'
+                              Refund payment request under process by accounts'
+                            ||'<br></br>'||v_header ||v_rows1||v_rows||' </table>'||'<br>'||
+                            '
+                            Regards,'||'<p></p>'||
+                            'Account Dept.'
+                            );--logistic_email
+
+                              send_email_html(account_apprv_email,'istyaquea@hha.com.sa' ,'VSS Refund Request Receipt# '||rec.RECEIPT_NO_ ||' ['||action_||']' ,'
+                              Refund payment request under process by accounts'
+                            ||'<br></br>'||v_header ||v_rows1||v_rows||' </table>'||'<br>'||
+                            '
+                            Regards,'||'<p></p>'||
+                            'Account Dept.'
+                            );--logistic_email
+                          end if ;
+
+
+
+
+        end if ;
+
+
+            ---------------account rejected------
+           if rec.ACCOUNT_REJ_FLAG ='R' then
+                send_email_html(account_apprv_email,source_email,'VSS Refund Request Receipt# '||rec.RECEIPT_NO_ ||' ['||'Rejected'||']' ,'
+                          Refund request '|| action_formated ||' By Accounts Admin'
+                          ||'<br></br>'||v_header ||v_rows1||v_rows||' </table>'||'<br>'||
+                          'Rejection Remarks: '||rec.ACCOUNT_REJ_REMARKS||'<br>'||
+                          '
+                          Regards,'||'<p></p>'||
+                          'Accounts Admin');--source_email
+
+                       send_email_html(account_apprv_email,mgr_email,'VSS Refund Request Receipt# '||rec.RECEIPT_NO_ ||' ['||'Rejected'||']' ,'
+                          Refund request '|| action_formated ||' By Accounts Admin'
+                          ||'<br></br>'||v_header ||v_rows1||v_rows||' </table>'||'<br>'||
+                          'Rejection Remarks: '||rec.ACCOUNT_REJ_REMARKS||'<br>'||
+                          '
+                          Regards,'||'<p></p>'||
+                          'Accounts Admin');--mgr_email
+
+                        send_email_html(account_apprv_email,logistic_email,'VSS Refund Request Receipt# '||rec.RECEIPT_NO_ ||' ['||'Rejected'||']' ,'
+                          Refund request '|| action_formated ||' By Accounts Admin'
+                          ||'<br></br>'||v_header ||v_rows1||v_rows||' </table>'||'<br>'||
+                          'Rejection Remarks: '||rec.ACCOUNT_REJ_REMARKS||'<br>'||
+                          '
+                          Regards,'||'<p></p>'||
+                          'Accounts Admin');--mgr_email
+
+           end if;
+           ---------------account rejected------
+
+
+
+            ---------------account payment done------
+           if rec.PAYMENT_DONE_BY_ACCOUNT ='Y' then
+                send_email_html(log_account_apprv_email,source_email,'VSS Refund Request Receipt# '||rec.RECEIPT_NO_ ||' ['||action_||']' ,'
+                          Refund request '|| action_formated ||' By Accounts Admin'
+                          ||'<br></br>'||v_header ||v_rows1||v_rows||' </table>'||'<br>'||
+                          '
+                          Regards,'||'<p></p>'||
+                          'Accounts Admin');--source_email
+
+                       send_email_html(log_account_apprv_email,mgr_email,'VSS Refund Request Receipt# '||rec.RECEIPT_NO_ ||' ['||action_||']' ,'
+                          Refund request '|| action_formated ||' By Accounts Admin'
+                          ||'<br></br>'||v_header ||v_rows1||v_rows||' </table>'||'<br>'||
+                          '
+                          Regards,'||'<p></p>'||
+                          'Accounts Admin');--mgr_email
+
+                        send_email_html(log_account_apprv_email,logistic_email,'VSS Refund Request Receipt# '||rec.RECEIPT_NO_ ||' ['||action_||']' ,'
+                          Refund request '|| action_formated ||' By Accounts Admin'
+                          ||'<br></br>'||v_header ||v_rows1||v_rows||' </table>'||'<br>'||
+                          '
+                          Regards,'||'<p></p>'||
+                          'Accounts Admin');--mgr_email
+
+
+
+                           send_email_html(log_account_apprv_email,'smayet@hha.com.sa','VSS Refund Request Receipt# '||rec.RECEIPT_NO_ ||' ['||action_||']' ,'
+                          Refund request '|| action_formated ||' By Accounts Admin'
+                          ||'<br></br>'||v_header ||v_rows1||v_rows||' </table>'||'<br>'||
+                          '
+                          Regards,'||'<p></p>'||
+                          'Accounts Admin');--mgr_email
+
+                           send_email_html(log_account_apprv_email,'aahmed@hha.com.sa','VSS Refund Request Receipt# '||rec.RECEIPT_NO_ ||' ['||action_||']' ,'
+                          Refund request '|| action_formated ||' By Accounts Admin'
+                          ||'<br></br>'||v_header ||v_rows1||v_rows||' </table>'||'<br>'||
+                          '
+                          Regards,'||'<p></p>'||
+                          'Accounts Admin');--mgr_email
+
+                          send_email_html(log_account_apprv_email,'mazam@hha.com.sa','VSS Refund Request Receipt# '||rec.RECEIPT_NO_ ||' ['||action_||']' ,'
+                          Refund request '|| action_formated ||' By Accounts Admin'
+                          ||'<br></br>'||v_header ||v_rows1||v_rows||' </table>'||'<br>'||
+                          '
+                          Regards,'||'<p></p>'||
+                          'Accounts Admin');--mgr_email
+
+                             send_email_html(log_account_apprv_email,'ukhan@hha.com.sa','VSS Refund Request Receipt# '||rec.RECEIPT_NO_ ||' ['||action_||']' ,'
+                          Refund request '|| action_formated ||' By Accounts Admin'
+                          ||'<br></br>'||v_header ||v_rows1||v_rows||' </table>'||'<br>'||
+                          '
+                          Regards,'||'<p></p>'||
+                          'Accounts Admin');--mgr_email
+
+           end if;
+            ---------------account payment done------
+
+
+
+ end loop;
+
+v_rows   := Null;
+v_rows1 := null;
+mgr_email  := null;
+logistic_email  := null;
+req_loc_:=null;
+account_apprv_email:=null;
+log_account_apprv_email:=null;
+
+EXCEPTION WHEN OTHERS THEN
+
+ send_email_html('it@hha.com.sa','haroon@hha.com.sa' ,'email_VSS_REFUND_mazda',''
+                            ||'<br></br>'||'email_VSS_REFUND_mazda'||' </table> ' ||'<p>&nbsp;</p>'
+                            ||'<p></p>'||--'<img src="C:\HHA\icons\hhalogo_wp.bmp" alt="HTML5 Icon" width="100" height="80">'
+                            'Regards,'||'<p></p>'||'
+                            MAZDA Logistic'
+                            );
+
+
+end;
+/]]></n0:source>
+		</n0:createOracleProcedure>
+	</changeSet>
+</databaseChangeLog>

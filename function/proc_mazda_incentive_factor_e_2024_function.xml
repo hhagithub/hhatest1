@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="f5a66c6d98e3749f9da778fe3060a81d597d813e" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="PROC_MAZDA_INCENTIVE_FACTOR_E_2024" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."PROC_MAZDA_INCENTIVE_FACTOR_E_2024" (P_LOC VARCHAR2,P_PERIOD VARCHAR2,P_EMP_NO VARCHAR2) return varchar2 --MAZDA MANAGER INCENTIVE
+IS
+ V_Factor_E NUMBER;
+ V_Ser_cont_Count NUMBER;
+ V_Ser_cont_Factor NUMBER;
+
+ V_NARRATION VARCHAR2(2000);
+ --V_EMP_NO VARCHAR2(20);
+
+BEGIN
+
+--LOC_NO = '488'
+
+ FOR LOC IN (select Distinct LOC_No as WT_LOCATION from LOCATION_MANPOWER_23 where Period = P_Period and LOC_No=P_LOC) Loop
+-- FOR LOC IN (Select distinct WT_LOCATION/*,WT_EMP_NO*/ from work_team_details where  NVL(ASTON_MARTIN_FLAG,'M') <> 'Y') LOOP
+ 
+ V_Factor_E := 0;
+ V_Ser_cont_Count := 0;
+ V_Ser_cont_Factor := 0;
+V_NARRATION := NULL;
+ --V_EMP_NO := '180650';
+
+
+DECLARE
+BEGIN
+--Factor E                      = 0.3 +                [Service contract Factor X 0.7]
+
+   --Service contract Factor
+
+   select count(*) INTO  V_Ser_cont_Count FROM work_contract_cust_mst
+    WHERE  APP IS NULL and to_char(CRE_DATE,'RRRRMM') = P_PERIOD AND CRE_BY=P_EMP_NO ;
+
+      if V_Ser_cont_Count < 3 then  V_Ser_cont_Factor:=0;
+      elsif V_Ser_cont_Count < 4 then V_Ser_cont_Factor:=0.5;
+      elsif V_Ser_cont_Count < 5 then V_Ser_cont_Factor:=0.75;
+      elsif V_Ser_cont_Count >= 5 then  V_Ser_cont_Factor:=1;
+      end if;
+
+    v_Factor_E   :=  0.3 + (V_Ser_cont_Factor * 0.7);
+ 
+           --  V_NARRATION := V_NARRATION || ' (LOC:= '||LOC.WT_LOCATION || ')';
+            V_NARRATION := V_NARRATION || ' (EMP NO:= '||P_EMP_NO || ')';
+             V_NARRATION := V_NARRATION || ' (Service Contract Sales:= '||V_Ser_cont_Count || ')';  
+            V_NARRATION := V_NARRATION || ' (Service contract Factor:='|| NVL( V_Ser_cont_Factor,0)|| ')';
+            V_NARRATION := V_NARRATION || ' (Factor_E:='|| v_Factor_E|| ')';
+
+     EXCEPTION WHEN NO_DATA_FOUND THEN
+                NULL;
+            WHEN TOO_MANY_ROWS THEN
+                NULL;
+    END;
+
+    dbms_output.put_line(V_NARRATION);
+  
+  
+  END LOOP;
+  
+  
+   return v_Factor_E;
+    --commit;
+    dbms_output.put_line(' Procedure Successful ');
+EXCEPTION
+     WHEN others THEN
+  dbms_output.put_line(' SQL Error Msg='||SQLERRM);
+  return null;
+
+END;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

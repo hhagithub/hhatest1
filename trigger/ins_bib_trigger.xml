@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="76118b505ac37320e5e3f22724a9549cf2723d3f" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleTrigger objectName="INS_BIB" objectType="TRIGGER" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE TRIGGER "HHA_PROD"."INS_BIB" before insert on HEJAZULTRA_UP for each row
+begin
+  select nvl(max(nvl(TICKET_NO,0)),0)+1 into :new.TICKET_NO from HEJAZULTRA_UP;
+end;
+
+/
+/
+ALTER TRIGGER "HHA_PROD"."INS_BIB" ENABLE;]]></n0:source>
+		</n0:createOracleTrigger>
+	</changeSet>
+</databaseChangeLog>

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="f34297041f8c848af5f0bd8986b53c863aa5ff09" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="SOAP_ADD_NUMBERS" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."SOAP_ADD_NUMBERS" (p_int_1  IN  NUMBER, p_int_2  IN  NUMBER) RETURN NUMBER AS
+  l_envelope  CLOB;
+  l_xml       XMLTYPE;
+  l_result    VARCHAR2(32767);
+  lClob       VARCHAR2(32767);
+BEGIN
+
+  -- Build a SOAP document appropriate for the web service.
+  l_envelope := '<?xml version="1.0" encoding="UTF-8"?>
+  <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
+                 xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <soap:Body>
+    <ws_add xmlns="http://oracle-base.com/webservices/" soap:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+      <int1 xsi:type="xsd:integer">' || p_int_1 || '</int1>
+      <int2 xsi:type="xsd:integer">' || p_int_2 || '</int2>
+    </ws_add>
+  </soap:Body>
+</soap:Envelope>';
+
+  -- Get the XML response from the web service.
+  l_xml := APEX_WEB_SERVICE.make_request(
+    p_url      => 'http://oracle-base.com/webservices/server.php',
+    p_action   => 'http://oracle-base.com/webservices/server.php/ws_add',
+    p_envelope => l_envelope
+  );
+
+  -- Display the whole SOAP document returned.
+  DBMS_OUTPUT.put_line('l_xml=' || l_xml.getClobVal());
+  lClob := l_xml.getClobVal();
+  /*
+  <?xml version="1.0" encoding="ISO-8859-1"?>
+  <SOAP-ENV:Envelope SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" 
+  xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/">
+  <SOAP-ENV:Body><ns1:ws_addResponse xmlns:ns1="http://oracle-base.com/webservices/">
+  <return xsi:type="xsd:string">4</return></ns1:ws_addResponse></SOAP-ENV:Body></SOAP-ENV:Envelope> 
+  */
+
+  -- Pull out the specific value of interest.
+  l_result := APEX_WEB_SERVICE.parse_xml(
+    p_xml   => l_xml,
+    p_xpath => '//return/text()',
+    p_ns    => 'xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"'
+    --p_ns    => 'xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"'
+    
+  );
+
+  DBMS_OUTPUT.put_line('l_result=' || l_result);
+
+  RETURN TO_NUMBER(l_result);
+END;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="f9f8e453a66061f78a6f772d5d48a61af04bcd9d" author="(HHA_PROD)-Generated"     >
+		<n0:createSxmlObject objectName="EMP_SEQ" objectType="SEQUENCE" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  <SEQUENCE xmlns="http://xmlns.oracle.com/ku" version="1.0">
+   <SCHEMA>HHA_PROD</SCHEMA>
+   <NAME>EMP_SEQ</NAME>
+   <START_WITH>8000</START_WITH>
+   <INCREMENT>1</INCREMENT>
+   <MINVALUE>1</MINVALUE>
+   <MAXVALUE>9999999999999999999999999999</MAXVALUE>
+   <CACHE>20</CACHE>
+   <SCALE>NOSCALE</SCALE>
+</SEQUENCE>]]></n0:source>
+		</n0:createSxmlObject>
+	</changeSet>
+</databaseChangeLog>

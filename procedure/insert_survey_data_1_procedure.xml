@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="342c3d0734826f4e531529b20494513268b8a30c" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleProcedure objectName="INSERT_SURVEY_DATA_1" objectType="PROCEDURE" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "HHA_PROD"."INSERT_SURVEY_DATA_1" (vin in varchar2  , mobile in Number) is
+l_json_text   CLOB;
+l_count       PLS_INTEGER;
+l_members     wwv_flow_t_varchar2;
+l_paths       apex_t_varchar2;
+l_exists      BOOLEAN;
+l_count_2     PLS_INTEGER;
+l_count_3     PLS_INTEGER;
+l_count_thanks PLS_INTEGER;
+l_count_suggetsion PLS_INTEGER;
+l_count_complains PLS_INTEGER;
+
+BEGIN
+ select  apex_web_service.make_rest_request(p_url => 'https://m.hha.com.sa/ords/hhaapi/mob/survay/get_questionairs/?vin='||vin||'&mobile_number='||mobile ,
+ p_http_method => 'GET',      
+ --p_body  => '{"vin":"JM7DMAW78P1210145","mobile_number":""}',                 
+ p_username => 'hhaprodrestuser', 
+ p_password => 'hhaprodrestpass1' )    INTO l_json_text                                        
+ from dual;
+
+--SELECT order_document INTO l_json_text FROM json_order where id=2;
+dbms_output.put_line(l_json_text);
+ apex_json.parse (l_json_text);
+l_count := apex_json.get_count (p_path => 'items');
+--dbms_output.put_line(l_count);
+/*
+FOR i IN 1 .. l_count LOOP   
+
+l_count_2 := apex_json.get_count ( p_path   => 'items[%d].questionairs', p0=> i); 
+l_count_thanks := apex_json.get_count ( p_path   => 'items[%d].thanks_options', p0=> i); 
+l_count_suggetsion := apex_json.get_count ( p_path   => 'items[%d].complain_options', p0=> i); 
+l_count_complains := apex_json.get_count ( p_path   => 'items[%d].suggestion_options', p0=> i); 
+INSERT INTO SURVEY_MASTER(
+survey_id,event_name_en,event_name_ar,appl_code,event_code,appl_name,created_on ,mobile_no,vin 
+)
+VALUES
+(
+   (apex_json.get_varchar2 (p_path   => 'items[%d].survey_id',p0=> i )),
+   (apex_json.get_varchar2 (p_path   => 'items[%d].event_name_en',p0=> i )),
+   (apex_json.get_varchar2 (p_path   => 'items[%d].event_name_ar',p0=> i )),
+   (apex_json.get_varchar2 (p_path   => 'items[%d].appl_code',p0=> i )),
+   (apex_json.get_varchar2 (p_path   => 'items[%d].event_code',p0=> i )),
+   (apex_json.get_varchar2 (p_path   => 'items[%d].appl_name',p0=> i )),
+   (apex_json.get_varchar2 (p_path   => 'items[%d].created_on',p0=> i )),
+   (apex_json.get_varchar2 (p_path   => 'items[%d].mobile_no',p0=> i )),
+   (apex_json.get_varchar2 (p_path   => 'items[%d].vin',p0=> i )) 
+);
+
+if l_count_2>0 then
+   FOR j IN 1 .. l_count_thanks LOOP
+   dbms_output.put_line('thanks_id  : ' || apex_json.get_varchar2 (p_path   => 'items[%d].thanks_options[%d].thanks_id',p0=> i, p1=> j) );
+  INSERT INTO SURVEY_JSON_THANKS(thanks_id,thanks_en,thanks_ar,order_ ,is_active,type_,SURVEY_ID) VALUES (
+      (apex_json.get_varchar2 (
+            p_path   => 'items[%d].thanks_options[%d].thanks_id',
+            p0       => i,
+            p1       => j)
+            ),
+       (apex_json.get_varchar2 (
+            p_path   => 'items[%d].thanks_options[%d].thanks_en',
+            p0       => i,
+            p1       => j)
+            ),
+       (apex_json.get_varchar2 (
+            p_path   => 'items[%d].thanks_options[%d].thanks_ar',
+            p0       => i,
+            p1       => j)
+            ),
+       (apex_json.get_varchar2 (
+            p_path   => 'items[%d].thanks_options[%d].order',
+            p0       => i,
+            p1       => j)
+            ),
+       (apex_json.get_varchar2 (
+            p_path   => 'items[%d].thanks_options[%d].is_active',
+            p0       => i,
+            p1       => j)
+            ),
+       (apex_json.get_varchar2 (
+            p_path   => 'items[%d].thanks_options[%d].type',
+            p0       => i,
+            p1       => j)
+            ),
+        
+          (apex_json.get_varchar2 (p_path   => 'items[%d].survey_id',p0=> i ))   
+  );  
+   
+   end loop;
+   FOR j IN 1 .. l_count_suggetsion LOOP
+    dbms_output.put_line('suggest_id  : ' || apex_json.get_varchar2 (p_path   => 'items[%d].suggestion_options[%d].suggestion_id',p0=> i, p1=> j) );
+     INSERT INTO SURVEY_JSON_SUGGEST(suggestion_id,suggestion_en,suggestion_ar,order_ ,is_active,type_,SURVEY_ID) VALUES (
+          (apex_json.get_varchar2 (
+            p_path   => 'items[%d].suggestion_options[%d].suggestion_id',
+            p0       => i,
+            p1       => j)
+            ),
+       (apex_json.get_varchar2 (
+            p_path   => 'items[%d].suggestion_options[%d].suggestion_en',
+            p0       => i,
+            p1       => j)
+            ),
+       (apex_json.get_varchar2 (
+            p_path   => 'items[%d].suggestion_options[%d].suggestion_ar',
+            p0       => i,
+            p1       => j)
+            ),
+       (apex_json.get_varchar2 (
+            p_path   => 'items[%d].suggestion_options[%d].order',
+            p0       => i,
+            p1       => j)
+            ),
+       (apex_json.get_varchar2 (
+            p_path   => 'items[%d].suggestion_options[%d].is_active',
+            p0       => i,
+            p1       => j)
+            ),
+       (apex_json.get_varchar2 (
+            p_path   => 'items[%d].suggestion_options[%d].type',
+            p0       => i,
+            p1       => j)
+            ),
+        
+          (apex_json.get_varchar2 (p_path   => 'items[%d].survey_id',p0=> i ))   
+   );
+   end loop;
+   FOR j IN 1 .. l_count_complains LOOP
+  --  dbms_output.put_line('compain_id  : ' || apex_json.get_varchar2 (p_path   => 'items[%d].complain_options[%d].complain_id',p0=> i, p1=> j) );
+   INSERT INTO SURVEY_JSON_COMPLAIN(complain_id,complain_en,complain_ar,order_ ,is_active,type_,SURVEY_ID) VALUES (
+         (apex_json.get_varchar2 (
+            p_path   => 'items[%d].complain_options[%d].complain_id',
+            p0       => i,
+            p1       => j)
+            ),
+       (apex_json.get_varchar2 (
+            p_path   => 'items[%d].complain_options[%d].complain_en',
+            p0       => i,
+            p1       => j)
+            ),
+       (apex_json.get_varchar2 (
+            p_path   => 'items[%d].complain_options[%d].complain_ar',
+            p0       => i,
+            p1       => j)
+            ),
+       (apex_json.get_varchar2 (
+            p_path   => 'items[%d].complain_options[%d].order',
+            p0       => i,
+            p1       => j)
+            ),
+       (apex_json.get_varchar2 (
+            p_path   => 'items[%d].complain_options[%d].is_active',
+            p0       => i,
+            p1       => j)
+            ),
+       (apex_json.get_varchar2 (
+            p_path   => 'items[%d].complain_options[%d].type',
+            p0       => i,
+            p1       => j)
+            ),
+        
+          (apex_json.get_varchar2 (p_path   => 'items[%d].survey_id',p0=> i ))   
+   );
+   end loop;
+   FOR j IN 1 .. l_count_2 LOOP
+     --dbms_output.put_line('Contract Number  : ' || apex_json.get_varchar2(p_path => 'PolicyUpdate.contractNumber'));
+    -- dbms_output.put_line('questionair_id  : ' || apex_json.get_varchar2 (p_path   => 'items[%d].questionairs[%d].questionair_id',p0=> i, p1=> j) );
+        
+            INSERT INTO SURVEY_JSON_QTNS(SURVEY_ID,QUESTIONAIR_ID,questionair_en ,QUESTIONAIR_AR,ORDER_,IS_ACTIVE,HAS_FRFT,TYPE_)
+            VALUES
+            (
+            (apex_json.get_varchar2 (p_path   => 'items[%d].survey_id',p0=> i )),
+            (apex_json.get_varchar2 (
+            p_path   => 'items[%d].questionairs[%d].questionair_id',
+            p0       => i,
+            p1       => j)
+            ),
+            (apex_json.get_varchar2 (
+            p_path   => 'items[%d].questionairs[%d].questionair_en',
+            p0       => i,
+            p1       => j)
+            )
+            ,
+            (apex_json.get_varchar2 (
+            p_path   => 'items[%d].questionairs[%d].questionair_ar',
+            p0       => i,
+            p1       => j)
+            ),
+            (apex_json.get_varchar2 (
+            p_path   => 'items[%d].questionairs[%d].order',
+            p0       => i,
+            p1       => j)
+            ),
+            (apex_json.get_varchar2 (
+            p_path   => 'items[%d].questionairs[%d].is_active',
+            p0       => i,
+            p1       => j)
+            ),
+            (apex_json.get_varchar2 (
+            p_path   => 'items[%d].questionairs[%d].has_frft',
+            p0       => i,
+            p1       => j)
+            ),
+            (apex_json.get_varchar2 (
+            p_path   => 'items[%d].questionairs[%d].type',
+            p0       => i,
+            p1       => j)
+            ) 
+
+            ); 
+        
+
+            l_count_3 := apex_json.get_count ( p_path   => 'items[%d].questionairs[%d].sub_questionairs', p0=>i,p1=>j);
+       --    dbms_output.put_line('No of sub_questionairs  : '|| l_count_3);
+        
+       
+        For k in 1..l_count_3 lOOP
+         dbms_output.put_line('sub_questionair  : ' || apex_json.get_varchar2 (p_path   => 'items[%d].questionairs[%d].sub_questionairs[%d].questionair_en',p0=> i, p1=> j,p2=>k) );
+         
+                INSERT INTO SURVEY_JSON_SUB_QTNS(
+                questionair_id,
+                sub_questionair_id,
+                questionair_en,
+                questionair_ar,
+                order_ ,
+                is_active,
+                type_,
+                survey_id
+                )
+                VALUES
+                (
+                (apex_json.get_varchar2 (
+                p_path   => 'items[%d].questionairs[%d].sub_questionairs[%d].questionair_id',
+                p0       => i,
+                p1       => j,
+                p2       => k)),
+                (apex_json.get_varchar2 (
+                p_path   => 'items[%d].questionairs[%d].sub_questionairs[%d].sub_questionair_id',
+                p0       => i,
+                p1       => j,
+                p2       => k)),
+                (apex_json.get_varchar2 (
+                p_path   => 'items[%d].questionairs[%d].sub_questionairs[%d].questionair_en',
+                p0       => i,
+                p1       => j,
+                p2       => k)),
+                (apex_json.get_varchar2 (
+                p_path   => 'items[%d].questionairs[%d].sub_questionairs[%d].questionair_ar',
+                p0       => i,
+                p1       => j,
+                p2       => k)),
+                (apex_json.get_varchar2 (
+                p_path   => 'items[%d].questionairs[%d].sub_questionairs[%d].order_',
+                p0       => i,
+                p1       => j,
+                p2       => k)),
+                (apex_json.get_varchar2 (
+                p_path   => 'items[%d].questionairs[%d].sub_questionairs[%d].is_active',
+                p0       => i,
+                p1       => j,
+                p2       => k)),
+                (apex_json.get_varchar2 (
+                p_path   => 'items[%d].questionairs[%d].sub_questionairs[%d].type_',
+                p0       => i,
+                p1       => j,
+                p2       => k)),
+                 (apex_json.get_varchar2 (p_path   => 'items[%d].survey_id',p0=> i ))
+                
+                );
+
+        END LOOP;
+        
+END LOOP;
+end if;
+END LOOP;*/
+  COMMIT; 
+ end INSERT_SURVEY_DATA_1;
+/]]></n0:source>
+		</n0:createOracleProcedure>
+	</changeSet>
+</databaseChangeLog>

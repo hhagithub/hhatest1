@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="35c45d91424b8a9471c44134c763fc2fd8cbaa0c" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="GET_JWT_INFO" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."GET_JWT_INFO" (jwt_token varchar2) return varchar2 is
+    l_query_string VARCHAR2(4000);-- := SYS.OWA_UTIL.GET_CGI_ENV('QUERY_STRING');
+    l_token        VARCHAR2(4000);
+    l_username     VARCHAR2(4000);
+    l_session      NUMBER;
+
+    l_jwt_start_pos NUMBER;
+    l_jwt_base      VARCHAR2(4000);
+    l_jwt_base_str  VARCHAR2(4000);
+    l_jwt_arr       apex_application_global.vc_arr2;
+    l_prn_json      VARCHAR2(4000);
+    l_jwt_part1     VARCHAR2(4000);
+    l_jwt_part2     VARCHAR2(4000);
+    l_jwt_part3     VARCHAR2(4000);
+    lang            varchar2(20);
+begin
+
+
+  l_token         := jwt_token;
+
+
+--To get the payload from the middle segment of the JWT, we can convert the JWT to a PL/SQL Array:
+  l_jwt_arr       := APEX_UTIL.STRING_TO_TABLE(l_token, '.');
+
+l_jwt_part1 := UTL_ENCODE.TEXT_DECODE(l_jwt_arr(1), 'UTF8', UTL_ENCODE.BASE64);
+l_jwt_part2 := UTL_ENCODE.TEXT_DECODE(l_jwt_arr(2), 'UTF8', UTL_ENCODE.BASE64);
+l_jwt_part3 := UTL_ENCODE.TEXT_DECODE(l_jwt_arr(3), 'UTF8', UTL_ENCODE.BASE64);
+
+  l_prn_json := UTL_ENCODE.TEXT_DECODE(l_jwt_arr(2), 'UTF8', UTL_ENCODE.BASE64);
+
+  APEX_JSON.PARSE(l_prn_json);
+
+  --l_username := APEX_JSON.get_varchar2 (p_path => 'prn');
+
+  return l_prn_json;
+
+end;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

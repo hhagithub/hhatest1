@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="2d90cd6d5913d2b041a4ffa660c170a287d06465" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="ZATCA_ALLOWANCE_DOCUMENT" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."ZATCA_ALLOWANCE_DOCUMENT" (ID_ Varchar2)  RETURN VARCHAR2 IS
+
+BEGIN
+
+   return 
+   '<!--Allowance (discount) at document level -->
+   <cac:AllowanceCharge>
+        <cbc:ChargeIndicator>false</cbc:ChargeIndicator>
+        <cbc:Amount currencyID="SAR">0.00</cbc:Amount>
+        <cac:TaxCategory>
+            <cbc:ID>S</cbc:ID>
+            <cbc:Percent>15</cbc:Percent>
+            <cac:TaxScheme>
+                <cbc:ID>VAT</cbc:ID>
+            </cac:TaxScheme>
+        </cac:TaxCategory>
+    </cac:AllowanceCharge>'; 
+
+END;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

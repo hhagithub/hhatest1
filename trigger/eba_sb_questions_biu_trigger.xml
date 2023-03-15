@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="6a3377c8a14262e47f8ad8d2d38b6e0cdacb5a19" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleTrigger objectName="EBA_SB_QUESTIONS_BIU" objectType="TRIGGER" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE TRIGGER "HHA_PROD"."EBA_SB_QUESTIONS_BIU" 
+    before update or insert on eba_sb_questions
+    for each row
+begin
+    if :new.tags is not null then
+        :new.tags := eba_sb_fw.tags_cleaner(:new.tags);
+    end if;
+    if inserting then
+        if :new.id is null then
+            :new.id := eba_sb.gen_id();
+        end if;
+        :new.created_by := nvl(v('APP_USER'),user);
+        :new.created := current_timestamp;
+        :new.row_version_number := 1;
+    elsif updating then
+        :new.row_version_number := nvl(:old.row_version_number,1) + 1;
+    end if;
+    :new.updated_by := nvl(v('APP_USER'),user);
+    :new.updated := current_timestamp;
+    eba_sb_fw.tag_sync(
+        p_new_tags      => :new.tags,
+        p_old_tags      => :old.tags,
+        p_content_type  => 'QUESTIONS',
+        p_content_id    => :new.id );
+end;
+
+/
+/
+ALTER TRIGGER "HHA_PROD"."EBA_SB_QUESTIONS_BIU" ENABLE;]]></n0:source>
+		</n0:createOracleTrigger>
+	</changeSet>
+</databaseChangeLog>

@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="7d910c69e01e68f88ab8b867402de3e0c83fff12" author="(HHA_PROD)-Generated"     >
+		<n0:createSxmlObject objectName="APEX_WSSR19" objectType="VIEW" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  <VIEW xmlns="http://xmlns.oracle.com/ku" version="1.0">
+   <SCHEMA>HHA_PROD</SCHEMA>
+   <NAME>APEX_WSSR19</NAME>
+   <COL_LIST>
+      <COL_LIST_ITEM>
+         <NAME>RD_RECALL_CODE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>RD_SUPL_CODE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>RD_CHASSIS_NO</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>RD_STATUS</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>VM_PLATE_NO</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>VM_CUSTOMER_NAME</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>VM_PO_BOX</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>VM_CITY</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>VM_POSTAL_CODE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>TELEPHONE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>RD_LOCATION</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>RD_JOB_NO</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>JM_JOB_DATE</NAME>
+      </COL_LIST_ITEM>
+   </COL_LIST>
+   <SUBQUERY>SELECT DISTINCT
+       a.RD_RECALL_CODE,
+       a.RD_SUPL_CODE,
+       a.RD_CHASSIS_NO,
+       decode(ltrim(rtrim(NVL(a.RD_STATUS,'N'))),'W','In Progress','C','Completed','N','Not Started') RD_STATUS,
+       b.VM_PLATE_NO,
+       b.VM_CUSTOMER_NAME,
+       b.VM_PO_BOX,
+       b.VM_CITY,
+       b.VM_POSTAL_CODE,
+       DECODE (b.VM_TELEPHONE_NO || '/' || b.VW_MOBILE, '/', '', b.VM_TELEPHONE_NO || '/' || b.VW_MOBILE) telephone,
+       a.RD_LOCATION,
+       a.RD_JOB_NO,
+       c.JM_JOB_DATE
+  FROM work_recall_detail a, work_vehicle_master b, work_job_master c
+ WHERE a.RD_CHASSIS_NO = b.VM_CHASSIS_NO(+)
+       --AND NVL (a.rd_recall_code, '1') = NVL (:recall, NVL (a.rd_recall_code, '1'))
+       AND a.RD_JOB_NO = c.JM_JOB_NO(+)
+       --AND a.rd_status = :rstatus
+      -- AND :rstatus = 'N'
+       AND c.jm_location(+) = a.rd_location
+       --AND VM_SOLD_LOCATION BETWEEN :branch1 AND :branch2
+      -- AND  not exists ( SELECT PARAMTER_CODE FROM APPS_FINAL_PARAM app WHERE ID =:REPORTID AND SEL_FLAG =0  AND PARAMETER_VALUE='BRANCH' and PARAMTER_CODE = VM_SOLD_LOCATION)
+      -- AND EXISTS ( SELECT 1 FROM USER_AUTH_FRANCHISE WHERE USER_CODE = :USER_CODE AND NVL(TO_NUMBER(MK_CODE),'0') = NVL(TO_NUMBER(JM_SUPL_CODE),'0') )
+      --  AND EXISTS  (SELECT 1 FROM USER_AUTH_BRANCHES  WHERE USER_CODE=:USER_CODE AND BRANCH_CODE = VM_SOLD_LOCATION)
+UNION ALL
+SELECT DISTINCT
+       a.RD_RECALL_CODE,
+       a.RD_SUPL_CODE,
+       a.RD_CHASSIS_NO,
+       decode(ltrim(rtrim(NVL(a.RD_STATUS,'N'))),'W','In Progress','C','Completed','N','Not Started') ,
+       b.VM_PLATE_NO,
+       b.VM_CUSTOMER_NAME,
+       b.VM_PO_BOX,
+       b.VM_CITY,
+       b.VM_POSTAL_CODE,
+       DECODE (b.VM_TELEPHONE_NO || '/' || b.VW_MOBILE, '/', '', b.VM_TELEPHONE_NO || '/' || b.VW_MOBILE) telephone,
+       a.RD_LOCATION,
+       a.RD_JOB_NO,
+       c.JM_JOB_DATE
+  FROM work_recall_detail a, work_vehicle_master b, work_job_master c
+ WHERE a.RD_CHASSIS_NO = b.VM_CHASSIS_NO(+)
+     --  AND NVL (a.rd_recall_code, '1') = NVL (:recall, NVL (a.rd_recall_code, '1'))
+       AND a.RD_JOB_NO = c.JM_JOB_NO(+)
+       --AND a.rd_status = NVL (:rstatus, a.rd_status)
+       AND a.rd_status NOT IN ( 'P','N')
+       AND c.jm_location(+) = a.rd_location
+      -- AND JM_LOCATION BETWEEN :branch1 AND :branch2
+    --   AND  not exists ( SELECT PARAMTER_CODE FROM APPS_FINAL_PARAM app WHERE ID =:REPORTID AND SEL_FLAG =0  AND PARAMETER_VALUE='BRANCH' and PARAMTER_CODE = JM_LOCATION)
+--       AND EXISTS ( SELECT 1 FROM USER_AUTH_FRANCHISE WHERE USER_CODE = :USER_CODE AND NVL(TO_NUMBER(MK_CODE),'0') = NVL(TO_NUMBER(JM_SUPL_CODE),'0') )
+--       AND EXISTS  (SELECT 1 FROM USER_AUTH_BRANCHES  WHERE USER_CODE=:USER_CODE AND BRANCH_CODE = JM_LOCATION)</SUBQUERY>
+</VIEW>]]></n0:source>
+		</n0:createSxmlObject>
+	</changeSet>
+</databaseChangeLog>

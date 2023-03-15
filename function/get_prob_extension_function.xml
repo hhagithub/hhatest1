@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="68d9d9b3f5cdcbe92016a2579ec0a078ea11ecf3" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="GET_PROB_EXTENSION" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."GET_PROB_EXTENSION" (EMPNO_ NUMBER) RETURN VARCHAR2 IS
+PROB_EXTENSION_NO_ VARCHAR2(20);
+BEGIN
+select PROB_EXTENSION_NO INTO PROB_EXTENSION_NO_
+from pastatic
+where st_empcd = EMPNO_;
+RETURN PROB_EXTENSION_NO_;
+EXCEPTION WHEN OTHERS THEN
+RETURN NULL;
+END;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

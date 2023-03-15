@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="a1c54c33dbadd50ca9e9f484dbcc807bd9395986" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleTrigger objectName="WORK_MANUAL_OPERATIONS_DUMMY_T1" objectType="TRIGGER" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE TRIGGER "HHA_PROD"."WORK_MANUAL_OPERATIONS_DUMMY_T1" 
+BEFORE
+insert on "WORK_MANUAL_OPERATIONS_DUMMY"
+for each row
+begin
+SELECT LPAD(MK_CODE,2,0) MK_CODE INTO :NEW.WM_SUPL_CODE
+FROM MAKES 
+WHERE MK_CODE IN (SELECT MK_CODE FROM USER_AUTH_FRANCHISE WHERE USER_CODE = v('APP_USER')) 
+AND UPPER(MK_DESC) = UPPER(:NEW.SUPPLY_CODE)
+ORDER BY TO_NUMBER(MK_CODE);
+end;
+
+/
+/
+ALTER TRIGGER "HHA_PROD"."WORK_MANUAL_OPERATIONS_DUMMY_T1" ENABLE;]]></n0:source>
+		</n0:createOracleTrigger>
+	</changeSet>
+</databaseChangeLog>

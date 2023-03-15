@@ -1,0 +1,545 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="5b6cc46396d685809acd46caba6ff16afba94439" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="R28_STD_TIMINGS_MNT_BACKUP2" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."R28_STD_TIMINGS_MNT_BACKUP2" (wj_location1_ varchar2,wj_emp_no_ varchar2,starttime_ date) return Number is
+perp number(4) := 100 ;
+CF_DAY_ number;
+begin
+
+SELECT TO_CHAR(starttime_,'D') INTO CF_DAY_ FROM DUAL;
+
+
+select nvl(MP_PERCENT,100) 
+     into perp
+from WORK_MECH_PROD_DETAIL where mp_month_yr = lpad(to_char(trunc(starttime_),'mmrrrr'),6,0)
+and mp_location = wj_location1_
+and mp_advisor_id = wj_emp_no_;
+
+
+--------------------------------------------------------------------------------
+declare
+abc varchar2(80);
+begin
+  select ((((DT_STD_TIME /* -(nvl(:W18H,0)+nvl(:W20H,0)+nvl(:W25H,0)+nvl(:W26H,0)+nvl(:W27H,0))*/) *perp)/100)
+  )
+    into abc
+    from work_daily_timings 
+   where dt_location = (
+
+select distinct wj_location
+--WJ_STD_HOURS/100 hours,
+from work_job_time 
+where wj_end_time is not null
+--and wj_job_no = '214600010'
+and wj_emp_no = wj_emp_no_
+and trunc(wj_start_time) = trunc(starttime_)
+and rownum = 1
+   )
+     and rownum = 1
+     and trunc(DT_DATE) = trunc(starttime_);
+     
+     IF CF_DAY_ = 1 THEN
+     	DECLARE
+     		DD1 NUMBER;
+     BEGIN
+     	SELECT DISTINCT 1
+     	INTO DD1
+FROM work_job_time 
+WHERE wj_end_time is not null
+and wj_location = wj_location1_
+
+and wj_emp_no =   wj_emp_no_--decode('4844',null,wj_emp_no,'4844') 
+AND TRUNC(WJ_START_TIME)  =  TO_DATE(starttime_,'DD-MM-RRRR')-2
+and WJ_OVER_TIME is not null;
+     	RETURN(0);
+     	EXCEPTION WHEN NO_DATA_FOUND THEN
+     	     return(abc);
+     	END;
+     	--naveed
+     	ELSIF CF_DAY_ = 6 THEN
+     	DECLARE
+     		DD1 NUMBER;
+     BEGIN
+     	SELECT DISTINCT 1
+     	INTO DD1
+FROM work_job_time 
+WHERE wj_end_time is not null
+and wj_location = wj_location1_
+
+and wj_emp_no =   wj_emp_no_--decode('4844',null,wj_emp_no,'4844') 
+AND TRUNC(WJ_START_TIME)  =  TO_DATE(starttime_,'DD-MM-RRRR')+2
+and WJ_OVER_TIME is not null;
+     	RETURN(0);
+     	EXCEPTION WHEN NO_DATA_FOUND THEN
+     	     return(abc);
+     	END;
+     	ELSE 
+     		return(abc);
+     	END IF;
+     	--naveed end
+     
+exception 
+	when no_data_found then
+	
+	------------------
+	declare
+		def varchar2(80);
+	begin
+		  select ((((DT_STD_TIME /* -(nvl(:W18H,0)+nvl(:W20H,0)+nvl(:W25H,0)+nvl(:W26H,0)+nvl(:W27H,0))*/) *perp)/100)
+  )
+		/*
+  select (((DT_STD_TIME*perp)/100)
+  -(
+   nvl(:W18H,0)+nvl(:W20H,0)+nvl(:W25H,0)+nvl(:W26H,0)+nvl(:W27H,0)
+   )
+  )*/
+    into def
+    from work_daily_timings 
+   where dt_location = (
+
+select distinct wj_location
+--WJ_STD_HOURS/100 hours,
+from work_job_time 
+where wj_end_time is not null
+--and wj_job_no = '214600010'
+and wj_emp_no = wj_emp_no_
+and trunc(wj_start_time) = 
+(
+select trunc(max(wj_start_time))
+from work_job_time 
+where wj_end_time is not null
+--and wj_job_no = '214600010'
+and wj_emp_no = wj_emp_no_
+and trunc(wj_start_time) < trunc(starttime_)
+)
+
+and rownum = 1
+   )
+     and rownum = 1
+     and trunc(DT_DATE) = 
+trunc(starttime_)
+;
+    
+    
+    
+         IF CF_DAY_ = 1 THEN
+     	DECLARE
+     		DD1 NUMBER;
+     BEGIN
+     	SELECT DISTINCT 1
+     	INTO DD1
+FROM work_job_time 
+WHERE wj_end_time is not null
+and wj_location = wj_location1_
+
+and wj_emp_no =   wj_emp_no_--decode('4844',null,wj_emp_no,'4844') 
+AND TRUNC(WJ_START_TIME)  =  TO_DATE(starttime_,'DD-MM-RRRR')-2
+and WJ_OVER_TIME is not null;
+     	RETURN(0);
+     	EXCEPTION WHEN NO_DATA_FOUND THEN
+     	     return(def);
+     	END;
+     	/*ELSE 
+     		return(def);
+     	END IF;
+     	
+     		--naveed
+     	IF CF_DAY_ = 6 THEN
+     		*/
+     		     	
+     	--naveed
+     	ELSIF CF_DAY_ = 6 THEN
+     		
+     		
+     	DECLARE
+     		DD1 NUMBER;
+     BEGIN
+     	SELECT DISTINCT 1
+     	INTO DD1
+FROM work_job_time 
+WHERE wj_end_time is not null
+and wj_location = wj_location1_
+
+and wj_emp_no =   wj_emp_no_--decode('4844',null,wj_emp_no,'4844') 
+AND TRUNC(WJ_START_TIME)  =  TO_DATE(starttime_,'DD-MM-RRRR')+2
+and WJ_OVER_TIME is not null;
+     	RETURN(0);
+     	EXCEPTION WHEN NO_DATA_FOUND THEN
+     	     return(def);
+     	END;
+     	ELSE 
+     		return(def);
+     	END IF;
+     	--naveed end
+    -- return(def);
+exception when others then  
+	
+	----------------------null;
+		declare
+		def varchar2(80);
+begin
+  select ((((DT_STD_TIME  /*-(nvl(:W18H,0)+nvl(:W20H,0)+nvl(:W25H,0)+nvl(:W26H,0)+nvl(:W27H,0))*/) *perp)/100)
+  )
+    into def
+    from work_daily_timings 
+   where dt_location = (
+
+select distinct wj_location
+--WJ_STD_HOURS/100 hours,
+from work_job_time 
+where wj_end_time is not null
+--and wj_job_no = '214600010'
+and wj_emp_no = wj_emp_no_
+
+and rownum = 1
+   )
+     and rownum = 1
+     and trunc(DT_DATE) = 
+trunc(starttime_)
+;
+
+     IF CF_DAY_ = 1 THEN
+     	DECLARE
+     		DD1 NUMBER;
+     BEGIN
+     	SELECT DISTINCT 1
+     	INTO DD1
+FROM work_job_time 
+WHERE wj_end_time is not null
+and wj_location = wj_location1_
+
+and wj_emp_no =   wj_emp_no_--decode('4844',null,wj_emp_no,'4844') 
+AND TRUNC(WJ_START_TIME)  =  TO_DATE(starttime_,'DD-MM-RRRR')-2
+and WJ_OVER_TIME is not null;
+     	RETURN(0);
+     	EXCEPTION WHEN NO_DATA_FOUND THEN
+     	     return(def);
+     	     	END;
+     	--naveed
+     	ELSIF CF_DAY_ = 6 THEN
+     	DECLARE
+     		DD1 NUMBER;
+     BEGIN
+     	SELECT DISTINCT 1
+     	INTO DD1
+FROM work_job_time 
+WHERE wj_end_time is not null
+and wj_location = wj_location1_
+
+and wj_emp_no =   wj_emp_no_--decode('4844',null,wj_emp_no,'4844') 
+AND TRUNC(WJ_START_TIME)  =  TO_DATE(starttime_,'DD-MM-RRRR')+2
+and WJ_OVER_TIME is not null;
+     	RETURN(0);
+     	EXCEPTION WHEN NO_DATA_FOUND THEN
+     	     return(def);
+     	END;
+     	ELSE 
+     		return(def);
+     	END IF;
+     	--naveed end
+
+EXCEPTION WHEN OTHERS THEN RETURN NULL;
+END;
+
+	----------------------
+	end;
+	
+	--------------------
+	
+	
+	when others then return null;
+  
+  
+  
+end;
+--------------------------------------------------------------------------------
+
+--/********************************************************************
+ exception when no_data_found then 
+ 	perp := 100;
+--/********************************************************************
+
+--------------------------------------------------------------------------------
+declare
+abc varchar2(80);
+begin
+  select ((((DT_STD_TIME /* -(nvl(:W18H,0)+nvl(:W20H,0)+nvl(:W25H,0)+nvl(:W26H,0)+nvl(:W27H,0))*/) *perp)/100)
+  )
+    into abc
+    from work_daily_timings 
+   where dt_location = (
+
+select distinct wj_location
+--WJ_STD_HOURS/100 hours,
+from work_job_time 
+where wj_end_time is not null
+--and wj_job_no = '214600010'
+and wj_emp_no = wj_emp_no_
+and trunc(wj_start_time) = trunc(starttime_)
+and rownum = 1
+   )
+     and rownum = 1
+     and trunc(DT_DATE) = trunc(starttime_);
+          IF CF_DAY_ = 1 THEN
+     	DECLARE
+     		DD1 NUMBER;
+     BEGIN
+     	SELECT DISTINCT 1
+     	INTO DD1
+FROM work_job_time 
+WHERE wj_end_time is not null
+and wj_location = wj_location1_
+
+and wj_emp_no =   wj_emp_no_--decode('4844',null,wj_emp_no,'4844') 
+AND TRUNC(WJ_START_TIME)  =  TO_DATE(starttime_,'DD-MM-RRRR')-2
+and WJ_OVER_TIME is not null;
+     	RETURN(0);
+     	EXCEPTION WHEN NO_DATA_FOUND THEN
+     	     return(abc);
+     /*	END;
+     	ELSE 
+     		return(abc);
+     	END IF;
+     
+     ---return(abc);
+     	--naveed
+     	IF CF_DAY_ = 6 THEN*/
+     	
+     	     	END;
+     	--naveed
+     	ELSIF CF_DAY_ = 6 THEN
+     		
+     	DECLARE
+     		DD1 NUMBER;
+     BEGIN
+     	SELECT DISTINCT 1
+     	INTO DD1
+FROM work_job_time 
+WHERE wj_end_time is not null
+and wj_location = wj_location1_
+
+and wj_emp_no =   wj_emp_no_--decode('4844',null,wj_emp_no,'4844') 
+AND TRUNC(WJ_START_TIME)  =  TO_DATE(starttime_,'DD-MM-RRRR')+2
+and WJ_OVER_TIME is not null;
+     	RETURN(0);
+     	EXCEPTION WHEN NO_DATA_FOUND THEN
+     	     return(abc);
+     	END;
+     	ELSE 
+     		return(abc);
+     	END IF;
+     	--naveed end
+     
+exception 
+	when no_data_found then
+	
+	------------------
+	declare
+		def varchar2(80);
+begin
+  select ((((DT_STD_TIME /* -(nvl(:W18H,0)+nvl(:W20H,0)+nvl(:W25H,0)+nvl(:W26H,0)+nvl(:W27H,0))*/) *perp)/100)
+  )
+    into def
+    from work_daily_timings 
+   where dt_location = (
+
+select distinct wj_location
+--WJ_STD_HOURS/100 hours,
+from work_job_time 
+where wj_end_time is not null
+--and wj_job_no = '214600010'
+and wj_emp_no = wj_emp_no_
+and trunc(wj_start_time) = 
+(
+select trunc(max(wj_start_time))
+from work_job_time 
+where wj_end_time is not null
+--and wj_job_no = '214600010'
+and wj_emp_no = wj_emp_no_
+and trunc(wj_start_time) < trunc(starttime_)
+)
+
+and rownum = 1
+   )
+     and rownum = 1
+     and trunc(DT_DATE) = 
+trunc(starttime_)
+;
+
+     IF CF_DAY_ = 1 THEN
+     	DECLARE
+     		DD1 NUMBER;
+     BEGIN
+     	SELECT DISTINCT 1
+     	INTO DD1
+FROM work_job_time 
+WHERE wj_end_time is not null
+and wj_location = wj_location1_
+
+and wj_emp_no =   wj_emp_no_--decode('4844',null,wj_emp_no,'4844') 
+AND TRUNC(WJ_START_TIME)  =  TO_DATE(starttime_,'DD-MM-RRRR')-2
+and WJ_OVER_TIME is not null;
+     	RETURN(0);
+     	EXCEPTION WHEN NO_DATA_FOUND THEN
+     	     return(def);
+     	/*END;
+     	ELSE 
+     		return(def);
+     	END IF;
+     ---return(def);
+     
+     	--naveed
+     	IF CF_DAY_ = 6 THEN*/
+     	
+     	     	END;
+     	--naveed
+     	ELSIF CF_DAY_ = 6 THEN
+     	DECLARE
+     		DD1 NUMBER;
+     BEGIN
+     	SELECT DISTINCT 1
+     	INTO DD1
+FROM work_job_time 
+WHERE wj_end_time is not null
+and wj_location = wj_location1_
+
+and wj_emp_no =   wj_emp_no_--decode('4844',null,wj_emp_no,'4844') 
+AND TRUNC(WJ_START_TIME)  =  TO_DATE(starttime_,'DD-MM-RRRR')+2
+and WJ_OVER_TIME is not null;
+     	RETURN(0);
+     	EXCEPTION WHEN NO_DATA_FOUND THEN
+     	     return(def);
+     	END;
+     	ELSE 
+     		return(def);
+     	END IF;
+     	--naveed end
+exception when others then  
+	
+	----------------------null;
+		declare
+		def varchar2(80);
+begin
+  select ((((DT_STD_TIME /* -(nvl(:W18H,0)+nvl(:W20H,0)+nvl(:W25H,0)+nvl(:W26H,0)+nvl(:W27H,0))*/) *perp)/100)
+  )
+    into def
+    from work_daily_timings 
+   where dt_location = (
+
+select distinct wj_location
+--WJ_STD_HOURS/100 hours,
+from work_job_time 
+where wj_end_time is not null
+--and wj_job_no = '214600010'
+and wj_emp_no = wj_emp_no_
+
+and rownum = 1
+   )
+     and rownum = 1
+     and trunc(DT_DATE) = 
+trunc(starttime_)
+;
+         IF CF_DAY_ = 1 THEN
+     	DECLARE
+     		DD1 NUMBER;
+     BEGIN
+     	SELECT DISTINCT 1
+     	INTO DD1
+FROM work_job_time 
+WHERE wj_end_time is not null
+and wj_location = wj_location1_
+
+and wj_emp_no =   wj_emp_no_--decode('4844',null,wj_emp_no,'4844') 
+AND TRUNC(WJ_START_TIME)  =  TO_DATE(starttime_,'DD-MM-RRRR')-2
+and WJ_OVER_TIME is not null;
+     	RETURN(0);
+     	EXCEPTION WHEN NO_DATA_FOUND THEN
+     	     return(def);
+     	/*END;
+     	ELSE 
+     		return(def);
+     	END IF;
+     	
+     		--naveed
+     	IF CF_DAY_ = 6 THEN*/
+     	
+     	     	END;
+     	--naveed
+     	ELSIF CF_DAY_ = 6 THEN
+     		
+     	DECLARE
+     		DD1 NUMBER;
+     BEGIN
+     	SELECT DISTINCT 1
+     	INTO DD1
+FROM work_job_time 
+WHERE wj_end_time is not null
+and wj_location = wj_location1_
+
+and wj_emp_no =   wj_emp_no_--decode('4844',null,wj_emp_no,'4844') 
+AND TRUNC(WJ_START_TIME)  =  TO_DATE(starttime_,'DD-MM-RRRR')+2
+and WJ_OVER_TIME is not null;
+     	RETURN(0);
+     	EXCEPTION WHEN NO_DATA_FOUND THEN
+     	     return(def);
+     	END;
+     	ELSE 
+     		return(def);
+     	END IF;
+     	--naveed end
+    --- return(def);
+EXCEPTION WHEN OTHERS THEN RETURN NULL;
+END;
+
+	----------------------
+	end;
+	
+	--------------------
+	
+	
+	when others then return null;
+  
+  
+  
+end;
+--------------------------------------------------------------------------------
+
+--OLD FORMULA BEFORE UPPER FULL FORMULA
+/*
+abc varchar2(80);
+begin
+  select DT_STD_TIME stdtime 
+    into abc
+    from work_daily_timings 
+   where dt_location = (
+
+select distinct wj_location
+--WJ_STD_HOURS/100 hours,
+from work_job_time 
+where wj_end_time is not null
+--and wj_job_no = '214600010'
+and wj_emp_no = wj_emp_no_
+and trunc(wj_start_time) = trunc(starttime_)
+and rownum = 1
+   )
+     and trunc(DT_DATE) = trunc(starttime_)
+          and rownum = 1;
+     return(abc);
+     
+     exception when others then return null;
+  
+  
+  
+end;*/
+ 	end;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="ccf873b92d3532c75e97fc19a2563dbc100f91e4" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleProcedure objectName="WIP_PROC_MAZDA_INCENTIVE" objectType="PROCEDURE" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "HHA_PROD"."WIP_PROC_MAZDA_INCENTIVE" (P_PERIOD VARCHAR2)  --MAZDA MANAGER INCENTIVE
+IS
+
+ V_WIP_MONTHLY_DATA NUMBER;
+ V_WIP_MONTHLY_FACTOR NUMBER;
+
+
+BEGIN
+  FOR LOC IN 
+  (
+     Select distinct 0 AS TYPE,WT_LOCATION,TO_NUMBER(WT_EMP_NO) AS "WT_EMP_NO" ,WT_SECTION,WT_CLASS from work_team_details where   WT_SECTION in ('08') AND WT_EMP_STATUS = 'A' AND NVL(ASTON_MARTIN_FLAG,'M') <> 'Y'  --Manager
+    UNION ALL
+     Select distinct 1 AS TYPE,WT_LOCATION,TO_NUMBER(WT_EMP_NO) AS "WT_EMP_NO" ,WT_SECTION,WT_CLASS  from work_team_details where wt_section IN ('03') AND WT_EMP_STATUS = 'A' and  NVL(ASTON_MARTIN_FLAG,'M') <> 'Y'   /*AND WT_EMP_NO = '5995' AND WT_LOCATION =481 */  --ADVISOR
+    UNION ALL 
+     Select distinct 2 AS TYPE,WT_LOCATION,TO_NUMBER(WT_TEAM_LEADER) AS "WT_EMP_NO" ,WT_SECTION,WT_CLASS  from work_team_details where wt_section IN ('03') AND WT_EMP_STATUS = 'A' and  NVL(ASTON_MARTIN_FLAG,'M') <> 'Y'  and WT_TEAM_LEADER is not null  /*and WT_TEAM_LEADER = '5995'  AND  WT_LOCATION=481*/ --SUPERVISOR   
+  ) LOOP
+
+  
+
+ V_WIP_MONTHLY_DATA := 0;
+ V_WIP_MONTHLY_FACTOR := 0;
+
+ 
+   
+       IF LOC.TYPE = 0 THEN  --1 MANAGER 
+        BEGIN
+        select sum(tot)/count(tot) INTO V_WIP_MONTHLY_DATA 
+        from (
+        select count(*) tot,JM_SERVICE_ADVISOR sr from WIP_MONTHLY_DATA
+        where jm_location = LOC.WT_LOCATION
+        AND PERIOD = P_PERIOD
+        group by JM_SERVICE_ADVISOR
+        ) ;
+
+             IF V_WIP_MONTHLY_DATA  <= 3 OR NVL(V_WIP_MONTHLY_DATA,0) = 0 THEN
+                V_WIP_MONTHLY_FACTOR := 1;
+            ELSIF V_WIP_MONTHLY_DATA >3 AND V_WIP_MONTHLY_DATA <= 6 THEN
+                V_WIP_MONTHLY_FACTOR := 0.75;
+            ELSIF V_WIP_MONTHLY_DATA >6 AND V_WIP_MONTHLY_DATA <=8 THEN
+                V_WIP_MONTHLY_FACTOR := .50;
+            ELSIF V_WIP_MONTHLY_DATA >8 AND V_WIP_MONTHLY_DATA <=10 THEN
+                V_WIP_MONTHLY_FACTOR :=.25;           
+            ELSE
+                V_WIP_MONTHLY_FACTOR := 0;
+            END IF;
+
+
+        EXCEPTION WHEN NO_DATA_FOUND THEN
+                     NULL;
+                WHEN TOO_MANY_ROWS THEN
+                    NULL;
+        END;
+
+        ELSIF LOC.TYPE = 1 THEN  --1 ADVISOR 
+        BEGIN
+            SELECT COUNT(*) INTO V_WIP_MONTHLY_DATA 
+            FROM WIP_MONTHLY_DATA
+            WHERE JM_LOCATION = LOC.WT_LOCATION
+            AND PERIOD = P_PERIOD
+            AND JM_SERVICE_ADVISOR = TO_CHAR(TRIM(LOC.WT_EMP_NO));
+      
+            IF V_WIP_MONTHLY_DATA  <= 3 OR  NVL(V_WIP_MONTHLY_DATA,0) = 0 THEN
+                V_WIP_MONTHLY_FACTOR := 1;
+            ELSIF V_WIP_MONTHLY_DATA >3 AND V_WIP_MONTHLY_DATA <= 6 THEN
+                V_WIP_MONTHLY_FACTOR := 0.75;
+            ELSIF V_WIP_MONTHLY_DATA >6 AND V_WIP_MONTHLY_DATA <=8 THEN
+                V_WIP_MONTHLY_FACTOR := .50;
+            ELSIF V_WIP_MONTHLY_DATA >8 AND V_WIP_MONTHLY_DATA <=10 THEN
+                V_WIP_MONTHLY_FACTOR :=.25;           
+            ELSE
+                V_WIP_MONTHLY_FACTOR := 0;
+            END IF;
+            
+           -- V_FACTOR_C := (V_FACTOR_C * 0.5)+ (V_WIP_MONTHLY_FACTOR*0.5);
+
+        EXCEPTION WHEN NO_DATA_FOUND THEN
+                     NULL;
+                WHEN TOO_MANY_ROWS THEN
+                    NULL;
+        END;
+
+    ELSIF LOC.TYPE = 2 THEN  --2 receiptionist SUPERVISOR
+    BEGIN 
+        select sum(tot)/count(tot) INTO V_WIP_MONTHLY_DATA 
+        from (
+        select count(*) tot,JM_SERVICE_ADVISOR sr from WIP_MONTHLY_DATA
+        where jm_location = LOC.WT_LOCATION
+        AND PERIOD = P_PERIOD
+        group by JM_SERVICE_ADVISOR
+        ) ;
+
+             IF V_WIP_MONTHLY_DATA  <= 3 OR NVL(V_WIP_MONTHLY_DATA,0) = 0 THEN
+                V_WIP_MONTHLY_FACTOR := 1;
+            ELSIF V_WIP_MONTHLY_DATA >3 AND V_WIP_MONTHLY_DATA <= 6 THEN
+                V_WIP_MONTHLY_FACTOR := 0.75;
+            ELSIF V_WIP_MONTHLY_DATA >6 AND V_WIP_MONTHLY_DATA <=8 THEN
+                V_WIP_MONTHLY_FACTOR := .50;
+            ELSIF V_WIP_MONTHLY_DATA >8 AND V_WIP_MONTHLY_DATA <=10 THEN
+                V_WIP_MONTHLY_FACTOR :=.25;           
+            ELSE
+                V_WIP_MONTHLY_FACTOR := 0;
+            END IF;
+            
+            --V_FACTOR_C := (V_FACTOR_C * 0.5)+ ( V_WIP_MONTHLY_FACTOR*0.5);
+
+        EXCEPTION WHEN NO_DATA_FOUND THEN
+                     NULL;
+                WHEN TOO_MANY_ROWS THEN
+                    NULL;
+        END;
+
+    END IF;
+
+
+
+         INSERT INTO work_wip_factor(EMP_NO,LOCATION,PERIOD,SECTION,WIP_FACTOR)
+                                 VALUES( LOC.WT_EMP_NO,LOC.WT_LOCATION, P_PERIOD, LOC.WT_SECTION,V_WIP_MONTHLY_FACTOR );
+
+
+    --dbms_output.put_line(V_NARRATION);
+END LOOP;
+
+    commit;
+    dbms_output.put_line(' Procedure Successful ');
+EXCEPTION
+     WHEN others THEN
+  dbms_output.put_line(' SQL Error Msg='||SQLERRM);
+
+END;
+/]]></n0:source>
+		</n0:createOracleProcedure>
+	</changeSet>
+</databaseChangeLog>

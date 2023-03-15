@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="82a6fff0548d72b9427989d67d8a51a2f5199029" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="TEMP_QR_CODE_FUNC" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."TEMP_QR_CODE_FUNC" (P1 IN VARCHAR2,P2 IN VARCHAR2) return BLOB AS 
+QR_CODE BLOB;
+
+V_P1_P VARCHAR2;
+V_P1_LEN NUMBER;
+V_P1_VAL VARCHAR2;
+V_BASE VARCHAR2;
+BEGIN
+
+select   utl_encode.base64_encode(RAWTOHEX(UTL_RAW.CAST_TO_RAW(1))) INTO V_P1_P from dual;
+select   utl_encode.base64_encode(RAWTOHEX(UTL_RAW.CAST_TO_RAW(LENGTH('HELLOWORLD')))) INTO V_P1_LEN from dual;
+select   utl_encode.base64_encode(RAWTOHEX(UTL_RAW.CAST_TO_RAW('HELLOWORLD'))) INTO V_P1_VAL from dual;
+
+V_BASE := V_BASE || V_P1_P || V_P1_LEN || V_P1_VAL;
+
+
+/*
+SELECT
+ZT_QR.F_QR_AS_BMP(
+            p_data => '
+
+شركة :-  الحاج حسين علي رضا وشركاه المحدودة
+الرقم الضريبي :-
+رقم الفاتورة :-' ||  INVOICE_NUMBER ||'
+تاريخ الفاتورة :-' || tO_CHAR(INV_TIME,'DD/MM/RRRR') ||'
+المبلغ بدون ضريبة :- ' || TOTAL_AMOUNT ||'
+المبلغ ضريبة :- ' || TOTAL_AMOUNT_VAT ||'
+مبلغ شامل الضريبة :- ' || (TOTAL_AMOUNT + TOTAL_AMOUNT_VAT)
+
+
+
+,
+ 
+            p_error_correction => 'M') INTO PIC
+
+
+     from invoice_header
+    where  INVOICE_NUMBER = P1 ;--to_char(DATE_CREATED,'mmrrrr') = '102021'
+    */
+
+    RETURN QR_CODE;
+    EXCEPTION WHEN NO_DATA_FOUND  THEN
+    RETURN NULL;
+
+END;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

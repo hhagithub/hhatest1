@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="e3a0adccf212c669ee9f8a93a6765aa1e23d137b" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="ZATCA_QR_CODE_SINGLE_TEST" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."ZATCA_QR_CODE_SINGLE_TEST" (P_P_NO IN NUMBER,P_P_VAL IN VARCHAR2) return varchar2 AS
+QR_CODE BLOB;
+V_BASE  VARCHAR2(32767);
+V_HEX   VARCHAR2(32767);
+
+V_P1 VARCHAR2(32767);
+V_P2 VARCHAR2(32767);
+V_P3 VARCHAR2(32767);
+V_P4 VARCHAR2(32767);
+V_P5 VARCHAR2(32767);
+
+
+V_HEX_P1   VARCHAR2(32767);
+V_HEX_P2   VARCHAR2(32767);
+V_HEX_P3   VARCHAR2(32767);
+V_HEX_P4   VARCHAR2(32767);
+V_HEX_P5   VARCHAR2(32767);
+
+V_P_P   VARCHAR2(32767);
+V_P_LEN VARCHAR2(32767);
+V_P_VAL VARCHAR2(32767);
+
+
+P_NO  NUMBER;
+P_VAL  VARCHAR2(32767);
+
+V_ID NUMBER;
+BEGIN
+
+P_NO := P_P_NO;
+P_VAL := P_P_VAL;
+
+    select LPAD(TRIM(to_char(P_NO,'XXXXXXXXXX')),2,'0')           INTO V_P_P from dual;
+    SELECT LPAD(TRIM(TO_CHAR(LENGTHB(P_VAL),'XXXXXXXXXX')),2,'0') INTO V_P_LEN  FROM DUAL;
+    select RAWTOHEX(UTL_RAW.CAST_TO_RAW((utl_i18n.raw_to_char(utl_raw.cast_to_raw(P_VAL), 'utf8')))) INTO V_P_VAL from dual; 
+
+ --   
+   null;
+--else
+  -- select LPAD(TRIM(to_char(P_NO,'XXXXXXXXXX')),2,'0')          INTO V_P_P from dual;
+  --select LPAD(TRIM(to_char(LENGTH(P_VAL),'XXXXXXXXXX')),2,'0') INTO V_P_LEN from dual;
+--end if;
+
+V_BASE :=  V_P_P || V_P_LEN || V_P_VAL;
+
+return v_base;
+
+SELECT utl_raw.cast_to_varchar2 (utl_encode.base64_encode(V_BASE))   INTO V_BASE FROM DUAL;
+
+select replace(replace(V_BASE,chr(10),''),chr(13),'') into v_base from dual;
+
+
+
+
+ --V_HEX :=  V_HEX || QR_CODE_BASE(1,P1); 
+ 
+RETURN V_BASE;
+
+END;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

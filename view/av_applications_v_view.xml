@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="e78ddf6bf814185483894c8e4bdbfa781c2ef5f2" author="(HHA_PROD)-Generated"     >
+		<n0:createSxmlObject objectName="AV_APPLICATIONS_V" objectType="VIEW" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  <VIEW xmlns="http://xmlns.oracle.com/ku" version="1.0">
+   <SCHEMA>HHA_PROD</SCHEMA>
+   <NAME>AV_APPLICATIONS_V</NAME>
+   <COL_LIST>
+      <COL_LIST_ITEM>
+         <NAME>APPLICATION_NAME</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>APPLICATION_ID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>PAGE_FUNCTION</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>PAGE_ID</NAME>
+      </COL_LIST_ITEM>
+   </COL_LIST>
+   <SUBQUERY>select p.application_name
+      ,p.application_id
+      ,case p.page_function
+         when 'Unknown' then
+          max(r.source_type)
+         else
+          page_function
+       end page_function
+      ,p.page_id
+from apex_application_pages p
+join apex_application_page_regions r on r.application_id = p.application_id
+                                 and p.page_id = r.page_id
+group by p.application_name
+        ,p.application_id
+        ,p.page_id
+        ,page_function
+order by p.application_id
+        ,p.page_id
+</SUBQUERY>
+</VIEW>]]></n0:source>
+		</n0:createSxmlObject>
+	</changeSet>
+</databaseChangeLog>

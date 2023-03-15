@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="c454a077c1906955b27602caf9a3c27befe1e63e" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleTrigger objectName="BIU_EBA_SB_ACK_HISTORY" objectType="TRIGGER" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE TRIGGER "HHA_PROD"."BIU_EBA_SB_ACK_HISTORY" 
+   before insert on eba_sb_ack_history
+   for each row
+begin
+    if :new.id is null then
+        :new.id := eba_sb.gen_id();
+    end if;
+   :new.created := current_timestamp;
+   :new.app_user := nvl(wwv_flow.g_user,user);
+end;
+
+/
+/
+ALTER TRIGGER "HHA_PROD"."BIU_EBA_SB_ACK_HISTORY" ENABLE;]]></n0:source>
+		</n0:createOracleTrigger>
+	</changeSet>
+</databaseChangeLog>

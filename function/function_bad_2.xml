@@ -1,0 +1,680 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="fa813c4428cbdd0d6e564a6bbc6d589820b54f46" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="%OBJECT_NAME%" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."GET_ATTEND_TYPE_RECS" get_attend_type_recs
+(
+P_EMPNO           varchar2 default null, 
+P_APP_USER        varchar2, 
+P_FROM_DATE       date, 
+P_TO_DATE         date, 
+P_LOC             varchar2 default null, 
+P_Legal_Emp       varchar2 default null,
+P_Period          varchar2 default null
+) 
+return attend_type_recs is
+return_rows attend_type_recs;
+
+FDATE   DATE;
+TDATE   DATE;
+
+EMPNO     VARCHAR2(220):=P_EMPNO;
+APP_USER  VARCHAR2(220):=P_APP_USER;
+LOC       VARCHAR2(220):=P_LOC;
+Legal_Emp VARCHAR2(220):=P_Legal_Emp;
+
+begin
+  
+if P_Period is not null then
+   FDATE := TO_DATE(TO_CHAR(TO_DATE(P_Period||'-01','YYYY-MM-DD'),'DD-MON-YY'),'DD-MON-YY');
+   TDATE := TO_DATE(TO_CHAR(LAST_DAY(TO_DATE(P_Period||'-01','YYYY-MM-DD')),'DD-MON-YY'),'DD-MON-YY');   
+else
+   FDATE := P_FROM_DATE;
+   TDATE := P_TO_DATE;   
+end if;
+                                   
+select attend_type
+(
+EMP_NO,
+Month_Year,
+Year_Month,
+ST_ENAME,
+P_DATE,
+Legal_Employer,
+Internal_address,
+Branch,
+Position,
+EMAIL,
+EMAIL_UNIQUE,
+Tot_Ded_Perc,
+ST_BASIC,
+NTOT_DED_AMT,
+DEDUCTIBLE_HOURS_TOT,
+DEDUCTIBLE_HOURS_FORMAT,
+REMARKS_Absent_Cnt,
+REMARKS_Incomp_Cnt,
+Exempt_Late,
+Exempt_Out_Early,
+Exempt_incmplt,
+Exmpt_time,
+Exmpt_Min,
+REMARKS_Leave_Cnt,
+REMARKS_Day_Off_Cnt,
+REMARKS_Late_Cnt,
+REMARKS_Out_Early_Cnt,
+REMARKS_Half_Incomp_Cnt,
+REMARKS_Half_Absent_Cnt
+)
+bulk collect into return_rows
+from (
+  /* Formatted on 5-18-2021 11:07:41 AM (QP5 v5.287) */
+  SELECT EMP_NO,
+         Month_Year,
+         Year_Month,
+         ST_ENAME,
+         P_DATE,
+         Legal_Employer,
+         Internal_address,
+         Branch,
+         Position,
+         EMAIL,
+         EMAIL_UNIQUE,
+         Tot_Ded_Perc,
+         ST_BASIC,
+         NTOT_DED_AMT,
+         DEDUCTIBLE_HOURS_TOT,
+         DEDUCTIBLE_HOURS_FORMAT,
+         REMARKS_Absent_Cnt,
+         REMARKS_Incomp_Cnt,
+         Exempt_Late,
+         Exempt_Out_Early,
+         Exempt_incmplt,
+         Exmpt_time,
+         Exmpt_Min,
+         REMARKS_Leave_Cnt,
+         REMARKS_Day_Off_Cnt,
+         REMARKS_Late_Cnt,
+         REMARKS_Out_Early_Cnt,
+         REMARKS_Half_Incomp_Cnt,
+         REMARKS_Half_Absent_Cnt
+    FROM (SELECT EMP_NO,
+                 Month_Year,
+                 Year_Month,
+                 ST_ENAME,
+                 P_DATE,
+                 Legal_Employer,
+                 Internal_address,
+                 Branch,
+                 Position,
+                 CC.desc_eng EMAIL,
+                 CC.desc_eng || CC.Value_1 EMAIL_UNIQUE,
+                 Tot_Ded_Perc,
+                 ST_BASIC,
+                 NTOT_DED_AMT,
+                 DEDUCTIBLE_HOURS_TOT,
+                 DEDUCTIBLE_HOURS_FORMAT,
+                 DECODE (REMARKS_Absent_Cnt, 0, '-', REMARKS_Absent_Cnt)
+                    REMARKS_Absent_Cnt,
+                 DECODE (REMARKS_Incomp_Cnt, 0, '-', REMARKS_Incomp_Cnt)
+                    REMARKS_Incomp_Cnt,
+                 (SELECT DECODE (COUNT (*), 0, '-', COUNT (*))
+                    FROM hcm_exemption xmp
+                   WHERE     xmp.EMP_NO = BB.EMP_NO
+                         AND TO_CHAR (FROM_DATE, 'RRRRMM') = Year_Month
+                         AND EXEMPT_REASON = 1
+                         AND APPROVED = 1
+                         AND (SELECT NVL (
+                                        SUM (
+                                           (  (    TO_CHAR (xx.ACT_IN_WO_EXEP,
+                                                            'hh24')
+                                                 * 60
+                                               + TO_CHAR (xx.ACT_IN_WO_EXEP,
+                                                          'mi'))
+                                            - (    TO_CHAR (xx.Time_in, 'hh24')
+                                                 * 60
+                                               + TO_CHAR (xx.Time_in, 'mi'))
+                                            + (    TO_CHAR (xx.Time_out,
+                                                            'hh24')
+                                                 * 60
+                                               + TO_CHAR (xx.Time_out, 'mi'))
+                                            - (    TO_CHAR (xx.ACT_OUT_WO_EXEP,
+                                                            'hh24')
+                                                 * 60
+                                               + TO_CHAR (xx.ACT_OUT_WO_EXEP,
+                                                          'mi')))),
+                                        0)
+                                FROM hcm_timecardn xx
+                               WHERE     xx.EMP_NO = BB.EMP_NO
+                                     AND TRUNC (xx.ATTENDANCE_DATE) BETWEEN FDATE
+                                                                        AND TDATE ) <>
+                                0)
+                    Exempt_Late,
+                 (SELECT DECODE (COUNT (*), 0, '-', COUNT (*))
+                    FROM hcm_exemption xmp
+                   WHERE     xmp.EMP_NO = BB.EMP_NO
+                         AND TO_CHAR (FROM_DATE, 'RRRRMM') = Year_Month
+                         AND EXEMPT_REASON = 3
+                         AND APPROVED = 1
+                         AND (SELECT NVL (
+                                        SUM (
+                                           (  (    TO_CHAR (xx.ACT_IN_WO_EXEP,
+                                                            'hh24')
+                                                 * 60
+                                               + TO_CHAR (xx.ACT_IN_WO_EXEP,
+                                                          'mi'))
+                                            - (    TO_CHAR (xx.Time_in, 'hh24')
+                                                 * 60
+                                               + TO_CHAR (xx.Time_in, 'mi'))
+                                            + (    TO_CHAR (xx.Time_out,
+                                                            'hh24')
+                                                 * 60
+                                               + TO_CHAR (xx.Time_out, 'mi'))
+                                            - (    TO_CHAR (xx.ACT_OUT_WO_EXEP,
+                                                            'hh24')
+                                                 * 60
+                                               + TO_CHAR (xx.ACT_OUT_WO_EXEP,
+                                                          'mi')))),
+                                        0)
+                                FROM hcm_timecardn xx
+                               WHERE     xx.EMP_NO = BB.EMP_NO
+                                     AND TRUNC (xx.ATTENDANCE_DATE) BETWEEN FDATE
+                                                                        AND TDATE ) <>
+                                0)
+                    Exempt_Out_Early,
+                 (SELECT DECODE (COUNT (*), 0, '-', COUNT (*))
+                    FROM hcm_exemption xmp
+                   WHERE     xmp.EMP_NO = BB.EMP_NO
+                         AND TO_CHAR (FROM_DATE, 'RRRRMM') = Year_Month
+                         AND EXEMPT_REASON IN (2, 4)
+                         AND APPROVED = 1
+                         AND (SELECT NVL (
+                                        SUM (
+                                           (  (    TO_CHAR (xx.ACT_IN_WO_EXEP,
+                                                            'hh24')
+                                                 * 60
+                                               + TO_CHAR (xx.ACT_IN_WO_EXEP,
+                                                          'mi'))
+                                            - (    TO_CHAR (xx.Time_in, 'hh24')
+                                                 * 60
+                                               + TO_CHAR (xx.Time_in, 'mi'))
+                                            + (    TO_CHAR (xx.Time_out,
+                                                            'hh24')
+                                                 * 60
+                                               + TO_CHAR (xx.Time_out, 'mi'))
+                                            - (    TO_CHAR (xx.ACT_OUT_WO_EXEP,
+                                                            'hh24')
+                                                 * 60
+                                               + TO_CHAR (xx.ACT_OUT_WO_EXEP,
+                                                          'mi')))),
+                                        0)
+                                FROM hcm_timecardn xx
+                               WHERE     xx.EMP_NO = BB.EMP_NO
+                                     AND TRUNC (xx.ATTENDANCE_DATE) BETWEEN FDATE
+                                                                        AND TDATE ) <>
+                                0)
+                    Exempt_incmplt,
+                 (SELECT LTRIM (
+                               LPAD (
+                                  FLOOR (
+                                       SUM (
+                                          (  (    TO_CHAR (xx.ACT_IN_WO_EXEP,
+                                                           'hh24')
+                                                * 60
+                                              + TO_CHAR (xx.ACT_IN_WO_EXEP,
+                                                         'mi'))
+                                           - (    TO_CHAR (xx.Time_in, 'hh24')
+                                                * 60
+                                              + TO_CHAR (xx.Time_in, 'mi'))
+                                           + (    TO_CHAR (xx.Time_out, 'hh24')
+                                                * 60
+                                              + TO_CHAR (xx.Time_out, 'mi'))
+                                           - (    TO_CHAR (xx.ACT_OUT_WO_EXEP,
+                                                           'hh24')
+                                                * 60
+                                              + TO_CHAR (xx.ACT_OUT_WO_EXEP,
+                                                         'mi'))))
+                                     / 60),
+                                  2,
+                                  0)
+                            || ':'
+                            || LPAD (
+                                  MOD (
+                                     SUM (
+                                        (  (    TO_CHAR (xx.ACT_IN_WO_EXEP,
+                                                         'hh24')
+                                              * 60
+                                            + TO_CHAR (xx.ACT_IN_WO_EXEP, 'mi'))
+                                         - (  TO_CHAR (xx.Time_in, 'hh24') * 60
+                                            + TO_CHAR (xx.Time_in, 'mi'))
+                                         + (    TO_CHAR (xx.Time_out, 'hh24')
+                                              * 60
+                                            + TO_CHAR (xx.Time_out, 'mi'))
+                                         - (    TO_CHAR (xx.ACT_OUT_WO_EXEP,
+                                                         'hh24')
+                                              * 60
+                                            + TO_CHAR (xx.ACT_OUT_WO_EXEP,
+                                                       'mi')))),
+                                     60),
+                                  2,
+                                  0),
+                            ':')
+                    FROM hcm_timecardn xx
+                   WHERE     xx.EMP_NO = BB.EMP_NO
+                         AND TRUNC (xx.ATTENDANCE_DATE) BETWEEN FDATE
+                                                            AND TDATE )
+                    Exmpt_time,
+                 TO_NUMBER (
+                    (SELECT NVL (
+                               SUM (
+                                  (  (    TO_CHAR (xx.ACT_IN_WO_EXEP, 'hh24')
+                                        * 60
+                                      + TO_CHAR (xx.ACT_IN_WO_EXEP, 'mi'))
+                                   - (  TO_CHAR (xx.Time_in, 'hh24') * 60
+                                      + TO_CHAR (xx.Time_in, 'mi'))
+                                   + (  TO_CHAR (xx.Time_out, 'hh24') * 60
+                                      + TO_CHAR (xx.Time_out, 'mi'))
+                                   - (    TO_CHAR (xx.ACT_OUT_WO_EXEP, 'hh24')
+                                        * 60
+                                      + TO_CHAR (xx.ACT_OUT_WO_EXEP, 'mi')))),
+                               0)
+                       FROM hcm_timecardn xx
+                      WHERE     xx.EMP_NO = BB.EMP_NO
+                            AND TRUNC (xx.ATTENDANCE_DATE) BETWEEN FDATE
+                                                               AND TDATE ))
+                    Exmpt_Min,
+                 DECODE (REMARKS_Leave_Cnt, 0, '-', REMARKS_Leave_Cnt)
+                    REMARKS_Leave_Cnt,
+                 DECODE (REMARKS_Day_Off_Cnt, 0, '-', REMARKS_Day_Off_Cnt)
+                    REMARKS_Day_Off_Cnt,
+                 DECODE (REMARKS_Late_Cnt, 0, '-', REMARKS_Late_Cnt)
+                    REMARKS_Late_Cnt,
+                 DECODE (REMARKS_Out_Early_Cnt, 0, '-', REMARKS_Out_Early_Cnt)
+                    REMARKS_Out_Early_Cnt,
+                 DECODE (REMARKS_Half_Incomp_Cnt,
+                         0, '-',
+                         REMARKS_Half_Incomp_Cnt)
+                    REMARKS_Half_Incomp_Cnt,
+                 DECODE (REMARKS_Half_Absent_Cnt,
+                         0, '-',
+                         REMARKS_Half_Absent_Cnt)
+                    REMARKS_Half_Absent_Cnt
+            FROM (  SELECT EMP_NO,
+                           Month_Year,
+                           Year_Month,
+                           ST_ENAME,
+                           P_DATE,
+                           Legal_Employer,
+                           Internal_address,
+                           Branch,
+                           Position,
+                           ROUND (NTOT_DED_AMT * 100 / ST_BASIC, 2)
+                              AS Tot_Ded_Perc,
+                           ST_BASIC,
+                           NTOT_DED_AMT,
+                           DEDUCTIBLE_HOURS_TOT,
+                           DEDUCTIBLE_HOURS_FORMAT,
+                           REMARKS_Absent_Cnt,
+                           REMARKS_Incomp_Cnt,
+                           REMARKS_Leave_Cnt,
+                           REMARKS_Day_Off_Cnt,
+                           REMARKS_Late_Cnt,
+                           REMARKS_Out_Early_Cnt,
+                           REMARKS_Half_Incomp_Cnt,
+                           REMARKS_Half_Absent_Cnt
+                      FROM (SELECT EMP_NO,
+                                   Month_Year,
+                                   Year_Month,
+                                   ST_ENAME,
+                                   TO_CHAR (SYSDATE, 'dd-mm-yyyy hh:mm:ss')
+                                      P_DATE,
+                                   (SELECT DISTINCT LEGAL_EMPLOYER
+                                      FROM pastatic p
+                                     WHERE     p.st_empcd = AA.EMP_NO
+                                           AND p.st_status <= '15')
+                                      Legal_Employer,
+                                   (SELECT DISTINCT Loc_code_old
+                                      FROM pastatic p
+                                     WHERE     p.st_empcd = AA.EMP_NO
+                                           AND p.st_status <= '15')
+                                      Internal_address,
+                                   (SELECT DISTINCT  --COST_LOCATION || '-' ||
+                                                   ORGANIZATION_NAME Branch
+                                      FROM pastatic p
+                                     WHERE     p.st_empcd = AA.EMP_NO
+                                           AND p.st_status <= '15')
+                                      Branch,
+                                   (SELECT DISTINCT POSITION_NAME Position
+                                      FROM pastatic p
+                                     WHERE     p.st_empcd = AA.EMP_NO
+                                           AND p.st_status <= '15')
+                                      Position,
+                                   ST_BASIC,
+                                   ROUND (
+                                        (  (  REMARKS_Absent_Cnt
+                                            + REMARKS_Incomp_Cnt)
+                                         * "day_Sal")
+                                      + (REMARKS_Half_Incomp_Cnt * "day_Sal" * .5)
+                                      + (REMARKS_Half_Absent_Cnt * "day_Sal" * .5)
+                                      + (  TO_NUMBER (DEDUCTIBLE_HOURS_TOT)
+                                         * TO_NUMBER ("Minu_sal")),
+                                      3)
+                                      NTOT_DED_AMT,
+                                   DEDUCTIBLE_HOURS_TOT,
+                                   LTRIM (
+                                         LPAD (FLOOR (DEDUCTIBLE_HOURS_TOT / 60),
+                                               2,
+                                               0)
+                                      || ':'
+                                      || LPAD (MOD (DEDUCTIBLE_HOURS_TOT, 60),
+                                               2,
+                                               0),
+                                      ':')
+                                      DEDUCTIBLE_HOURS_FORMAT,
+                                   REMARKS_Absent_Cnt,
+                                   REMARKS_Incomp_Cnt,
+                                   REMARKS_Leave_Cnt,
+                                   REMARKS_Day_Off_Cnt,
+                                   REMARKS_Late_Cnt,
+                                   REMARKS_Out_Early_Cnt,
+                                   REMARKS_Half_Incomp_Cnt,
+                                   REMARKS_Half_Absent_Cnt
+                              FROM (  SELECT EMP_NO,
+                                             Month_Year,
+                                             Year_Month,
+                                             ST_ENAME,
+                                             ST_BASIC,
+                                             "day_Sal",
+                                             "Minu_sal",
+                                             SUM (DEDUCTIBLE_HOURS)
+                                                DEDUCTIBLE_HOURS_TOT, --DEDUCTIBLE_HOURS_FORMAT,
+                                             SUM ("REMARKS_Absent")
+                                                REMARKS_Absent_Cnt,
+                                             SUM ("REMARKS_Incomplete")
+                                                REMARKS_Incomp_Cnt,
+                                             SUM ("REMARKS_Annual_Leave")
+                                                REMARKS_Leave_Cnt,
+                                             SUM ("REMARKS_Day_Off")
+                                                REMARKS_Day_Off_Cnt,
+                                             SUM ("REMARKS_Late") REMARKS_Late_Cnt,
+                                             SUM ("REMARKS_Out_Early")
+                                                REMARKS_Out_Early_Cnt,
+                                             SUM ("REMARKS_Half_Incomplete")
+                                                REMARKS_Half_Incomp_Cnt,
+                                             SUM ("REMARKS_Half_Absent")
+                                                REMARKS_Half_Absent_Cnt
+                                        FROM (SELECT EMP_NO,
+                                                     ATTENDANCE_DATE,
+                                                     Month_Year,
+                                                     Year_Month,
+                                                     ST_ENAME,
+                                                     ST_BASIC,
+                                                     ROUND (
+                                                          ST_BASIC
+                                                        / TO_CHAR (
+                                                             LAST_DAY (
+                                                                TO_DATE (
+                                                                   TO_CHAR (
+                                                                      ATTENDANCE_DATE,
+                                                                      'mm'),
+                                                                   'MM')),
+                                                             'DD'),
+                                                        3)
+                                                        AS "day_Sal",
+                                                     ROUND (
+                                                          ST_BASIC
+                                                        / TO_CHAR (
+                                                             LAST_DAY (
+                                                                TO_DATE (
+                                                                   TO_CHAR (
+                                                                      ATTENDANCE_DATE,
+                                                                      'mm'),
+                                                                   'MM')),
+                                                             'DD')
+                                                        / 540,
+                                                        3)
+                                                        AS "Minu_sal",
+                                                     DEDUCTIBLE_HOURS,
+                                                     CASE
+                                                        WHEN ("REMARKS" = 'Absent')
+                                                        THEN
+                                                           1
+                                                        ELSE
+                                                           0
+                                                     END
+                                                        "REMARKS_Absent",
+                                                     CASE
+                                                        WHEN ("REMARKS" =
+                                                                 'Incomplete')
+                                                        THEN
+                                                           1
+                                                        ELSE
+                                                           0
+                                                     END
+                                                        "REMARKS_Incomplete",
+                                                     CASE
+                                                        WHEN ("REMARKS" =
+                                                                 'Annual Leave')
+                                                        THEN
+                                                           1
+                                                        ELSE
+                                                           0
+                                                     END
+                                                        "REMARKS_Annual_Leave",
+                                                     CASE
+                                                        WHEN ("REMARKS" = 'Day Off')
+                                                        THEN
+                                                           1
+                                                        ELSE
+                                                           0
+                                                     END
+                                                        "REMARKS_Day_Off",
+                                                     CASE
+                                                        WHEN ("REMARKS" = 'Late')
+                                                        THEN
+                                                           1
+                                                        ELSE
+                                                           0
+                                                     END
+                                                        "REMARKS_Late",
+                                                     CASE
+                                                        WHEN ("REMARKS" =
+                                                                 'Out Early')
+                                                        THEN
+                                                           1
+                                                        ELSE
+                                                           0
+                                                     END
+                                                        "REMARKS_Out_Early",
+                                                     CASE
+                                                        WHEN ("REMARKS" =
+                                                                 'Half Incomplete')
+                                                        THEN
+                                                           1
+                                                        ELSE
+                                                           0
+                                                     END
+                                                        "REMARKS_Half_Incomplete",
+                                                     CASE
+                                                        WHEN ("REMARKS" =
+                                                                 'Half Absent')
+                                                        THEN
+                                                           1
+                                                        ELSE
+                                                           0
+                                                     END
+                                                        "REMARKS_Half_Absent"
+                                                FROM ( (SELECT  EMP_NO,
+                                                               TO_CHAR (
+                                                                  ATTENDANCE_DATE,
+                                                                  'MON-RRRR')
+                                                                  Month_Year,
+                                                               -- TO_CHAR (ATTENDANCE_DATE, 'Month,RRRR')
+                                                               --  Month_Year,
+                                                               TO_CHAR (
+                                                                  ATTENDANCE_DATE,
+                                                                  'RRRRMM')
+                                                                  Year_Month,
+                                                               ATTENDANCE_DATE,
+                                                               (SELECT ST_ENAME
+                                                                  FROM PASTATIC
+                                                                 WHERE ST_EMPCD =
+                                                                          BB.EMP_NO)
+                                                                  ST_ENAME,
+                                                               (SELECT ST_BASIC
+                                                                  FROM PASTATIC
+                                                                 WHERE ST_EMPCD =
+                                                                          BB.EMP_NO)
+                                                                  ST_BASIC,
+                                                               DEDUCTIBLE_HOURS,
+                                                               REMARKS
+                                                          FROM hcm_timecardn bb
+                                                         WHERE     bb.EMP_NO IN
+                                                                      (SELECT st_empcd
+                                                               FROM pastatic PP
+                                                              WHERE     st_status <=
+                                                                           '15'
+                                                                    AND LOC_CODE_OLD =
+                                                                           NVL (
+                                                                              LOC,
+                                                                              LOC_CODE_OLD)
+                                                                    AND (   EXISTS
+                                                                               (SELECT ST_EMPCD
+                                                                                  FROM PASTATIC
+                                                                                       EMP
+                                                                                 WHERE     EMP.ST_EMPCD =
+                                                                                              PP.ST_EMPCD
+                                                                                       AND APP_USER IN
+                                                                                              (SELECT EMPLOYEE_NUMBER
+                                                                                                 FROM HCM_USERS_ROLES
+                                                                                                WHERE userrolename IN
+                                                                                                         ('Attendance_Access_All','HTL_ATTND_REPORT_ALL')))
+                                                                         OR EXISTS
+                                                                               (SELECT ST_EMPCD
+                                                                                  FROM PASTATIC
+                                                                                       EMP
+                                                                                 WHERE     EMP.ST_EMPCD =
+                                                                                              PP.ST_EMPCD
+                                                                                       AND TOWN_OR_CITY IN
+                                                                                              ('Riyadh',
+                                                                                               'Unaizah',
+                                                                                               'Hail',
+                                                                                               'Buraydah')
+                                                                                       AND APP_USER IN
+                                                                                              (SELECT EMPLOYEE_NUMBER
+                                                                                                 FROM HCM_USERS_ROLES
+                                                                                                WHERE userrolename =
+                                                                                                         'Attendance_Access_Central'))
+                                                                         OR EXISTS
+                                                                               (SELECT ST_EMPCD
+                                                                                  FROM PASTATIC
+                                                                                       EMP
+                                                                                 WHERE     EMP.ST_EMPCD =
+                                                                                              PP.ST_EMPCD
+                                                                                       AND TOWN_OR_CITY IN
+                                                                                              ('Abqaiq',
+                                                                                               'Hofuf',
+                                                                                               'Khobar',
+                                                                                               'Qatif',
+                                                                                               'Dammam',
+                                                                                               'Jubail')
+                                                                                       AND APP_USER IN
+                                                                                              (SELECT EMPLOYEE_NUMBER
+                                                                                                 FROM HCM_USERS_ROLES
+                                                                                                WHERE userrolename =
+                                                                                                         'Access_Attendance_Eastern'))
+                                                                         OR EXISTS
+                                                                               (SELECT ST_EMPCD
+                                                                                  FROM PASTATIC
+                                                                                       EMP
+                                                                                 WHERE     EMP.ST_EMPCD =
+                                                                                              PP.ST_EMPCD
+                                                                                       AND TOWN_OR_CITY IN
+                                                                                              ('Madinah','Tabuk','Yanbu')
+                                                                                       AND APP_USER IN
+                                                                                              (SELECT EMPLOYEE_NUMBER
+                                                                                                 FROM HCM_USERS_ROLES
+                                                                                                WHERE userrolename =
+                                                                                                         'Access_Attendance_Madinah'))
+                                                                        ------------------------------------------------------------
+                                                                           OR EXISTS
+                                                                               (SELECT ST_EMPCD
+                                                                                  FROM PASTATIC
+                                                                                       EMP
+                                                                                 WHERE     EMP.ST_EMPCD =
+                                                                                              PP.ST_EMPCD
+                                                                                       AND Legal_Employer IN
+                                                                                              ('NATCOM')
+                                                                                              
+                                                                                       AND APP_USER IN
+                                                                                              ( 
+                                                                                                 SELECT EMPLOYEE_NUMBER
+                                                                                                 FROM HCM_USERS_ROLES
+                                                                                                WHERE userrolename =
+                                                                                                         'Access_Attendance_Natcom'
+                                                                                                         )
+                                                                                                         )
+                                                                              OR EXISTS
+                                                                               (SELECT ST_EMPCD
+                                                                                  FROM PASTATIC
+                                                                                       EMP
+                                                                                 WHERE     EMP.ST_EMPCD =
+                                                                                              PP.ST_EMPCD
+                                                                                       AND Legal_Employer IN
+                                                                                              ('SAMCO')
+                                                                                       AND APP_USER IN
+                                                                                              (SELECT EMPLOYEE_NUMBER
+                                                                                                 FROM HCM_USERS_ROLES
+                                                                                                WHERE userrolename =
+                                                                                                         'Access_Attendance_Samco')
+                                                                                                         )                              
+                                                                        ------------------------------------------------------------
+                                                                         OR EXISTS
+                                                                               (SELECT ST_EMPCD
+                                                                                  FROM PASTATIC
+                                                                                       EMP
+                                                                                 WHERE     EMP.ST_EMPCD =
+                                                                                              PP.ST_EMPCD
+                                                                                       AND TOWN_OR_CITY IN
+                                                                                              ('Makkah','Taif')
+                                                                                       AND APP_USER IN
+                                                                                              (SELECT EMPLOYEE_NUMBER
+                                                                                                 FROM HCM_USERS_ROLES
+                                                                                                WHERE userrolename =
+                                                                                                         'Access_Attendance_Makkah'))))
+                                                               AND bb.EMP_NO =
+                                                                      NVL ( EMPNO,
+                                                                           EMP_NO)
+                                                               AND TRUNC (
+                                                                      bb.ATTENDANCE_DATE) BETWEEN FDATE
+                                                                                              AND TDATE )))
+                                    GROUP BY EMP_NO,
+                                             Month_Year,
+                                             Year_Month,
+                                             ST_ENAME, --DEDUCTIBLE_HOURS_FORMAT,
+                                             ST_BASIC,
+                                             "day_Sal",
+                                             "Minu_sal") AA)
+                     WHERE Legal_Employer = NVL ( Legal_Emp, Legal_Employer)
+                  ORDER BY EMP_NO,                            --   Month_Year,
+                                  TO_NUMBER (Year_Month)) BB,
+                 (SELECT VALUE_1, desc_eng AS desc_eng
+                    FROM codes_descriptions
+                   WHERE     MAIN_CODE = '201'
+                         AND MAJOR_CODE = 5
+                         AND MINOR_CODE != '0' --and VALUE_1 = nvl(:loc,VALUE_1)
+                                              ) cc
+           WHERE BB.INTERNAL_ADDRESS = cc.value_1)
+ORDER BY Exmpt_Min DESC
+);
+return return_rows;
+end;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

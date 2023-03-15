@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="cf997a7a47b2ec9c23c7db2a3447dd4230327378" author="(HHA_PROD)-Generated"     >
+		<n0:createSxmlObject objectName="AV_PLUGINS_V" objectType="VIEW" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  <VIEW xmlns="http://xmlns.oracle.com/ku" version="1.0">
+   <SCHEMA>HHA_PROD</SCHEMA>
+   <NAME>AV_PLUGINS_V</NAME>
+   <COL_LIST>
+      <COL_LIST_ITEM>
+         <NAME>APPLICATION_ID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>APPLICATION_NAME</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>PLUGIN_ID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>PLUGIN_TYPE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>NAME</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>DISPLAY_NAME</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>PLSQL_CODE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>API_VERSION</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>RENDER_FUNCTION</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>HELP_TEXT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>VERSION_IDENTIFIER</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ABOUT_URL</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>PAGE_ID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>PAGE_NAME</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>OBJECT_NAME</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>OBJECT_LABEL</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>PAGE_DESIGNER_URL</NAME>
+      </COL_LIST_ITEM>
+   </COL_LIST>
+   <SUBQUERY>select p.application_id
+      ,p.application_name
+      ,p.plugin_id
+      ,p.plugin_type
+      ,p.name
+      ,p.display_name
+      ,p.plsql_code
+      ,p.api_version
+      ,p.render_function
+      ,p.help_text
+      ,p.version_identifier
+      ,p.about_url
+      ,o.page_id
+      ,o.page_name
+      ,o.object_name
+      ,o.object_label
+      ,av_general_pkg.f_get_page_designer_url(pi_app_id => p.application_id, pi_app_page_id => o.page_id) page_designer_url
+from apex_appl_plugins p
+left join ( -- Item Plugins
+           select pi.application_id
+                  ,pi.page_id
+                  ,pi.page_name
+                  ,pi.display_as plugin_display_name
+                  ,'Item Type' object_type
+                  ,pi.item_name object_name
+                  ,pi.label object_label
+           from apex_application_page_items pi
+           where pi.display_as_code like 'PLUGIN%'
+           union all
+           -- Region Plugins
+           select pr.application_id
+                  ,pr.page_id
+                  ,pr.page_name
+                  ,pr.source_type plugin_display_name
+                  ,'Region Type' object_type
+                  ,pr.region_name object_name
+                  ,pr.region_name object_label
+           from apex_application_page_regions pr
+           where pr.source_type_code like 'PLUGIN%'
+           union all
+           -- Dynamic Action Plugins
+           select pd.application_id
+                  ,pd.page_id
+                  ,pd.page_name
+                  ,pda.action_name plugin_display_name
+                  ,'Dynamic Action' object_type
+                  ,pda.action_name object_name
+                  ,pd.dynamic_action_name object_label
+           from apex_application_page_da pd
+           join apex_application_page_da_acts pda on pda.dynamic_action_id = pd.dynamic_action_id
+           where pda.action_code like 'PLUGIN%'
+           union all
+           -- Process Plugins
+           select pp.application_id
+                  ,pp.page_id
+                  ,pp.page_name
+                  ,pp.process_type plugin_display_name
+                  ,'Process Type' object_type
+                  ,pp.process_name object_name
+                  ,pp.process_name object_label
+           from apex_application_page_proc pp
+           where pp.process_type_code like 'PLUGIN%') o on o.application_id = p.application_id
+                                                    and o.object_type = p.plugin_type
+                                                    and o.plugin_display_name = p.display_name
+</SUBQUERY>
+</VIEW>]]></n0:source>
+		</n0:createSxmlObject>
+	</changeSet>
+</databaseChangeLog>

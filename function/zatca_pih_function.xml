@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="645914e311f466a2ab445b89b981a2489321ddd8" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="ZATCA_PIH" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."ZATCA_PIH" RETURN VARCHAR2 IS
+V_HASH VARCHAR2(100);
+
+BEGIN
+return 'NWZlY2ViNjZmZmM4NmYzOGQ5NTI3ODZjNmQ2OTZjNzljMmRiYzIzOWRkNGU5MWI0NjcyOWQ3M2EyN2ZiNTdlOQ=='; 
+--For First Inovie
+   SELECT IHASH INTO V_HASH FROM ZATCA_REQ_RES_CLOB WHERE LAST_RECORD = 'Y';
+   RETURN V_HASH;
+EXCEPTION WHEN NO_DATA_FOUND THEN
+  return 'NWZlY2ViNjZmZmM4NmYzOGQ5NTI3ODZjNmQ2OTZjNzljMmRiYzIzOWRkNGU5MWI0NjcyOWQ3M2EyN2ZiNTdlOQ=='; 
+END;
+
+
+--   BEGIN
+--    SELECT IHASH INTO V_HASH FROM ZATCA_REQ_RES_CLOB WHERE TIMESTAMP = (SELECT MAX(TIMESTAMP) FROM ZATCA_REQ_RES_CLOB);
+--    IF V_HASH IS NOT NULL THEN
+--     RETURN V_HASH;
+--    ELSE
+--      return 'NWZlY2ViNjZmZmM4NmYzOGQ5NTI3ODZjNmQ2OTZjNzljMmRiYzIzOWRkNGU5MWI0NjcyOWQ3M2EyN2ZiNTdlOQ=='; 
+--    END IF;
+--   EXCEPTION WHEN NO_DATA_FOUND THEN
+--    return 'NWZlY2ViNjZmZmM4NmYzOGQ5NTI3ODZjNmQ2OTZjNzljMmRiYzIzOWRkNGU5MWI0NjcyOWQ3M2EyN2ZiNTdlOQ=='; 
+-- --For Other Invoice Please Search in Store Table For Last Invoice Hash;
+-- END;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

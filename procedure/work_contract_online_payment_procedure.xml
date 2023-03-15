@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="fef413051f530442ea419f43b4b11082d6c5c706" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleProcedure objectName="WORK_CONTRACT_ONLINE_PAYMENT" objectType="PROCEDURE" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "HHA_PROD"."WORK_CONTRACT_ONLINE_PAYMENT" (
+CON_OWNER_NAME_ENG_ in varchar,CON_OWNER_NAME_ARB_ in varchar,CON_OWNER_ID_ in number,CON_MOBILE_NO_ in varchar,CON_START_DATE_ in date,
+CON_END_DATE_ in date,CON_AMOUNT_ in number,CON_TOTAL_AMOUNT_ in number,CON_VIN_ in varchar,CON_VEH_MODEL_ in varchar,
+CON_PLATE_NO_ in varchar,CON_COLOR_ in varchar,CRE_DATE_ in date ,CRE_BY_ in number,
+CONTRACT_NO_MASTER_ in number,SR_NO_ in number,ROAD_SIDE_CARD_NO_ in varchar,PAYMENT_MODE_ in number,
+CHEQUE_NO_ in varchar,CHEQUE_DATE_ date,CREDIT_CARD_NO_ in varchar ,APPROVAL_NO_ in number,BANK_CODE_ in varchar,
+TERMINAL_ID_ in number,MODEL_YEAR_ in number,FRANCHISE_ in number,zatca_inv_no_ in number,user_ in number ,loc_ in number
+) is
+   
+    loc number;
+    CON_ID_ number;
+   
+ begin
+ select BRANCH_CODE into loc from users@to_appidev.hha.local --@to_appi.hha.local 
+   where user_code=user_;
+   
+   select   nvl(max(CON_ID)+1,loc_||10001)    into CON_ID_  from work_contract_cust_mst@to_appidev.hha.local --@to_appi.hha.local 
+      where substr(con_id,1,3) = loc_;
+
+    insert into work_contract_cust_mst@to_appidev.hha.local --@to_appi.hha.local 
+    (CON_ID,CON_OWNER_NAME_ENG,CON_OWNER_NAME_ARB,CON_OWNER_ID,CON_MOBILE_NO,CON_START_DATE,
+    CON_END_DATE,CON_AMOUNT,CON_TOTAL_AMOUNT,CON_VIN,CON_VEH_MODEL,CON_PLATE_NO,CON_COLOR,CRE_DATE,CRE_BY,
+    CONTRACT_NO_MASTER,SR_NO,ROAD_SIDE_CARD_NO,PAYMENT_MODE,CHEQUE_NO,CHEQUE_DATE,CREDIT_CARD_NO,APPROVAL_NO,BANK_CODE,
+    TERMINAL_ID,MODEL_YEAR,FRANCHISE,zatca_inv_no) values
+    (CON_ID_,CON_OWNER_NAME_ENG_,CON_OWNER_NAME_ARB_,CON_OWNER_ID_,CON_MOBILE_NO_,sysdate,
+    sysdate,CON_AMOUNT_,CON_TOTAL_AMOUNT_,CON_VIN_,CON_VEH_MODEL_,CON_PLATE_NO_,CON_COLOR_,sysdate,2634,
+    CONTRACT_NO_MASTER_,SR_NO_,ROAD_SIDE_CARD_NO_,null,null,null,null,null,null,
+    null,MODEL_YEAR_,1,zatca_inv_no_);
+  
+insert into work_sundries_details@to_appidev.hha.local --@to_appi.hha.local 
+(SD_JOB_CARD_NO,SD_ITEM_CODE,SD_VISUAL_ITEM,SD_CARD_NO,SD_START_DATE,SD_END_DATE,SD_SELLING_PRICE,CRE_BY,CRE_DATE)
+select 
+CON_ID_,
+ITEM_CODE,
+nvl(CR_VISUAL_FLAG,'N'),ROAD_SIDE_CARD_NO_,
+CON_START_DATE_,CON_END_DATE_,ROAD_ASS_SELL_PRICE,user_,sysdate
+ from work_contract_road@to_appidev.hha.local --@to_appi.hha.local
+   where CR_CAMP_CODE = CONTRACT_NO_MASTER_;
+ 
+-- :cre_by:=:global.user_code;
+-- :CRE_DATE:=sysdate;
+ 
+ declare
+    t number;
+ begin
+ 
+ select max(END_KM) into t  from work_contract_amounts@to_appidev.hha.local --@to_appi.hha.local
+  where contract_id = CONTRACT_NO_MASTER_;
+
+ insert into work_contract_types@to_appidev.hha.local --@to_appi.hha.local
+  (CT_CHASSIS_NO,CT_CONTRACT_TYPE,CT_SPEEDOMETER_START,CT_START_DATE,
+ CT_END_DATE,CT_FOR_TYPE,CONTRACT_NO,CRE_BY,CRE_date,app)
+values
+(CON_VIN_,CONTRACT_NO_MASTER_, t
+,CON_START_DATE_,CON_END_DATE_,9,CON_ID_,user_,sysdate,'APEX-230');
+ 
+ exception when no_data_found then 
+    null;
+   end;
+         
+ end;
+/]]></n0:source>
+		</n0:createOracleProcedure>
+	</changeSet>
+</databaseChangeLog>

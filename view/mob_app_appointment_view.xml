@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="b90bd7f26a3e9cac9e79787a992ab88e1207c485" author="(HHA_PROD)-Generated"     >
+		<n0:createSxmlObject objectName="MOB_APP_APPOINTMENT" objectType="VIEW" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  <VIEW xmlns="http://xmlns.oracle.com/ku" version="1.0">
+   <SCHEMA>HHA_PROD</SCHEMA>
+   <NAME>MOB_APP_APPOINTMENT</NAME>
+   <COL_LIST>
+      <COL_LIST_ITEM>
+         <NAME>MOBILE_NUMBER</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>APPOINTMENT_ID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>APPOINTMENT_TYPE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>SERVICE_TYPE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>SERVICE_MILAGE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>APPOINTMENT_ON</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>CREATED_ON</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>APPOINTMENT_STATUS</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>VIN</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>PRICE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>BRANCH_CODE</NAME>
+      </COL_LIST_ITEM>
+   </COL_LIST>
+   <SUBQUERY>select AP_MOBILE_NO mobile_number,
+AP_APPOINT_NO appointment_id,
+DECODE(CAMPAIGN_FLAG,'R','R','S','S','P','P','B','B','S') appointment_type,
+AP_SERVICE_TYPE service_type,
+APPOINT_REF service_milage,
+TO_CHAR(AP_APPOINT_DATE,'DD/MM/RRRR HH24:MI') appointment_on,
+TO_CHAR(CRE_DATE,'DD/MM/RRRR HH24:MI') created_on,
+CASE WHEN AP_ACTIVE IS NULL AND TRUNC(AP_APPOINT_DATE) > TRUNC(SYSDATE) THEN 'Pending'
+when AP_ACTIVE = 1 then 'canceled'
+else 'Done' 
+end appointment_status,
+AP_CHASSIS_NO vin,
+'' price,
+AP_LOCATION branch_code
+from work_appointment</SUBQUERY>
+</VIEW>]]></n0:source>
+		</n0:createSxmlObject>
+	</changeSet>
+</databaseChangeLog>

@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="c39e6001ca4f8acc1eeaae8d4b47e4b1b758f6c2" author="(HHA_PROD)-Generated"     >
+		<n0:createSxmlObject objectName="HTL_NOTIFICATION" objectType="VIEW" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  <VIEW xmlns="http://xmlns.oracle.com/ku" version="1.0">
+   <SCHEMA>HHA_PROD</SCHEMA>
+   <NAME>HTL_NOTIFICATION</NAME>
+   <COL_LIST>
+      <COL_LIST_ITEM>
+         <NAME>NOTE_ICON_COLOR</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>NOTE_TEXT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>NOTE_LINK</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>NOTE_COLOR</NAME>
+      </COL_LIST_ITEM>
+   </COL_LIST>
+   <SUBQUERY>select 'rgb(192,0,15)' AS NOTE_ICON_COLOR,'BTR Request Approval - FYA: ('||(SELECT ST_ENAME FROM PASTATIC WHERE ST_EMPCd=V.REQ_by)||'Request BTR approval' as NOTE_TEXT,
+APEX_UTIL.PREPARE_URL(p_url => 'f?p=' || '147' || ':113:'|| V('APP_SESSION')
+||'::NO::P113_BTR_NO,P113_FLAG_CHECK_USER:'||(SELECT BTR_NO FROM HCM_BTR WHERE REQ_ID = V.REQ_ID)||',Y', p_checksum_type => 'SESSION')
+AS NOTE_LINK,
+'' AS NOTE_COLOR
+from HCM_APPROVAL_VIEW V
+WHERE EMP_NO=v('APP_USER') 
+AND SERVICE_CODE='BTR'
+
+UNION ALL
+ select 'rgb(192,0,15)' AS NOTE_ICON_COLOR,'Marriage Approval Request - FYA: ('||(SELECT ST_ENAME FROM PASTATIC WHERE ST_EMPCd=V.REQ_by)||'Request Marriage Approval' as NOTE_TEXT,
+APEX_UTIL.PREPARE_URL(p_url => 'f?p=' || '147' || ':117:'|| V('APP_SESSION')
+||'::NO::P117_MAR_NO,P117_FLAG_CHECK_USER:'||(SELECT MAR_NO FROM HCM_MAR WHERE REQ_ID = V.REQ_ID)||',Y', p_checksum_type => 'SESSION') AS NOTE_LINK, '' AS NOTE_COLOR
+from HCM_APPROVAL_VIEW V WHERE EMP_NO=v('APP_USER') AND SERVICE_CODE='MRG'
+
+
+
+UNION ALL
+
+
+select 'rgb(192,0,15)' AS NOTE_ICON_COLOR,'Relocation  - FYA: ('||V.REQ_by||' - '||(SELECT ST_ENAME FROM PASTATIC WHERE ST_EMPCd=V.REQ_by)||'Relocation approval' as NOTE_TEXT,
+--'f?p=147:115:&#38;APP_SESSION.::::P115_SER_NO,P97_FLAG_CHECK_USER:'||(SELECT SER_NO FROM HCM_RELOCATION_REQ WHERE REQ_ID = V.REQ_ID)||',Y' AS NOTE_LINK, '' AS NOTE_COLOR
+APEX_UTIL.PREPARE_URL(p_url => 'f?p=' || '147' || ':115:'|| V('APP_SESSION')
+||'::NO::P115_SER_NO,P115_FLAG_CHECK_USER:'||(SELECT SER_NO FROM HCM_RELOCATION_REQ WHERE REQ_ID = V.REQ_ID)||',Y', p_checksum_type => 'SESSION') AS NOTE_LINK, '' AS NOTE_COLOR
+from HCM_APPROVAL_VIEW V WHERE EMP_NO=v('APP_USER') AND SERVICE_CODE='RL'
+
+UNION ALL Select 'rgb(192,0,15)' AS NOTE_ICON_COLOR,'School Fees Approval-FYA: ('||V.REQ_by||' - '||(SELECT ST_ENAME FROM PASTATIC WHERE ST_EMPCd=V.REQ_by)||'Request school fees approval' as NOTE_TEXT,
+APEX_UTIL.PREPARE_URL(p_url => 'f?p=' || '147' || ':97:'|| V('APP_SESSION')
+||'::NO::P97_SER_NO,P97_FLAG_CHECK_USER:'||(SELECT SER_NO FROM HCM_SCHOOL_REQ_MST WHERE REQ_ID = V.REQ_ID)||',Y', p_checksum_type => 'SESSION')AS NOTE_LINK, '' AS NOTE_COLOR
+from HCM_APPROVAL_VIEW V WHERE EMP_NO=v('APP_USER') AND SERVICE_CODE='SCHL_FEE'
+UNION ALL
+ select 'rgb(192,0,15)' AS NOTE_ICON_COLOR,'Overtime Assignment Request - FYA: ('||V.REQ_by||' - '||(SELECT ST_ENAME FROM PASTATIC WHERE ST_EMPCd=V.REQ_by)||'Request for Overtime Approval' as NOTE_TEXT,
+APEX_UTIL.PREPARE_URL(p_url => 'f?p=' || '147' || ':125:'|| V('APP_SESSION')
+||'::NO::P125_OVT_NO,P125_FLAG_CHECK_USER,P125_OVERTIME_FLAG:'||(SELECT OVT_NO FROM HCM_OVERTIME WHERE REQ_ID = V.REQ_ID)||',Y,OVT', p_checksum_type => 'SESSION') AS NOTE_LINK, '' AS NOTE_COLOR
+from HCM_APPROVAL_VIEW V WHERE EMP_NO=v('APP_USER') AND SERVICE_CODE='OVER_TIME'
+UNION ALL
+ select 'rgb(192,0,15)' AS NOTE_ICON_COLOR,'Overtime Payment Request - FYA: ('||V.REQ_by||' - '||(SELECT ST_ENAME FROM PASTATIC WHERE ST_EMPCd=V.REQ_by)||'Request for Overtime Payment Approval' as NOTE_TEXT,
+APEX_UTIL.PREPARE_URL(p_url => 'f?p=' || '147' || ':128:'|| V('APP_SESSION')
+||'::NO::P128_OVT_NO_PAY,P128_FLAG_CHECK_USER,P128_OVERTIME_FLAG:'||(SELECT OVT_NO_PAY FROM HCM_OVERTIME_PAYMENT WHERE REQ_ID = V.REQ_ID)||',Y,OVTP', p_checksum_type => 'SESSION') AS NOTE_LINK, '' AS NOTE_COLOR
+from HCM_APPROVAL_VIEW V WHERE EMP_NO=v('APP_USER') AND SERVICE_CODE='OVER_TIME_PAY'
+UNION ALL
+ select 'rgb(192,0,15)' AS NOTE_ICON_COLOR,'Manage Payment Method - FYA: ('||V.REQ_by||' - '||(SELECT ST_ENAME FROM PASTATIC WHERE ST_EMPCd=V.REQ_by)||'Request for Bank Payment Approval' as NOTE_TEXT,
+APEX_UTIL.PREPARE_URL(p_url => 'f?p=' || '147' || ':131:'|| V('APP_SESSION')
+||'::NO::P131_SR_NO,P131_FLAG_CHECK_USER:'||(select SR_NO from HCM_BANK_PAYMENT  WHERE REQ_ID = V.REQ_ID)||',Y', p_checksum_type => 'SESSION') AS NOTE_LINK, '' AS NOTE_COLOR
+from HCM_APPROVAL_VIEW V WHERE EMP_NO=v('APP_USER') AND SERVICE_CODE='BANK_ACCT_CHANGE'
+UNION ALL
+select 'rgb(192,0,15)' AS NOTE_ICON_COLOR,'Advance Payment Request - FYA: ('||V.REQ_by||' - '||(SELECT ST_ENAME FROM PASTATIC WHERE ST_EMPCd=V.REQ_by)||'Request for Advance Payment Approval' as NOTE_TEXT,
+APEX_UTIL.PREPARE_URL(p_url => 'f?p=' || '147' || ':146:'|| V('APP_SESSION')
+||'::NO::P146_ID,P146_FLAG_CHECK_USER,P146_ADVP_FLAG:'||(SELECT ID FROM ADVANCE_PAYMENT WHERE REQ_ID = V.REQ_ID)||',Y,OVTP', p_checksum_type => 'SESSION') AS NOTE_LINK, '' AS NOTE_COLOR
+from HCM_APPROVAL_VIEW V WHERE EMP_NO=v('APP_USER') AND SERVICE_CODE='ADV_PAY'
+UNION ALL
+select 'rgb(192,0,15)' AS NOTE_ICON_COLOR,'Justification Request - FYA: ('||V.REQ_by||' - '||(SELECT ST_ENAME FROM PASTATIC WHERE ST_EMPCd=V.REQ_by)||'Justification Request' as NOTE_TEXT,
+APEX_UTIL.PREPARE_URL(p_url => 'f?p=' || '147' || ':154:'|| V('APP_SESSION') 
+||'::NO::P154_DISC_NO,P154_FLAG_CHECK_USER,P154_REP_FLAG:'||(SELECT DISC_NO FROM HCM_DISCREPANCY WHERE REQ_ID = V.REQ_ID)||',Y,'||NULL, p_checksum_type => 'SESSION')
+AS NOTE_LINK,
+'' AS NOTE_COLOR
+from HCM_APPROVAL_VIEW V
+WHERE EMP_NO=v('APP_USER') 
+AND SERVICE_CODE='AB_JUST'
+UNION ALL
+select 'rgb(192,0,15)' AS NOTE_ICON_COLOR,'Re-Entry Visa Request - FYA: ('||V.REQ_by||' - '||(SELECT ST_ENAME FROM PASTATIC WHERE ST_EMPCd=V.REQ_by)||'Re-Entry Visa Request' as NOTE_TEXT,
+APEX_UTIL.PREPARE_URL(p_url => 'f?p=' || '147' || ':156:'|| V('APP_SESSION') 
+||'::NO::P156_ERV_NO,P156_FLAG_CHECK_USER,P156_REP_FLAG:'||(SELECT ERV_NO FROM HCM_ENTRY_VISA WHERE REQ_ID = V.REQ_ID)||',Y,'||NULL, p_checksum_type => 'SESSION')
+AS NOTE_LINK,
+'' AS NOTE_COLOR
+from HCM_APPROVAL_VIEW V
+WHERE EMP_NO=v('APP_USER') 
+AND SERVICE_CODE='VISA_ENTRY' 
+UNION ALL
+select 'rgb(192,0,15)' AS NOTE_ICON_COLOR,'Identification Letter Request - FYA: ('||V.REQ_by||' - '||(SELECT ST_ENAME FROM PASTATIC WHERE ST_EMPCd=V.REQ_by)||'Identification Letter Request'||
+' ('||(select 
+       DECODE(HIL.LETTER_TYPE,1,'Identification Letter With Salary',2,'Bank Loan Letter',3,'Identification Letter Without Salary')
+  from HCM_IDENTIFICATION_LETTER HIL
+  WHERE HIL.REQ_ID=V.REQ_ID)||')' as NOTE_TEXT,
+APEX_UTIL.PREPARE_URL(p_url => 'f?p=' || '147' || ':162:'|| V('APP_SESSION') 
+||'::NO::P162_IDNT_NO,P162_FLAG_CHECK_USER,P162_REP_FLAG:'||(SELECT IDNT_NO FROM HCM_IDENTIFICATION_LETTER WHERE REQ_ID = V.REQ_ID)||',Y,'||NULL, p_checksum_type => 'SESSION')
+AS NOTE_LINK,
+'' AS NOTE_COLOR
+from HCM_APPROVAL_VIEW V
+WHERE EMP_NO=v('APP_USER') 
+AND SERVICE_CODE='IDENT_LETTER' 
+UNION ALL
+select 'rgb(192,0,15)' AS NOTE_ICON_COLOR,'Rejoin Leave Request - FYA: ('||(SELECT ST_ENAME FROM PASTATIC WHERE ST_EMPCd=V.REQ_by)||'Rejoin Leave Request' as NOTE_TEXT,
+APEX_UTIL.PREPARE_URL(p_url => 'f?p=' || '147' || ':159:'|| V('APP_SESSION') 
+||'::NO::P159_RLR_NO,P159_FLAG_CHECK_USER,P159_REP_FLAG:'||(SELECT RLR_NO FROM HCM_REJOIN_LEAVE_REQ WHERE REQ_ID = V.REQ_ID)||',Y,'||NULL, p_checksum_type => 'SESSION')
+AS NOTE_LINK,
+'' AS NOTE_COLOR
+from HCM_APPROVAL_VIEW V
+WHERE EMP_NO=v('APP_USER') 
+AND SERVICE_CODE='REJOIN_LEAVE' 
+UNION ALL
+SELECT 'rgb(192,0,15)' AS NOTE_ICON_COLOR,'Please coordinate with your manager to Transfer your Assets' as NOTE_TEXT, 
+APEX_UTIL.PREPARE_URL(p_url => 'f?p=' || '147' || ':43:'|| V('APP_SESSION') 
+||'::NO::', p_checksum_type => 'SESSION') AS NOTE_LINK,'' AS NOTE_COLOR
+ FROM PASTATIC WHERE TERMINATION_DT_APPROVED IS NOT NULL and TERMINATION_DT_APPROVED >= sysdate-3
+and st_empcd in  ( SELECT distinct to_user from assets  )  AND st_empcd=v('APP_USER')
+</SUBQUERY>
+</VIEW>]]></n0:source>
+		</n0:createSxmlObject>
+	</changeSet>
+</databaseChangeLog>

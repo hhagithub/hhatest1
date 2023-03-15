@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="e61873d9fd56d73821b3336da9da7a42404eac74" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="JWT_SENTRY" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."JWT_SENTRY" (jwt_token varchar2) return boolean is
+    l_x01      varchar2(32767);
+    l_jwt      apex_jwt.t_token;
+    
+    l_jwt_user varchar2(255);
+    l_jwt_elts apex_t_varchar2;
+    l_result   varchar2(4000);
+    
+    l_jwt_arr  apex_application_global.vc_arr2;
+    signature  varchar2(4000);
+    
+    
+    jxt_text  varchar2(4000);
+    
+begin
+    --
+    -- parse JWT payload in X01
+    --
+    l_x01 := jwt_token;--v('APP_AJAX_X01');
+    
+    l_jwt_arr := APEX_UTIL.STRING_TO_TABLE(l_x01, '.');
+    
+for i in 1..l_jwt_arr.count 
+loop
+  jxt_text:= l_jwt_arr(i);
+end loop; 
+
+
+    
+    --signature := sys.utl_raw.cast_to_raw(l_jwt_arr(3));
+
+   
+    signature := '-----BEGIN CERTIFICATE-----
+MIIDVTCCAj2gAwIBAgIIGWTo3uk41yQwDQYJKoZIhvcNAQELBQAwWTETMBEGCgmSJomT8ixkARkW
+A2NvbTEWMBQGCgmSJomT8ixkARkWBm9yYWNsZTEVMBMGCgmSJomT8ixkARkWBWNsb3VkMRMwEQYD
+VQQDEwpDbG91ZDlDQS0yMB4XDTE4MDkxMDA3MDYzNloXDTI4MDkwNzA3MDYzNlowWTETMBEGCgmS
+JomT8ixkARkWA2NvbTEWMBQGCgmSJomT8ixkARkWBm9yYWNsZTEVMBMGCgmSJomT8ixkARkWBWNs
+b3VkMRMwEQYDVQQDDAplamZ6X2Zhc3ZjMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA
+gW4wST6YsHdZWZQVOFd0szA+jcK3AXEYQkI9BuboZpj9x5kOAm1cOokMz/oj+89MhU5NA0eqED/j
+0AEWuPM2ouxESICBuFkBw4i+za5L55R1pKYpAmgVSZOQ3+xKlAKjAFtESRECXNN9ckCaXKqQLwAY
+q+ntgvLC7BusWWUzzvKUE+EzQUDNl0wxmGYVBKJyFx/gsNGk0LV21gPYVbogkztAvb9eQZWfCEDe
+Sv4tr9N3dNqQX1NjD1kQkkFB0KfE8RTqt62AqaablJy8EJbKCiwgLpHQfk55kKigNTDPXWVaPG+3
+6/FIXDd+OonHji9NiWbVlLppnfC89dgpOsaQwwIDAQABoyEwHzAdBgNVHQ4EFgQULVC3R6jJJl72
+/MCecy1KI0uly+AwDQYJKoZIhvcNAQELBQADggEBAIr66IY8uNNHBdWaz4LGDeUFufhQtmHlnKU1
+Tk5yK/EYfZgFaZVp1/7i9A7Ty40lDf2zsDj4voHmmvCI4uyItOh9nuJo6WKfuWEZ/w22GOcUCP63
+CC8FdMmIIRdPtYwz9rCdT7nrbGH44CRvbiD2icMXrezqIQSRMLZwTaYdPPvIyiGNh0/ESkE8G7RB
+M9JuF31X8qexD3p7WxReDGGnkyOLNykD431Z7kNyqM5qqE2c2zlUcQdkNMYEKrNLm7FlMcepe52X
+TOlnt3dmLcyor0eCDmAGyU2KJTvZsh4U+71ar7R2Lp3GCLOdPXM+yYGiN50lEPdiF9oI0smaaJAE
+Ey4=
+-----END CERTIFICATE-----';
+
+signature := sys.utl_raw.cast_to_raw(signature);   
+    
+    if l_x01 like '%.%.%' then
+        begin
+          
+            l_jwt := apex_jwt.decode (
+                         p_value         => l_x01,
+                         p_signature_key => signature--sys.utl_raw.cast_to_raw(l_jwt_arr(3))
+                         );
+                         
+            apex_debug.trace('JWTload=%s', l_jwt.payload);
+            l_result := l_jwt.payload;
+            
+            apex_jwt.validate (
+                 p_token => l_jwt,
+                 p_iss   => 'www.oracle.com',
+                 p_aud   => 'APEX' 
+                 );
+            apex_debug.trace('...validated');
+            apex_json.parse (
+                 p_source => l_jwt.payload );
+            l_jwt_user := apex_json.get_varchar2('sub');
+        exception when others then
+            apex_debug.trace('...error: %s', sqlerrm);
+            l_result := '...error: %s' || sqlerrm;
+        end;
+    end if;
+    --
+    -- if not logged in yet:
+    -- - log in with JWT user if JWT given
+    -- - or trigger custom invalid session/login flow
+    --
+    if apex_authentication.is_public_user then
+        if l_jwt_user is not null then
+            apex_authentication.post_login (
+                p_username => l_jwt_user );
+        else
+            return false;
+        end if;
+    elsif apex_application.g_user <> l_jwt_user then
+        apex_debug.trace('...login user %s does not match JWT user %s',
+            apex_application.g_user,
+            l_jwt_user );
+        return false;
+    end if;
+    --
+    -- if JWT given, assign additional parameters to items
+    --
+    if l_jwt_user is not null then
+        l_jwt_elts := apex_json.get_members('.');
+        for i in 1 .. l_jwt_elts.count loop
+            if l_jwt_elts(i) like 'P%' then
+                apex_debug.trace('...setting %s', l_jwt_elts(i));
+                apex_util.set_session_state (
+                    p_name  => l_jwt_elts(i),
+                    p_value => apex_json.get_varchar2(l_jwt_elts(i)) );
+            end if;
+        end loop;
+    end if;
+    return true;
+end;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="efdc09568cecfdcb5200546c7dea15da4fbba231" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleProcedure objectName="IQ_TOKEN_REFRESH" objectType="PROCEDURE" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "HHA_PROD"."IQ_TOKEN_REFRESH" IS
+  TOKEN_229 VARCHAR2(4000);
+  TOKEN_521 VARCHAR2(4000);
+  TOKEN_481 VARCHAR2(4000);
+BEGIN
+  TOKEN_229 := getIQtoken(url => 'https://hha229.iq-motive.com:10004/api/Auth/login',branch => '229');
+  TOKEN_521 := getIQtoken(url => 'https://hha521.iq-motive.com:10004/api/Auth/login',branch => '521');
+  TOKEN_481 := getIQtoken(url => 'https://hha481.iq-motive.com:10004/api/Auth/login',branch => '481');
+END;
+/]]></n0:source>
+		</n0:createOracleProcedure>
+	</changeSet>
+</databaseChangeLog>

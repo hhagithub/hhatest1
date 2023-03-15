@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="800c488484edc00bf61b1347324ee885da3514a7" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="QR_CODE_BLOB_10G" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."QR_CODE_BLOB_10G" (P1 IN VARCHAR2) RETURN BLOB AS
+QR_CODE BLOB;
+BEGIN
+
+SELECT
+HHA_QR.F_QR_AS_BMP(
+            p_data =>P1 ,
+            p_error_correction => 'M'
+            ) INTO QR_CODE
+
+     from DUAL;
+RETURN QR_CODE;     
+
+END;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

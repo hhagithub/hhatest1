@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="d059795b0e3a5979904177423ff4e8314118a8ce" author="(HHA_PROD)-Generated"     >
+		<n0:createSxmlObject objectName="ZATCA_MAPPING_MASTER_VAT" objectType="VIEW" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  <VIEW xmlns="http://xmlns.oracle.com/ku" version="1.0">
+   <SCHEMA>HHA_PROD</SCHEMA>
+   <NAME>ZATCA_MAPPING_MASTER_VAT</NAME>
+   <COL_LIST>
+      <COL_LIST_ITEM>
+         <NAME>INVOICE_NUMBER</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>VATCODE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>VAT_TAXABLE_AMT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>CURR_VAT_TAXABLE_AMT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>VAT_CAT_TAX_AMT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>CURR_VAT_CAT_TAX_AMT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>VAT_CAT_CODE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>VAT_CAT_RATE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>TAX_EXEMPT_CODE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>TAX_EXEMPT_REASON</NAME>
+      </COL_LIST_ITEM>
+   </COL_LIST>
+   <SUBQUERY>select
+invoice_number,
+'' vatcode,
+nvl(sum(nvl(inv_line_net_amt,0)),0) vat_taxable_amt,--88
+'SAR' curr_vat_taxable_amt,
+nvl(sum(nvl(VAT_line_amt,0)),0) vat_cat_tax_amt,--96
+'SAR' curr_vat_cat_tax_amt,
+inv_item_vat_cat_code vat_cat_code,
+inv_item_vat_rate vat_cat_rate,
+tax_exempt_code,  --decode(inv_item_vat_cat_code,'S','','VATEX-SA-32')
+ tax_exempt_reason --decode(inv_item_vat_cat_code,'S','', 'Export of goods')
+from ZATCA_MAPPING_MASTER_DETAIL
+group by invoice_number, inv_item_vat_cat_code, inv_item_vat_rate,tax_exempt_code,tax_exempt_reason
+</SUBQUERY>
+</VIEW>]]></n0:source>
+		</n0:createSxmlObject>
+	</changeSet>
+</databaseChangeLog>

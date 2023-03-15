@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="c73db266536f80c1eda8a22b090bcffcfa87856e" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="QR_CODE_BASE_PHASE2" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."QR_CODE_BASE_PHASE2" (P_NO IN NUMBER,P_VAL IN VARCHAR2) return VARCHAR2 AS
+
+V_P_P   VARCHAR2(32767);
+V_P_LEN VARCHAR2(32767);
+V_P_VAL VARCHAR2(32767);
+V_BASE  VARCHAR2(32767);
+BEGIN
+
+--select   utl_encode.base64_encode(RAWTOHEX(UTL_RAW.CAST_TO_RAW(P_NO))) INTO V_P_P from dual;
+--select   utl_encode.base64_encode(RAWTOHEX(UTL_RAW.CAST_TO_RAW(LENGTH(P_VAL)))) INTO V_P_LEN from dual;
+--select   utl_encode.base64_encode(RAWTOHEX(UTL_RAW.CAST_TO_RAW(P_VAL))) INTO V_P_VAL from dual;
+
+--if p_no =1  then
+   
+  
+  if P_NO in (8) then
+   -- cli       
+   V_BASE := '08583056301006072a8648ce3d020106052b8104000a0342000461830ca0e68560084c3bfb2d7a8b5f6726afafaa75d524a5c2c2bd6b39ac2d8edbd5bf852e1a8c02b841d9da8729ba31a8a35fbe428378f869aa3ba2e61727d1';
+    --Sand box 
+   --V_BASE :=  '08583056301006072a8648ce3d020106052b8104000a03420004d300af65ad3564a3dae4aba65871cf470d164fe1bf52e330382a6ed85c9fac9d35612e4cd4d07b26497f549fc8c38514ce1c329a7edf02feeb9463ddf8bee30d';
+
+  elsif P_NO in (9) then
+   -- CLI
+   V_BASE := '09483046022100e67ca099e588f85d5af0a2a243e64adcf69e22fed516f0eb2f5ab00876dbdcfb022100d2bea5d6a9eaeafcd18d5bebf479dbb6affd0248b4478ac5eb8105358e170023';
+   
+   --V_BASE := '0948304602210095c0331caba3cef8c726b015d4cffbf519d846a7baea49ad80c53292bfcdfc20022100e04d0c1b7dfb70d29628e855fc73add0e1e76f160b7eec98476819656b4a91b5';
+  else
+    select LPAD(TRIM(to_char(P_NO,'XXXXXXXXXX')),2,'0')           INTO V_P_P from dual;
+    SELECT LPAD(TRIM(TO_CHAR(LENGTHB(P_VAL),'XXXXXXXXXX')),2,'0') INTO V_P_LEN  FROM DUAL;
+     select RAWTOHEX(UTL_RAW.CAST_TO_RAW((utl_i18n.raw_to_char(utl_raw.cast_to_raw(P_VAL), 'utf8')))) INTO V_P_VAL from dual; 
+    
+     V_BASE :=  V_P_P || V_P_LEN || V_P_VAL; 
+  end if;
+    
+   
+   null;
+--else
+  -- select LPAD(TRIM(to_char(P_NO,'XXXXXXXXXX')),2,'0')          INTO V_P_P from dual;
+  --select LPAD(TRIM(to_char(LENGTH(P_VAL),'XXXXXXXXXX')),2,'0') INTO V_P_LEN from dual;
+--end if;
+
+
+
+
+
+--SELECT utl_raw.cast_to_varchar2 (utl_encode.base64_encode(V_BASE))   INTO V_BASE FROM DUAL;
+
+RETURN V_BASE;
+END;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

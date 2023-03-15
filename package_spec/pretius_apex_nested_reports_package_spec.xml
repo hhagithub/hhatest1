@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="6abd03e807ee833d52e6ac25f5f470010f9a1fb8" author="(HHA_PROD)-Generated"     >
+		<n0:createOraclePackageSpec objectName="PRETIUS_APEX_NESTED_REPORTS" objectType="PACKAGE_SPEC" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE PACKAGE "HHA_PROD"."PRETIUS_APEX_NESTED_REPORTS" as
+
+  function pretius_row_details (
+    p_dynamic_action in apex_plugin.t_dynamic_action,
+    p_plugin         in apex_plugin.t_plugin 
+  ) return apex_plugin.t_dynamic_action_render_result;
+
+  function pretius_row_details_ajax(
+    p_dynamic_action in apex_plugin.t_dynamic_action,
+    p_plugin         in apex_plugin.t_plugin 
+  ) return apex_plugin.t_dynamic_action_ajax_result;
+
+end;
+/]]></n0:source>
+		</n0:createOraclePackageSpec>
+	</changeSet>
+</databaseChangeLog>

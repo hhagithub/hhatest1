@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="0e4d8a1f5d36357cbd160e03bfcb34e2a8d8a5e8" author="(HHA_PROD)-Generated"     >
+		<n0:createSxmlObject objectName="V_GETFILE_CHKLIST" objectType="VIEW" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  <VIEW xmlns="http://xmlns.oracle.com/ku" version="1.0">
+   <SCHEMA>HHA_PROD</SCHEMA>
+   <NAME>V_GETFILE_CHKLIST</NAME>
+   <COL_LIST>
+      <COL_LIST_ITEM>
+         <NAME>ID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>STOCK_NO</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>FILENAME</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>MIME_TYPE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ATTCH</NAME>
+      </COL_LIST_ITEM>
+   </COL_LIST>
+   <SUBQUERY>SELECT ID, STOCK_NO,	FILENAME	,MIME_TYPE,	ATTCH FROM(
+select '1.png' as ID,  STOCK_NO,'FRONT IMG' AS filename, mime_type,FRONT_IMG_UPLOAD as ATTCH
+                 from VEH_DEL_CHKLIST  
+                 UNION ALL
+select '2' as ID,  STOCK_NO,'BACK IMG' AS filename, mime_type,BACK_IMG_UPLOAD as ATTCH
+                 from VEH_DEL_CHKLIST
+                 UNION ALL
+select '3' as ID,  STOCK_NO,'LEFT IMG' AS filename, mime_type,LEFT_IMG_UPLOAD as ATTCH
+                 from VEH_DEL_CHKLIST
+                 UNION ALL
+select '4' as ID,  STOCK_NO,'RIGHT IMG' AS filename, mime_type,RIGHT_IMG_UPLOAD as ATTCH
+                 from VEH_DEL_CHKLIST
+                 UNION ALL
+select '5' as ID,  STOCK_NO,'SIGN1' AS filename, mime_type,SIGN1_UPLOAD as ATTCH
+                 from VEH_DEL_CHKLIST
+                 UNION ALL
+select '6' as ID,  STOCK_NO,'SIGN2' AS filename, mime_type,SIGN2_UPLOAD as ATTCH
+                 from VEH_DEL_CHKLIST ) ORDER BY ID
+</SUBQUERY>
+</VIEW>]]></n0:source>
+		</n0:createSxmlObject>
+	</changeSet>
+</databaseChangeLog>

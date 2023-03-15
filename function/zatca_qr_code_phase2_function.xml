@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="71c71b73e90d06a5c2856ea942078069af6ec221" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="ZATCA_QR_CODE_PHASE2" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."ZATCA_QR_CODE_PHASE2" (P1 IN VARCHAR2,P2 IN VARCHAR2,P3 IN VARCHAR2,P4 IN VARCHAR2,P5 IN VARCHAR2,P6 IN VARCHAR2,P7 IN VARCHAR2,P8 IN VARCHAR2,P9 IN VARCHAR2) return varchar2 AS
+QR_CODE BLOB;
+V_BASE  VARCHAR2(32767);
+V_HEX   VARCHAR2(32767);
+
+V_P1 VARCHAR2(32767);
+V_P2 VARCHAR2(32767);
+V_P3 VARCHAR2(32767);
+V_P4 VARCHAR2(32767);
+V_P5 VARCHAR2(32767);
+
+
+V_HEX_P1   VARCHAR2(32767);
+V_HEX_P2   VARCHAR2(32767);
+V_HEX_P3   VARCHAR2(32767);
+V_HEX_P4   VARCHAR2(32767);
+V_HEX_P5   VARCHAR2(32767);
+
+
+/*
+P1 VARCHAR2(32767);
+P2 VARCHAR2(32767);
+P3 VARCHAR2(32767);
+P4 NUMBER;
+P5 NUMBER;
+*/
+V_ID NUMBER;
+BEGIN
+/*
+SELECT ZATCA_QR_CODE_PHASE2('Al Salam Supplies Co. LTD','300055184400003','25/04/2021 15:30:00')  FROM DUAL
+
+select QR_CODE_BLOB(comp_ , vat_no_ , ISO8601(to_date(datetime_,'dd/mm/yyyy hh24:mi:ss')), net_amt ,vat_amt)
+into base64_
+from dual;
+
+SELECT   'Haji Husein Alireza & Co. Ltd.', 
+'300210958810003',
+TO_CHAR(SYSDATE,'DD/MM/RRRR HH24:MI'),
+(TOTAL_AMOUNT + TOTAL_AMOUNT_VAT),
+TOTAL_AMOUNT_VAT
+
+INTO P1,P2,P3,P4,P5
+
+ from invoice_header
+ WHERE INVOICE_NUMBER= P_INV_NO;
+*/
+ -- P1:= 'Acme Widget’s LTD';
+ -- P2:= '311111111101113'
+ -- ISO8601(to_date('07/09/2022 12:21:28','dd/mm/yyyy hh24:mi:ss'))
+--P6:= 'dB6x+/Q6kdzZ+IyFDZsPFKraadhd8d+ZNpSdBOSw2cY=';
+--P7:='MEYCIQCic0FuPW+qJJDlSK9rbJ6Zq/zIioC8hcNJTWg+DXtGPAIhALd5uPxKUmf9RIZbZeL3gJAKpiiTNpQZvRyJPdQbQ+hc';
+
+ V_HEX :=  V_HEX || QR_CODE_BASE_Phase2(1,P1); 
+ V_HEX :=  V_HEX || QR_CODE_BASE_Phase2(2,P2); 
+ V_HEX :=  V_HEX || QR_CODE_BASE_Phase2(3,P3);  
+ V_HEX :=  V_HEX || QR_CODE_BASE_Phase2(4,P4);
+ V_HEX :=  V_HEX || QR_CODE_BASE_Phase2(5,P5);  
+ V_HEX :=  V_HEX || QR_CODE_BASE_Phase2(6,P6);
+ V_HEX :=  V_HEX || QR_CODE_BASE_Phase2(7,P7);  
+ V_HEX :=  V_HEX || QR_CODE_BASE_Phase2(8,P8);
+ IF P9 is not null then
+ V_HEX :=  V_HEX || QR_CODE_BASE_Phase2(9,P9);    
+ end if;
+
+--return v_hex;
+
+SELECT utl_raw.cast_to_varchar2 (utl_encode.base64_encode(v_hex))   INTO V_BASE FROM DUAL;
+
+select replace(replace(V_BASE,chr(10),''),chr(13),'') into v_base from dual;
+
+RETURN V_BASE;
+
+ --V_HEX_P1 :=  utl_raw.cast_to_varchar2 (utl_encode.base64_encode(QR_CODE_BASE(1,P1)));  
+ --V_HEX_P2 :=  utl_raw.cast_to_varchar2 (utl_encode.base64_encode(QR_CODE_BASE(2,P2)));  
+ --V_HEX_P3 :=  utl_raw.cast_to_varchar2 (utl_encode.base64_encode(QR_CODE_BASE(3,P3)));  
+ --V_HEX_P4 :=  utl_raw.cast_to_varchar2 (utl_encode.base64_encode(QR_CODE_BASE(4,P4)));  
+ --V_HEX_P5 :=  utl_raw.cast_to_varchar2 (utl_encode.base64_encode(QR_CODE_BASE(5,P5)));  
+
+--return V_HEX_P1 || V_HEX_P2 || V_HEX_P3 || V_HEX_P4 || V_HEX_P5;
+/*
+SELECT
+HHA_QR.F_QR_AS_BMP(
+            p_data =>V_BASE ,
+            p_error_correction => 'M'
+            ) INTO QR_CODE
+
+     from DUAL;
+
+RETURN QR_CODE;     
+*/
+
+/*
+SELECT NVL(MAX(ID),0)+1 INTO V_ID FROM TEST_BLOB;
+if v_id is null THEN
+ v_id := 1;
+end if;
+INSERT INTO TEST_BLOB(ID,PIC) VALUES (V_ID,QR_CODE);
+   
+    RETURN QR_CODE;
+    EXCEPTION WHEN NO_DATA_FOUND THEN
+    RETURN NULL;
+*/
+END;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

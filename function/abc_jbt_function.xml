@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="e551713da0081d882f4d283fb91a8946b3eb38d3" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="ABC_JBT" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."ABC_JBT" return varchar2 is
+
+     l_value varchar2(4000) := 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.pF3q46_CLIyP_1QZPpeccbs-hC4n9YW2VMBjKrSO6Wg';
+
+     l_oauth2_client_id varchar2(30) := '12';
+
+     l_token apex_jwt.t_token;
+
+     l_jwt_value varchar2(4000);
+
+begin
+
+  l_jwt_value := apex_jwt.decode (
+
+                    p_value => l_value );
+
+        l_prn_json:=apex_jwt.validate (
+
+         p_token => l_token,
+         
+         p_aud => l_oauth2_client_id );
+
+   return  l_jwt_value ;
+
+
+end;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

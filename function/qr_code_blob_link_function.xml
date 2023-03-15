@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="1d89b5d25461398acee233d4e9eed40809dbf6b6" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="QR_CODE_BLOB_link" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."QR_CODE_BLOB_link" (P1 IN VARCHAR2,P2 IN VARCHAR2,P3 IN VARCHAR2,P4 IN NUMBER,P5 IN NUMBER) return varchar2 AS
+QR_CODE BLOB;
+V_BASE  VARCHAR2(32767);
+V_HEX   VARCHAR2(32767);
+/*
+P1 VARCHAR2(32767);
+P2 VARCHAR2(32767);
+P3 VARCHAR2(32767);
+P4 NUMBER;
+P5 NUMBER;
+*/
+V_ID NUMBER;
+BEGIN
+/*
+SELECT   'Haji Husein Alireza & Co. Ltd.', 
+'300210958810003',
+TO_CHAR(SYSDATE,'DD/MM/RRRR HH24:MI'),
+(TOTAL_AMOUNT + TOTAL_AMOUNT_VAT),
+TOTAL_AMOUNT_VAT
+
+INTO P1,P2,P3,P4,P5
+
+ from invoice_header
+ WHERE INVOICE_NUMBER= P_INV_NO;
+*/
+
+ V_HEX :=  V_HEX || QR_CODE_BASE(1,P1);  
+ V_HEX :=  V_HEX || QR_CODE_BASE(2,P2); 
+ V_HEX :=  V_HEX || QR_CODE_BASE(3,P3);  --V_HEX || QR_CODE_BASE(3,TO_CHAR(to_DATE(P3,'RRRR-MM-DD HH24:MI'),'RRRR-MM-DD HH24:MI')); --Z:30:25T15-04-2
+ V_HEX :=  V_HEX || QR_CODE_BASE(4,P4);
+ V_HEX :=  V_HEX || QR_CODE_BASE(5,P5);   
+
+ 
+ SELECT utl_raw.cast_to_varchar2 (utl_encode.base64_encode(v_hex))   INTO V_BASE FROM DUAL;
+
+return v_base;
+SELECT
+HHA_QR.F_QR_AS_BMP(
+            p_data =>V_BASE ,
+            p_error_correction => 'M'
+            ) INTO QR_CODE
+
+     from DUAL;
+
+RETURN QR_CODE;     
+/*
+SELECT NVL(MAX(ID),0)+1 INTO V_ID FROM TEST_BLOB;
+if v_id is null THEN
+ v_id := 1;
+end if;
+INSERT INTO TEST_BLOB(ID,PIC) VALUES (V_ID,QR_CODE);
+   
+    RETURN QR_CODE;
+    EXCEPTION WHEN NO_DATA_FOUND THEN
+    RETURN NULL;
+*/
+END;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

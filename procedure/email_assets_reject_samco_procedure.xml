@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="c805bbd91765f2f35cb0bc67252866734816aceb" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleProcedure objectName="EMAIL_ASSETS_REJECT_SAMCO" objectType="PROCEDURE" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "HHA_PROD"."EMAIL_ASSETS_REJECT_SAMCO" 
+   ( to_emp_ IN varchar ,item_ IN varchar
+     --item_ IN OUT datatype
+     )
+   IS
+
+-- ---------   ------  -------------------------------------------
+email1 varchar2(500);
+NAME1 VARCHAR2(500);
+email1_e varchar2(500);
+email1_c varchar2(500);
+NAME1_e VARCHAR2(500);
+app1  VARCHAR2(500);
+emp1  number(8);
+emp1_e  number(8);
+flag varchar2(100);
+Item_Type_ VARCHAR2(500);
+Serial_NO_ VARCHAR2(500);
+DESCRIPTION_ VARCHAR2(500);
+TO_USER_ VARCHAR2(500);
+st_ename_ VARCHAR2(500);
+location_ VARCHAR2(500);
+rej_rem_ VARCHAR2(500);
+
+BEGIN
+
+---manager
+select st_empcd,EMP_EMAIL,st_ename  into emp1,email1,NAME1 from pastatic where st_empcd = (
+select DIRECT_MANAGER_NUMBER from pastatic where st_empcd = to_emp_);
+----
+
+--asset MIS controlleremployee
+
+select VALUE_1,DESC_ENG,st_ename into emp1_e,email1_e,NAME1_e from codes_descriptions,pastatic where
+st_empcd=VALUE_1
+and main_code=251 and MAJOR_CODE!=0 and
+MAJOR_CODE=1;
+
+----
+
+select
+(SELECT DESC_ENG  FROM
+apphha_prod.CODES_DESCRIPTIONS WHERE MAIN_CODE=13 AND MINOR_CODE<>'0'
+ and rtrim(ltrim(VALUE_1)) = rtrim(ltrim(ITEM_TYPE))) Item_Type , ITEM_SNO Serial_NO,
+DESCRIPTION,TO_USER,p.st_ename,initcap(b.branch_desc_eng) location,REJ_REMARKS
+into Item_Type_ ,  Serial_NO_, DESCRIPTION_,TO_USER_,st_ename_,location_,rej_rem_
+ from assets_samco a,pastatic p , branches b where p.st_empcd=a.to_user
+ and b.branch_code=p.st_brcd and TO_USER=to_emp_ and ITEM_SNO=item_;
+
+--<font size="4" color="blue">
+
+send_email_html('misoper@hha.com.sa',email1_c,'Assets Rejection Notification by '||TO_USER_||'-'||rtrim(st_ename_),
+'Dear '||ltrim(rtrim(NAME1)) ||','||'<br><br><font size="3">'||'The Employee has rejected the below Asset under his name.
+                '||'<br><br></font>'||'<font size="4">
+
+ Location: '||location_
+||'<br><br></b>' ||'
+<style>
+table, th, td {
+  border: 1px solid black;
+  border-collapse: collapse;
+}
+th, td {
+  padding: 5px;
+}
+th {
+  text-align: left;
+}
+</style>
+ <table style="width:100%">
+  <tr>
+    <th>Item Type</th>
+    <th>Serial No</th>
+    <th>Item Name</th>
+    <th>Rejection Remarks</th>
+  </tr>
+  <tr>
+    <td>'||Item_Type_||'</td>
+    <td>'||Serial_NO_||'</td>
+    <td>'||DESCRIPTION_||'</td>
+    <td>'||rej_rem_||'</td>
+
+</table>'
+);
+
+----for emp
+
+send_email_html('misoper@hha.com.sa',email1_e,'Assets Rejection Notification by '||TO_USER_||'-'||rtrim(st_ename_),
+'Dear '||ltrim(rtrim(NAME1_e)) ||','||'<br><br><font size="3">'||'The Employee has rejected the below Asset under his name.
+                '||'<br><br></font>'||'<font size="4">
+ Location: '||location_
+||'<br><br></b>' ||'
+<style>
+table, th, td {
+  border: 1px solid black;
+  border-collapse: collapse;
+}
+th, td {
+  padding: 5px;
+}
+th {
+  text-align: left;
+}
+</style>
+ <table style="width:100%">
+  <tr>
+    <th>Item Type</th>
+    <th>Serial No</th>
+    <th>Item Name</th>
+    <th>Rejection Remarks</th>
+  </tr>
+  <tr>
+    <td>'||Item_Type_||'</td>
+    <td>'||Serial_NO_||'</td>
+    <td>'||DESCRIPTION_||'</td>
+    <td>'||rej_rem_||'</td>
+</table>'
+);
+
+---- his manager
+
+send_email_html('misoper@hha.com.sa',email1,'Assets Rejection Notification by '||TO_USER_||'-'||rtrim(st_ename_),
+'Dear '||'Line Manager'||','||'<br><br><font size="3">'||'The Employee'||TO_USER_||' - '||rtrim(st_ename_)||' has rejected the below Asset under his name.
+                '||'<br><br></font>'||'<font size="4">
+ Location: '||location_
+||'<br><br></b>' ||'
+<style>
+table, th, td {
+  border: 1px solid black;
+  border-collapse: collapse;
+}
+th, td {
+  padding: 5px;
+}
+th {
+  text-align: left;
+}
+</style>
+ <table style="width:100%">
+  <tr>
+    <th>Item Type</th>
+    <th>Serial No</th>
+    <th>Item Name</th>
+    <th>Rejection Remarks</th>
+  </tr>
+  <tr>
+    <td>'||Item_Type_||'</td>
+    <td>'||Serial_NO_||'</td>
+    <td>'||DESCRIPTION_||'</td>
+    <td>'||rej_rem_||'</td>
+
+</table>'
+);
+
+
+
+
+
+exception when no_data_found then
+null;
+
+
+END; -- Procedure
+/]]></n0:source>
+		</n0:createOracleProcedure>
+	</changeSet>
+</databaseChangeLog>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="c67cf82ec4f6482d08b61f30c7a2373fa79f499a" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="MASTER_JOB_INVOICED" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."MASTER_JOB_INVOICED" (JobNo_ Varchar2) return Varchar2 is
+ v_result varchar2(10);
+begin
+select DISTINCT 'NO'  into v_result from work_job_master ww
+    where ww.JM_MASTER_JOB_NO =JobNo_
+    and ww.jm_status =1;
+  --  and ww.jm_location != '211'
+
+  RETURN V_RESULT;
+  exception when no_data_found then
+  return 'YES';
+  WHEN OTHERS then
+  RETURN NULL;
+end;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

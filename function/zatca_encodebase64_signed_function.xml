@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="ddf85cd3a143d1efbbdc57034280b09afa982c5a" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="ZATCA_ENCODEBASE64_SIGNED" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."ZATCA_ENCODEBASE64_SIGNED" (InClearChar IN CLOB) RETURN CLOB IS
+
+    dest_lob BLOB;  
+    lang_context INTEGER := DBMS_LOB.DEFAULT_LANG_CTX;
+    dest_offset INTEGER := 1;
+    src_offset INTEGER := 1;
+    read_offset INTEGER := 1;
+    warning INTEGER;
+    ClobLen INTEGER;
+
+    amount INTEGER := 1440; -- must be a whole multiple of 3
+    -- size of a whole multiple of 48 is beneficial to get NEW_LINE after each 64 characters 
+    buffer RAW(1440);
+    res CLOB := EMPTY_CLOB();
+   v_clob clob;
+BEGIN
+
+     --select xmlserialize( Document  xmltype(InClearChar) as clob NO INDENT ) into v_clob from dual;
+      --v_clob := trim(regexp_replace(v_clob,'><', '> <'));
+
+     V_CLOB := InClearChar;
+    
+       ClobLen := DBMS_LOB.GETLENGTH(v_clob);
+
+    IF v_clob IS NULL OR NVL(ClobLen, 0) = 0 THEN 
+        RETURN NULL;
+    ELSIF ClobLen <= 24000 THEN
+           v_clob := UTL_RAW.CAST_TO_VARCHAR2(UTL_ENCODE.BASE64_ENCODE(UTL_RAW.CAST_TO_RAW(v_clob))); 
+           v_clob := replace(replace(v_clob,chr(10),''),chr(13),''); 
+           v_clob := REGEXP_REPLACE(v_clob, '[[:space:]]', '' );
+        RETURN  v_clob;
+    END IF;
+    -- UTL_ENCODE.BASE64_ENCODE is limited to 32k/(3/4), process in chunks if bigger    
+
+    DBMS_LOB.CREATETEMPORARY(dest_lob, TRUE);
+    DBMS_LOB.CONVERTTOBLOB(dest_lob, v_clob, DBMS_LOB.LOBMAXSIZE, dest_offset, src_offset, DBMS_LOB.DEFAULT_CSID, lang_context, warning);
+    LOOP
+        EXIT WHEN read_offset >= dest_offset;
+        DBMS_LOB.READ(dest_lob, amount, read_offset, buffer);
+        res := res || UTL_RAW.CAST_TO_VARCHAR2(UTL_ENCODE.BASE64_ENCODE(buffer));       
+        read_offset := read_offset + amount;
+    END LOOP;
+    DBMS_LOB.FREETEMPORARY(dest_lob);
+
+    res := replace(replace(res,chr(10),''),chr(13),''); 
+    res := REGEXP_REPLACE(res, '[[:space:]]', '' );
+
+   
+    RETURN res;
+
+END ;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

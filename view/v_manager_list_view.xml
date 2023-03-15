@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="7ef0d7a7c460a737675c421e7d8905dc36df6b86" author="(HHA_PROD)-Generated"     >
+		<n0:createSxmlObject objectName="V_MANAGER_LIST" objectType="VIEW" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  <VIEW xmlns="http://xmlns.oracle.com/ku" version="1.0">
+   <SCHEMA>HHA_PROD</SCHEMA>
+   <NAME>V_MANAGER_LIST</NAME>
+   <COL_LIST>
+      <COL_LIST_ITEM>
+         <NAME>BRANCH_CODE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>BRANCH_DESC_ENG</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>BRANCH_DESC_ARB</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>MANAGER_CODE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>MANAGER_NAME</NAME>
+      </COL_LIST_ITEM>
+   </COL_LIST>
+   <SUBQUERY>select  b.BRANCH_CODE,BRANCH_DESC_ENG,BRANCH_DESC_ARB,manager_code,
+(Select USER_NAME_E from users  where USER_CODE=manager_code ) Manager_Name
+ from branches b , BRANCHE_DEPARTMENTS bd,BRANCH_TYPE_MANAGER bm
+where b.branch_code=bd.branch_code
+and bd.department_code=21
+--and b.branch_code=285
+and bm.branch_code=b.branch_code
+and bm.position=1
+and bm.dept_code=bd.department_code
+and b.loc_status='A'
+and MANAGER_CODE in(select st_empcd from pastatic where st_status &#60;=15)
+UNION ALL
+    
+select  b.BRANCH_CODE,BRANCH_DESC_ENG,BRANCH_DESC_ARB,manager_code,
+(Select USER_NAME_E from users  where USER_CODE=manager_code ) Manager_Name
+ from branches b , BRANCHE_DEPARTMENTS bd,BRANCH_TYPE_MANAGER bm
+where b.branch_code=bd.branch_code
+and bd.department_code=31
+--and b.branch_code=285
+and bm.branch_code=b.branch_code
+and bm.position=1
+and bm.dept_code=bd.department_code
+and b.loc_status='A'
+and MANAGER_CODE in(select st_empcd from pastatic where st_status &#60;=15)
+UNION ALL    
+select  b.BRANCH_CODE,BRANCH_DESC_ENG,BRANCH_DESC_ARB,manager_code,
+(Select USER_NAME_E from users  where USER_CODE=manager_code ) Manager_Name
+ from branches b , BRANCHE_DEPARTMENTS bd,BRANCH_TYPE_MANAGER bm
+where b.branch_code=bd.branch_code
+and bd.department_code=41
+--and b.branch_code=285
+and bm.branch_code=b.branch_code
+and bm.position=1
+and bm.dept_code=bd.department_code
+and b.loc_status='A'
+and MANAGER_CODE in(select st_empcd from pastatic where st_status &#60;=15)
+ UNION ALL
+    
+select  b.BRANCH_CODE,BRANCH_DESC_ENG,BRANCH_DESC_ARB,manager_code,
+(Select USER_NAME_E from users  where USER_CODE=manager_code ) Manager_Name
+ from branches b , BRANCHE_DEPARTMENTS bd,BRANCH_TYPE_MANAGER bm
+where b.branch_code=bd.branch_code
+and bd.department_code=32
+--and b.branch_code=285
+and bm.branch_code=b.branch_code
+and bm.position=1
+and bm.dept_code=bd.department_code
+and b.loc_status='A'
+and MANAGER_CODE in(select st_empcd from pastatic where st_status &#60;=15)
+</SUBQUERY>
+</VIEW>]]></n0:source>
+		</n0:createSxmlObject>
+	</changeSet>
+</databaseChangeLog>

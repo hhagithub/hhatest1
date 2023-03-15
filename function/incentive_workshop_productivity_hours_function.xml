@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="5916790ac156e84f98e637fc05bbf1dc49efbd73" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="INCENTIVE_WORKSHOP_PRODUCTIVITY_HOURS" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."INCENTIVE_WORKSHOP_PRODUCTIVITY_HOURS" (wj_location1_ varchar2,P_PERIOD VARCHAR2,WJ_EMP_NO_ VARCHAR2) return number is
+--1 HOURS
+V_HOURS number;--varchar2(80);
+ V_OVERTIME NUMBER;
+ abc_DAYOFF number;
+ V_sold_cig NUMBER;
+
+BEGIN
+
+
+
+
+DECLARE
+--create or replace function R28_std_timings(wj_location1_ varchar2,WJ_EMP_NO_ VARCHAR2,STARTTIME_ DATE) return number is
+--1 HOURS
+abc number;--varchar2(80);
+begin
+
+
+
+
+Select
+round(
+(
+NVL((select sum(nvl(DECODE(round(SCHEDULED_HOURS,2),570,510,540,510,SCHEDULED_HOURS),0))
+from hcm_timecardn
+where emp_no= (WJ_EMP_NO_)
+and to_char(TRUNC(ATTENDANCE_DATE),'RRRRMM') =  P_PERIOD
+and upper(Nvl(remarks,'P')) not in(
+'WORLD CUP',
+'SICK LEAVE',
+'PATERNITY LEAVE',
+'NATIONAL DAY',
+'MATERNITY LEAVE',
+'MARRIAGE LEAVE',
+'LEGAL SUSPENSION',
+'HAJJ LEAVE',
+'FOUNDING DAY',
+'EID',
+'EDUCATION EXAM LEAVE',
+'DEATH LEAVE',
+'DAY OFF',
+'COVID-19 VACCINATION ABSENCE',
+'COVID-19 TEST ABSENCE',
+'CHRONIC DISEASE LEAVE',
+'ANNUAL LEAVE'
+) )
+
+ ,0)
+/*
+-
+NVL((
+select sum(VALUE_1) from codes_descriptions
+where
+MAIN_CODE = '422'
+and MINOR_CODE != 0 and DESC_ENG = to_number(wj_location1_) and rownum = 1)
+,0)
+*/
+)/60,2)
+into V_HOURS From Dual;
+
+
+
+if V_HOURS = 0 then
+      V_HOURS := 0;  --return 0;
+elsif V_HOURS< 0 then
+   V_HOURS := 8.5 ; --return 8.5;
+else
+    V_HOURS := V_HOURS;        --return V_HOURS;
+end if;
+return v_hours;
+
+
+/*
+
+Select
+round(
+(
+NVL((select sum(nvl(DECODE(SCHEDULED_HOURS,570,510,540,510,SCHEDULED_HOURS),0))
+from hcm_timecardn
+where emp_no= WJ_EMP_NO_
+and to_char(TRUNC(ATTENDANCE_DATE),'RRRRMM') =  P_PERIOD --TRUNC(STARTTIME_) 
+and upper(Nvl(remarks,'P')) not in(
+'WORLD CUP',
+'SICK LEAVE',
+'PATERNITY LEAVE',
+'NATIONAL DAY',
+'MATERNITY LEAVE',
+'MARRIAGE LEAVE',
+'LEGAL SUSPENSION',
+'HAJJ LEAVE',
+'FOUNDING DAY',
+'EID',
+'EDUCATION EXAM LEAVE',
+'DEATH LEAVE',
+'DAY OFF',
+'COVID-19 VACCINATION ABSENCE',
+'COVID-19 TEST ABSENCE',
+'CHRONIC DISEASE LEAVE',
+'ANNUAL LEAVE'
+) )
+
+ ,0)
+
+)/60,2)
+into V_HOURS From Dual;
+*/
+
+--return Round((nvl(R28_STD_TIMINGS_MNT1(wj_location1_,WJ_EMP_NO_,STARTTIME_),0)/60),2);
+
+
+
+
+End;
+
+
+      declare
+         --create or replace function R28_overtime_hr(wj_location1_ varchar2,WJ_EMP_NO_ VARCHAR2,STARTTIME_ DATE) return number is
+         --2 Over time
+     --   abcd number; --varchar2(20);
+     --    abc number;
+        
+        
+      begin
+
+            --DAY OFF OVERTIME
+
+            Select 
+            round(
+            (
+            NVL((select sum(nvl(TOTAL_HOURS,0))
+            from hcm_timecardn
+            where emp_no= WJ_EMP_NO_
+            and to_char(TRUNC(ATTENDANCE_DATE),'rrrrMM') =  P_PERIOD --TRUNC(STARTTIME_) 
+            AND UPPER(REMARKS) = TRIM(UPPER('Day Off'))) ,0)
+            )/60,2)
+            into abc_DAYOFF From Dual;
+      
+         -- IF abc_DAYOFF > 0 then
+            -- RETURN abc_DAYOFF;
+            -- END IF;
+
+      EXCEPTION WHEN NO_DATA_FOUND THEN
+          NULL;
+      END;
+
+        
+        
+         BEGIN
+            --REGULAR TIME OVER TIME
+            Select 
+            round(
+            (
+            NVL((select sum(nvl(ADDITIONAL_OUT,0))
+            from hcm_timecardn
+            where emp_no= WJ_EMP_NO_
+            and TO_CHAR(TRUNC(ATTENDANCE_DATE),'RRRRMM') =  P_PERIOD --TRUNC(STARTTIME_) 
+            ) ,0)
+            )/60,2)
+            into V_OVERTIME From Dual;
+
+
+            if V_OVERTIME < 0 then
+               V_OVERTIME := 0; --return 0;
+            elsif V_OVERTIME >= 24 then
+               V_OVERTIME := V_OVERTIME -24 ;--return abc-24;
+            else
+                V_OVERTIME :=  V_OVERTIME; --return abc;
+            end if;
+
+      end;
+
+      IF V_HOURS > 0 THEN
+            RETURN round((V_HOURS+V_OVERTIME+abc_DAYOFF),2);
+      ELSE
+            RETURN 0;
+      END IF;
+     
+
+      -- declare
+      -- --create or replace function R28_sold_cig_mnt(wj_emp_no_ VARCHAR2,starttime_ DATE,endtime_ DATE) return number is
+      -- --8 SOLD_CIG
+      -- temp number;--varchar2(80);
+      -- begin
+      
+      
+      --    select
+      --    Round(sum(nvl(NEW_TIME,0)),2)
+      --       --lpad(nvl(floor(sum(nvl(ST_GRANTED_TIME,0))),0),2,0)||':'||
+      --    -- nvl(floor(sum(nvl(NEW_TIME,0))),0)||':'||
+      --    --                                   lpad(nvl(round((sum(nvl(NEW_TIME,0))-floor(sum(nvl(NEW_TIME,0))))*60),0),2,0) 
+      --       into temp
+      --       from new_sold_time
+      --       where st_emp_no = wj_emp_no_ 
+      --       and to_char(trunc(st_credit_date),'rrrrdd') = 'P_PERIOD'     --between trunc(starttime_) and trunc(endtime_)
+      --       and ST_CREDIT_DATE is not null;
+
+            
+      -- V_sold_cig := TEMP;--return(temp);
+      -- exception when others then 
+      --    V_sold_cig := NULL;--return null;
+      -- end;
+
+
+
+      -- IF V_HOURS > 0 THEN
+      --       RETURN round((V_sold_cig/ (V_HOURS+V_OVERTIME+abc_DAYOFF))*100,2);
+      -- ELSE
+      --       RETURN 0;
+      -- END IF;
+
+
+END;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

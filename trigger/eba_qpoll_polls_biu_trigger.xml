@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="7e33295c3e16249b7b4ab5a0aa41e64f80f4a608" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleTrigger objectName="EBA_QPOLL_POLLS_BIU" objectType="TRIGGER" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE TRIGGER "HHA_PROD"."EBA_QPOLL_POLLS_BIU" 
+   before insert or update on EBA_QPOLL_POLLS
+   for each row
+begin
+   if :new.ID is null then
+      :new.id := to_number(sys_guid(),'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX');
+   end if;
+   if :new.row_key is null then
+      :new.row_key := EBA_QPOLL_FW.compress_int(eba_qpoll_seq.nextval);
+   end if;
+   if inserting then
+       :new.created := current_timestamp;
+       :new.created_by := nvl(wwv_flow.g_user,user);
+       :new.updated := current_timestamp;
+       :new.updated_by := nvl(wwv_flow.g_user,user);
+       :new.row_version_number := 1;
+   elsif updating then
+       :new.row_version_number := nvl(:old.row_version_number,1) + 1;
+   end if;
+   if inserting or updating then
+       :new.updated := current_timestamp;
+       :new.updated_by := nvl(wwv_flow.g_user,user);
+   end if;
+   if :new.poll_or_quiz = 'Q' then
+      :new.score_type := 'N';
+   end if;
+   if :new.status_id = 3 and nvl(:old.status_id,0) != 3 then
+      :new.start_time := current_timestamp;
+   elsif :new.status_id = 4 and nvl(:old.status_id,0) != 4 then
+      :new.stop_time := current_timestamp;
+   end if;
+end;
+
+/
+/
+ALTER TRIGGER "HHA_PROD"."EBA_QPOLL_POLLS_BIU" ENABLE;]]></n0:source>
+		</n0:createOracleTrigger>
+	</changeSet>
+</databaseChangeLog>

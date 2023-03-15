@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="b032fe0404e602256859edca0e179e4da9e14b6b" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleTrigger objectName="LOCATION_MANPOWER_23_T1" objectType="TRIGGER" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE TRIGGER "HHA_PROD"."LOCATION_MANPOWER_23_T1" 
+BEFORE
+insert on "LOCATION_MANPOWER_23"
+for each row
+DECLARE
+V_MAIN NUMBER;
+V_MGR NUMBER;
+
+BEGIN
+
+SELECT TO_NUMBER(MINOR_CODE) INTO V_MAIN
+FROM CODES_DESCRIPTIONS WHERE DESC_ENG = TRIM(UPPER(:NEW.JOB_TITLE)) AND MAIN_CODE = '429';
+IF :NEW.MGR_EMP_NO IS NOT NULL THEN
+SELECT TO_NUMBER(MINOR_CODE) INTO V_MGR
+FROM CODES_DESCRIPTIONS WHERE DESC_ENG = TRIM(UPPER(:NEW.MGR_JOB_TITLE)) AND MAIN_CODE = '429';
+:NEW.MGR_JOB_CODE := V_MGR;
+END IF;
+:NEW.JOB_CODE := V_MAIN;
+:NEW.JOB_TITLE := TRIM(UPPER(:NEW.JOB_TITLE));
+:NEW.MGR_JOB_TITLE := TRIM(UPPER(:NEW.MGR_JOB_TITLE));
+:NEW.TARGET_CNT_PCT := TO_NUMBER(REPLACE(:NEW.TARGET_CNT_PCT,'%',''));
+
+END;
+
+
+/
+/
+ALTER TRIGGER "HHA_PROD"."LOCATION_MANPOWER_23_T1" ENABLE;]]></n0:source>
+		</n0:createOracleTrigger>
+	</changeSet>
+</databaseChangeLog>

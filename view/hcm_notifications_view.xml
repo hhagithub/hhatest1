@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="20afaf6d6497e1898552ae49b42f6a21a953cdb0" author="(HHA_PROD)-Generated"     >
+		<n0:createSxmlObject objectName="HCM_NOTIFICATIONS" objectType="VIEW" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  <VIEW xmlns="http://xmlns.oracle.com/ku" version="1.0">
+   <SCHEMA>HHA_PROD</SCHEMA>
+   <NAME>HCM_NOTIFICATIONS</NAME>
+   <COL_LIST>
+      <COL_LIST_ITEM>
+         <NAME>NOTI_TYPE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>BTR_NO</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>BTR_EMP</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>EMPNAME</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>LOGIN_EMP</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>BTR_START_DATE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>BTR_END_DATE</NAME>
+      </COL_LIST_ITEM>
+   </COL_LIST>
+   <SUBQUERY>select 'BTR' noti_type, btr_no, BTR_EMP,
+      (select SUBSTR(st_ename,1,15) from pastatic where st_empcd = BTR_EMP) EmpName,
+      (select TO_NUMBER(DIRECT_MANAGER_NUMBER) from pastatic where st_empcd = btr_emp) LOGIN_EMP,
+      btr_start_date, btr_end_date
+FROM HCM_BTR
+WHERE BTr_status = 'S'
+and appr_req_to = 'LM'
+and nvl(appr_rej_flag,'N') = 'N'
+--and btr_emp in (select st_empcd from pastatic where DIRECT_MANAGER_NUMBER =  v('APP_USER'))    )
+
+union all
+
+select 'BTR' noti_type, btr_no, BTR_EMP,
+       (select SUBSTR(st_ename,1,15) from pastatic where st_empcd = BTR_EMP) EmpName,
+       t.employee_number LOGIN_EMP,
+       b.btr_start_date, b.btr_end_date
+FROM Hcm_Btr b, HCM_USERS_ROLES@To_Appi.hha.local t
+where BTr_status = 'S'
+and appr_req_to = 'HR'
+and nvl(appr_rej_flag,'N') = 'N'
+and t.userrolename  =  'ABC'
+</SUBQUERY>
+</VIEW>]]></n0:source>
+		</n0:createSxmlObject>
+	</changeSet>
+</databaseChangeLog>

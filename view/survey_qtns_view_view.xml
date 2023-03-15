@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="a30bbefd2a8ab2e6ac98a000dd742750ca333ba8" author="(HHA_PROD)-Generated"     >
+		<n0:createSxmlObject objectName="SURVEY_QTNS_VIEW" objectType="VIEW" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  <VIEW xmlns="http://xmlns.oracle.com/ku" version="1.0">
+   <SCHEMA>HHA_PROD</SCHEMA>
+   <NAME>SURVEY_QTNS_VIEW</NAME>
+   <COL_LIST>
+      <COL_LIST_ITEM>
+         <NAME>SURVEY_ID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>QUESTION_ID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>QUESTION</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>QUESTIONAIR_AR</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>QUESTION_TYPE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>MANDATORY_YN</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>SEQ</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ANSWER_01</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ANSWER_02</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ANSWER_03</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ANSWER_04</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ANSWER_05</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ANSWER_06</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ANSWER_07</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ANSWER_08</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ANSWER_09</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ANSWER_10</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ANSWER_11</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ANSWER_12</NAME>
+      </COL_LIST_ITEM>
+   </COL_LIST>
+   <SUBQUERY>SELECT SJQ.SURVEY_ID,SJQ.QUESTIONAIR_ID QUESTION_ID,SJQ.QUESTIONAIR_EN QUESTION,SJQ.QUESTIONAIR_AR,DECODE(SJQ.TYPE_,'rating','RADIO_GROUP','boolean','TRUE_FALSE') QUESTION_TYPE,
+'Y' MANDATORY_YN,ORDER_ SEQ,
+DECODE(SJQ.TYPE_,'rating','1','boolean','TRUE') ANSWER_01,
+DECODE(SJQ.TYPE_,'rating','2','boolean','FALSE') ANSWER_02,
+DECODE(SJQ.TYPE_,'rating','3') ANSWER_03,
+DECODE(SJQ.TYPE_,'rating','4') ANSWER_04,
+DECODE(SJQ.TYPE_,'rating','5') ANSWER_05,
+null   ANSWER_06,
+null   ANSWER_07,
+null   ANSWER_08,
+null   ANSWER_09,
+null   ANSWER_10,
+null   ANSWER_11,
+null   ANSWER_12
+FROM SURVEY_JSON_QTNS SJQ  
+ORDER BY ORDER_
+</SUBQUERY>
+</VIEW>]]></n0:source>
+		</n0:createSxmlObject>
+	</changeSet>
+</databaseChangeLog>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="deb6721820e40c8b0e809ca817e676a6a5457b27" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="ISO8601" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."ISO8601" (DT DATE) RETURN VARCHAR2 IS
+VDATE VARCHAR2(200);
+BEGIN
+SELECT to_char((from_tz(to_timestamp(to_char(DT, 'YYYY-MM-DD HH:MI:SS PM'), 'YYYY-MM-DD HH:MI:SS PM') ,'Asia/Riyadh') at time zone 'UTC'),'YYYY-MM-DD"T"HH24:MI:SS"Z"')
+INTO VDATE
+FROM dual;
+RETURN VDATE;
+END;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

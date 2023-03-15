@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="fb52b18856fbc7c4f59ff83f2b87468794474a5e" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleTrigger objectName="EBA_SB_PREFERENCES_BIU" objectType="TRIGGER" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE TRIGGER "HHA_PROD"."EBA_SB_PREFERENCES_BIU" 
+before insert or update on eba_sb_preferences
+    for each row
+begin
+    if inserting then
+        if :new.id is null then
+            :new.id := eba_sb.gen_id();
+        end if;
+        :new.created_by := nvl(v('APP_USER'),USER);
+        :new.created := current_timestamp;
+    end if;
+    :new.updated_by := nvl(v('APP_USER'),USER);
+    :new.updated := current_timestamp;
+    :new.preference_name := upper(:new.preference_name);
+end;
+
+/
+/
+ALTER TRIGGER "HHA_PROD"."EBA_SB_PREFERENCES_BIU" ENABLE;]]></n0:source>
+		</n0:createOracleTrigger>
+	</changeSet>
+</databaseChangeLog>

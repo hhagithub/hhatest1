@@ -1,0 +1,1002 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="d2f793e154087c8ad295b2f433a60536cfb3a1be" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleProcedure objectName="PROC_MAZDA_INCENTIVE_2023_BACKUP" objectType="PROCEDURE" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "HHA_PROD"."PROC_MAZDA_INCENTIVE_2023_BACKUP" (P_PERIOD VARCHAR2)  --MAZDA MANAGER INCENTIVE
+IS
+
+--FACTOR A--
+ V_WB_PERCENTAGE NUMBER ; --
+
+ V_FACTOR_A NUMBER;
+ V_FACTOR_A_VALUE_2 NUMBER;
+ V_MANAGEMENT_FACTOR NUMBER;  --
+ V_NPS NUMBER;  --
+ V_FIRFT NUMBER;   --
+
+ --FACTOR B--
+ V_Q1_SCORE NUMBER; --
+ V_Q14_SCORE NUMBER; --
+ V_FACTOR_B_Q1_VALUE_1 NUMBER; --
+ V_FACTOR_B_Q14_VALUE_1 NUMBER;--
+ V_FACTOR_B_Q1_VALUE_2 NUMBER;
+ V_FACTOR_B_Q14_VALUE_2 NUMBER;
+ V_FACTOR_B_Q1 NUMBER; --
+ V_FACTOR_B_Q14 NUMBER; --
+ V_FACTOR_B NUMBER;
+
+--FACTOR C--
+v_Factor_C number;
+V_Q_6_12_SCORE NUMBER;
+V_WIP_FACTOR number;
+
+v_Factor_D number;
+
+v_Factor_E number;
+
+--BASE LINE--
+V_WB_INVOICED_AMOUNT NUMBER;
+V_BASE_LINE NUMBER;
+
+--MANAGER INCENTIVE--
+V_MANAGER_INCENTIVE NUMBER;
+
+V_NARRATION VARCHAR2(2000);
+
+V_AI_MANG_EVAL NUMBER;
+V_AI_MANG_EVAL_VALUE_2 NUMBER;
+
+V_WIP_MONTHLY_DATA NUMBER;
+ V_WIP_MONTHLY_FACTOR NUMBER;
+
+V_Ser_cont_Count NUMBER;
+ V_Ser_cont_Factor NUMBER;
+
+
+V_Workshop_Productivity number;
+
+
+ V_MCI_Complaint_Factor NUMBER;
+
+BEGIN
+
+
+
+  FOR LOC IN (Select distinct WT_LOCATION/*,WT_EMP_NO*/ from work_team_details where  NVL(ASTON_MARTIN_FLAG,'M') <> 'Y') LOOP
+--FACTOR A--
+ V_WB_PERCENTAGE := 0 ; --
+
+ V_FACTOR_A := 0;
+ V_FACTOR_A_VALUE_2 := 0;
+ V_MANAGEMENT_FACTOR := 0;  --
+ V_NPS := 0;  --
+ V_FIRFT := 0;  --
+
+ --FACTOR B--
+ V_Q1_SCORE := 0; --
+ V_Q14_SCORE := 0; --
+ V_FACTOR_B_Q1_VALUE_1 := 0; --
+ V_FACTOR_B_Q14_VALUE_1 := 0;--
+ V_FACTOR_B_Q1_VALUE_2 := 0;
+ V_FACTOR_B_Q14_VALUE_2 := 0;
+ V_FACTOR_B_Q1 := 0; --
+ V_FACTOR_B_Q14 := 0; --
+ V_FACTOR_B := 0;
+
+--BASE LINE--
+V_WB_INVOICED_AMOUNT := 0;
+V_BASE_LINE := 0;
+
+--MANAGER INCENTIVE--
+V_MANAGER_INCENTIVE := 0;
+
+V_NARRATION := NULL;
+
+V_AI_MANG_EVAL := 0;
+V_AI_MANG_EVAL_VALUE_2 := 0;
+
+V_WIP_MONTHLY_DATA := 0;
+ V_WIP_MONTHLY_FACTOR := 0;
+
+
+/*Factor-A
+- Labor sales achivement -> take it from factor table and multiply with 0.9
+(Labor sales achivement - is achieved budget percentage)
+Lets say location achieved 110 % of the buget so 110 factor is 1.10
+(1.10 X  0.9 )  = 0.99
+*/
+
+        --LOCATION ACHIEVED % OF THE BUDGET
+        BEGIN
+
+            SELECT round(WB_PERCENTAGE) INTO V_WB_PERCENTAGE -- Total Busdget Amount -- A
+            FROM work_budget_amounts
+            WHERE WB_PERIOD = P_PERIOD  --'202104'
+            and WB_LOCATION = LOC.WT_LOCATION
+            and nvl(franchise,'99') <> '07';
+        -- and WB_SECTION = LOC.WT_SECTION;    ---ADD
+        EXCEPTION WHEN NO_DATA_FOUND THEN
+                NULL;
+             WHEN TOO_MANY_ROWS THEN
+                NULL;
+        END;
+
+
+
+        --FACTOR OF THE LOCATION ACHIEVED BUDGET
+        BEGIN
+          IF  V_WB_PERCENTAGE <70 THEN
+            V_FACTOR_A_VALUE_2 := 0;
+          ELSIF  V_WB_PERCENTAGE > 120 THEN
+            V_FACTOR_A_VALUE_2 := 1.2;
+          ELSE
+            Select  VALUE_2 INTO  V_FACTOR_A_VALUE_2  ---SOME VALUE NOT EXIST
+            from codes_descriptions where MAIN_CODE= 430 --192
+            and MINOR_CODE!=0
+            AND VALUE_1 = V_WB_PERCENTAGE ;  --V_PS_ALL_SOLD
+          END IF;
+        EXCEPTION WHEN NO_DATA_FOUND THEN
+                     NULL;
+                WHEN TOO_MANY_ROWS THEN
+                    NULL;
+        END;
+
+/* Management factor -> take it also into factor table and multiply with 0.1
+( Management factor - This percentage will be entered for each month by the Regionl manager)
+if management factor score for the location is 90 then take factor which is 0.7 so calucalution will be
+( 0.7 X 0.1 ) = 0.07
+Factor-A = 0.99 + .07 = 1.06 */
+
+        DECLARE
+        BEGIN
+                Select ai_mang_eval INTO V_AI_MANG_EVAL
+                from MAZDA_MANAGEMENT_FACTOR
+                where ai_period = P_PERIOD  --'202104'
+                AND ai_location = LOC.WT_LOCATION
+                AND ai_section = '08';
+
+        EXCEPTION WHEN NO_DATA_FOUND THEN
+               V_AI_MANG_EVAL := 100 ;  ---SPECIAL CASE
+                            NULL;
+                        WHEN TOO_MANY_ROWS THEN
+                            NULL;
+        END;
+
+        BEGIN
+          IF  V_AI_MANG_EVAL <70 THEN
+            V_AI_MANG_EVAL_VALUE_2 := 0;
+          ELSIF  V_AI_MANG_EVAL > 120 THEN
+            V_AI_MANG_EVAL_VALUE_2 := 1.2;
+          ELSE
+            Select  VALUE_2 INTO  V_AI_MANG_EVAL_VALUE_2  ---SOME VALUE NOT EXIST
+            from codes_descriptions where MAIN_CODE=430 --192
+            and MINOR_CODE!=0
+            AND VALUE_1 = V_AI_MANG_EVAL ;  --V_PS_ALL_SOLD
+          END IF;
+        EXCEPTION WHEN NO_DATA_FOUND THEN
+                     NULL;
+                WHEN TOO_MANY_ROWS THEN
+                    NULL;
+        END;
+
+        BEGIN
+        select sum(tot)/count(tot) INTO V_WIP_MONTHLY_DATA
+        from (
+        select count(*) tot,JM_SERVICE_ADVISOR sr from WIP_MONTHLY_DATA
+        where jm_location = LOC.WT_LOCATION
+        AND PERIOD = P_PERIOD
+        group by JM_SERVICE_ADVISOR
+        ) ;
+
+             IF V_WIP_MONTHLY_DATA  <= 3 OR NVL(V_WIP_MONTHLY_DATA,0) = 0 THEN
+                V_WIP_MONTHLY_FACTOR := 1;
+            ELSIF V_WIP_MONTHLY_DATA >3 AND V_WIP_MONTHLY_DATA <= 6 THEN
+                V_WIP_MONTHLY_FACTOR := 0.75;
+            ELSIF V_WIP_MONTHLY_DATA >6 AND V_WIP_MONTHLY_DATA <=8 THEN
+                V_WIP_MONTHLY_FACTOR := .50;
+            ELSIF V_WIP_MONTHLY_DATA >8 AND V_WIP_MONTHLY_DATA <=10 THEN
+                V_WIP_MONTHLY_FACTOR :=.25;
+            ELSE
+                V_WIP_MONTHLY_FACTOR := 0;
+            END IF;
+
+
+/*
+        SELECT COUNT(*) INTO V_WIP_MONTHLY_DATA
+        FROM WIP_MONTHLY_DATA
+        WHERE JM_LOCAITON= LOC.WT_LOCATION
+        AND PERIOD = P_PERIOD
+        */
+        EXCEPTION WHEN NO_DATA_FOUND THEN
+                     NULL;
+                WHEN TOO_MANY_ROWS THEN
+                    NULL;
+        END;
+
+
+    --6.1    Factor A                  =  [ Labour sales achievement Factor X 0.9]  +                   [ Managing Factor X 0.1]
+    V_MANAGEMENT_FACTOR := NVL(V_AI_MANG_EVAL_VALUE_2 * (0.1*V_WIP_MONTHLY_FACTOR),0) ;
+    V_FACTOR_A := NVL(V_FACTOR_A_VALUE_2*0.9,0) + NVL(V_MANAGEMENT_FACTOR,0) ;
+
+   V_NARRATION := V_NARRATION || ' (MAZDA MANAGER INCENTIVE )';
+   V_NARRATION := V_NARRATION || ' (LOC:= '||LOC.WT_LOCATION || ')';
+   V_NARRATION := V_NARRATION || ' (WB_PERCENTAGE:='|| V_WB_PERCENTAGE|| ')';
+   V_NARRATION := V_NARRATION || ' (CD_FACTOR_A_VALUE_1:='|| V_WB_PERCENTAGE|| ')';
+   V_NARRATION := V_NARRATION || ' (CD_FACTOR_A_VALUE_2:='|| V_FACTOR_A_VALUE_2|| ')';
+   V_NARRATION := V_NARRATION || ' (V_WIP_MONTHLY_FACTOR:='|| V_WIP_MONTHLY_FACTOR|| ')';
+   V_NARRATION := V_NARRATION || ' (MANAGEMENT_FACTOR:='|| V_MANAGEMENT_FACTOR|| ')';
+   V_NARRATION := V_NARRATION || ' (FACTOR_A:='|| V_FACTOR_A|| ')' ||'<BR>';
+
+/*Factor-B
+
+        Give provision to GM to enter each year NPS & FIRFT Achivement like for 2021 NPS is 85 and FIRFT is 95
+        Q1 score from haroon given report for the location for NPS of CSI */
+
+        --NPS & FIRFT Achivement like for 2021 NPS is 85 and FIRFT is 95
+
+      BEGIN
+        Select  VALUE_1,VALUE_2 INTO  V_NPS,V_FIRFT
+        from codes_descriptions where MAIN_CODE=293 and MINOR_CODE!=0
+        AND DESC_ENG = SUBSTR(P_PERIOD,1,4) ;
+
+         V_NARRATION := V_NARRATION || ' (NPS:='|| V_NPS|| ')';
+         V_NARRATION := V_NARRATION || ' (FIRFT:='|| V_FIRFT|| ')';
+     EXCEPTION WHEN NO_DATA_FOUND THEN
+            NULL;
+         WHEN TOO_MANY_ROWS THEN
+            NULL;
+     END;
+
+        --Q1 score for the location
+        BEGIN
+--
+            /*SELECT
+            round(avg(INDEX_)) INTO  V_Q1_SCORE FROM (
+            select YEAR_, MONTH_, FRANCHISE, TO_NUMBER(QUESTION) QUESTION , REGION, BRANCH_CODE, LOCATION, ADVISOR,
+            INDEX_ from MV_Qlik_KPI_APEX_QUES
+            where QUESTION=1
+            and  to_char(to_date('01'||'-'||MONTH_||'-'||YEAR_,'dd-mm-rrrr'),'rrrrmm')=P_PERIOD
+            and FRANCHISE='MAZDA'
+            AND BRANCH_CODE = LOC.WT_LOCATION);*/
+
+
+            select NVL(round(avg(INDEX_)),95) INDEX_ INTO  V_Q1_SCORE from MV_Qlik_KPI_APEX_QUES_LOC
+            where QUESTION=1
+            and  to_char(to_date('01'||'-'||MONTH_||'-'||YEAR_,'dd-mm-rrrr'),'rrrrmm')=P_PERIOD
+            and FRANCHISE='MAZDA'
+            AND BRANCH_CODE = LOC.WT_LOCATION;
+
+
+
+
+
+
+        EXCEPTION WHEN NO_DATA_FOUND THEN
+                NULL;
+            WHEN TOO_MANY_ROWS THEN
+                NULL;
+        END;
+
+       /*lets say NPS score of the location for month is  84
+        ( (84  /  85 ) X 100 )   = 98  Take factor from table which is 0.82  then multiply this with 0.7
+        (0.82 X 0.7 ) = 0.574*/
+
+       --Lets say NPS score of the location for month is  84  then ( (84  /  85 ) X 100 )   = 98
+       V_FACTOR_B_Q1_VALUE_1 := ROUND((V_Q1_SCORE / V_NPS) * 100);
+
+       ---Take factor from table
+
+       BEGIN
+        IF  ROUND(v_FACTOR_B_Q1_VALUE_1) <70 THEN
+            V_FACTOR_B_Q1_VALUE_2 := 0;
+        ELSIF  ROUND(v_FACTOR_B_Q1_VALUE_1) > 120 THEN
+            V_FACTOR_B_Q1_VALUE_2 := 1.2;
+        ELSE
+            Select  VALUE_2 INTO  V_FACTOR_B_Q1_VALUE_2  ---SOME VALUE NOT EXIST
+            from codes_descriptions where MAIN_CODE=430  --192 
+            and MINOR_CODE!=0
+            AND VALUE_1 = ROUND(v_FACTOR_B_Q1_VALUE_1) ;
+        END IF;
+       EXCEPTION WHEN NO_DATA_FOUND THEN
+                NULL;
+            WHEN TOO_MANY_ROWS THEN
+                NULL;
+       END;
+
+       --then multiply this with 0.7
+       V_FACTOR_B_Q1 := V_FACTOR_B_Q1_VALUE_2 * 0.7 ;
+
+        /*Q14 score from haroon given report for the FIR Ach lets say it is 92 then
+        ( (92  /  95 ) X 100 )   = 96.84  take factor froom table which is 0.8 then multiply this with 0.3
+        (0.8 X 0.3 ) = 0.24 */
+
+        --QUESTION 14 SCORE
+        BEGIN
+        -----
+        /*
+            select  round(avg(INDEX_))   INTO V_Q14_SCORE
+            from V_KPI_APEX_QUES14  where to_char(to_date('01'||'-'||MONTH_||'-'||YEAR_,'dd-mm-rrrr'),'rrrrMM')= P_PERIOD
+            and FRANCHISE='MAZDA'
+            AND BRANCH_CODE = LOC.WT_LOCATION ;*/
+
+
+select NVL(round(avg(INDEX_)),95) INDEX_    INTO V_Q14_SCORE
+from V_KPI_APEX_QUES14_LOC
+where to_char(to_date('01'||'-'||MONTH_||'-'||YEAR_,'dd-mm-rrrr'),'rrrrMM')= P_PERIOD
+            and FRANCHISE='MAZDA'
+            AND BRANCH_CODE = LOC.WT_LOCATION ;
+
+
+
+
+
+        EXCEPTION WHEN NO_DATA_FOUND THEN
+                NULL;
+            WHEN TOO_MANY_ROWS THEN
+                NULL;
+        END;
+
+        V_FACTOR_B_Q14_VALUE_1 := ROUND((V_Q14_SCORE / V_FIRFT) * 100);
+
+        BEGIN
+         ---Take factor from table
+        IF  ROUND(V_FACTOR_B_Q14_VALUE_1)  <70 THEN
+            V_FACTOR_B_Q14_VALUE_2 := 0;
+        ELSIF  ROUND(V_FACTOR_B_Q14_VALUE_1)  > 120 THEN
+            V_FACTOR_B_Q14_VALUE_2 := 1.2;
+        ELSE
+            Select  VALUE_2 INTO  V_FACTOR_B_Q14_VALUE_2  ---SOME VALUE NOT EXIST
+            from codes_descriptions where MAIN_CODE=430 --192
+            and MINOR_CODE!=0
+            AND VALUE_1 = ROUND(V_FACTOR_B_Q14_VALUE_1) ;
+        END IF;
+        EXCEPTION WHEN NO_DATA_FOUND THEN
+                NULL;
+            WHEN TOO_MANY_ROWS THEN
+                NULL;
+        END;
+
+         --then multiply this with 0.3
+         V_FACTOR_B_Q14 := V_FACTOR_B_Q14_VALUE_2 * 0.3 ;
+
+        --Factor-B = 0.574 + .24 = 0.814
+        V_FACTOR_B :=  NVL(V_FACTOR_B_Q1,0) + NVL(V_FACTOR_B_Q14,0);
+
+
+        V_NARRATION := V_NARRATION || ' (Q1_SCORE:='|| NVL(V_Q1_SCORE,0)|| ')';
+        V_NARRATION := V_NARRATION || ' (CD_FACTOR_B_Q1_VALUE_1:='|| ROUND(V_FACTOR_B_Q1_VALUE_1)|| ')';
+        V_NARRATION := V_NARRATION || ' (CD_FACTOR_B_Q1_VALUE_2:='|| V_FACTOR_B_Q1_VALUE_2|| ')';
+        V_NARRATION := V_NARRATION || ' (CD_V_FACTOR_B_Q1:='|| V_FACTOR_B_Q1|| ')';
+
+        V_NARRATION := V_NARRATION || ' (Q14_SCORE:='|| NVL(V_Q14_SCORE,0)|| ')';
+        V_NARRATION := V_NARRATION || ' (CD_FACTOR_B_Q14_VALUE_1:='|| ROUND(V_FACTOR_B_Q14_VALUE_1)|| ')';
+        V_NARRATION := V_NARRATION || ' (CD_FACTOR_B_Q14_VALUE_2:='|| V_FACTOR_B_Q14_VALUE_2|| ')';
+        V_NARRATION := V_NARRATION || ' (CD_V_FACTOR_B_Q14:='|| V_FACTOR_B_Q14|| ')';
+        V_NARRATION := V_NARRATION || ' (FACTOR_B:='|| V_FACTOR_B|| ')';
+
+
+
+ DECLARE
+--Factor C               =  [ Service Quality Attribute Ach % X 0.5]              + [ WIP Ach% X 0.5]
+
+   --Service Quality Attribute Ach
+         -- Q6. The courtesy and friendliness shown
+         -- Q7. The length of time spent waiting before being attended by a service advisor.
+         -- Q8. The attention to your questions/requests by the service advisor at the service reception?
+         -- Q9. Clarity and explanation have been given for the required repairs or maintenance and the estimated price to be charged.
+         -- QII. The explanation of services done on the vehicle and the cost of each service.
+         -- Q12. What overall time is required to finish the service from reception to delivery?
+
+    BEGIN
+            select NVL(round(avg(INDEX_)),95) INDEX_ INTO  V_Q_6_12_SCORE from MV_Qlik_KPI_APEX_QUES_LOC
+            where QUESTION in (6,7,8,9,11,12)
+            and  to_char(to_date('01'||'-'||MONTH_||'-'||YEAR_,'dd-mm-rrrr'),'rrrrmm')=P_PERIOD
+            and FRANCHISE='MAZDA'
+            AND BRANCH_CODE = LOC.WT_LOCATION;
+
+
+         -- WIP Ach%
+         --Report 208  WIP FACTORS
+
+            SELECT WIP_FACTOR  into V_WIP_FACTOR        -- EMP_NO,EMP_NO EMP_NAME,LOCATION,PERIOD,SECTION
+            FROM WORK_WIP_FACTOR
+            WHERE period = P_PERIOD --:P208_PERIOD
+            and LOCATION = NVL( LOC.WT_LOCATION,LOCATION);
+            -- AND  EXISTS  (SELECT 1 FROM USER_AUTH_BRANCHES  WHERE
+            ---- USER_CODE=:APP_USER AND    BRANCH_CODE = WORK_WIP_FACTOR.LOCATION )
+            ---- order by location,section,EMP_NO
+
+            v_Factor_C  :=   ( V_Q_6_12_SCORE * 0.5 ) + ( V_WIP_FACTOR * 0.5);
+
+            V_NARRATION := V_NARRATION || ' (Service Quality Attribute Ach:='|| NVL( V_Q_6_12_SCORE,0)|| ')';
+            V_NARRATION := V_NARRATION || ' (WIP Ach%:='|| (V_WIP_FACTOR)|| ')';
+            V_NARRATION := V_NARRATION || ' (v_Factor_C:='|| v_Factor_C|| ')';
+      
+   EXCEPTION WHEN NO_DATA_FOUND THEN
+                NULL;
+            WHEN TOO_MANY_ROWS THEN
+                NULL;
+   END;
+
+
+
+--Factor D          = [ Workshop Productivity % X 0.7]          +   [MCI Complaint Factor X 0.3]
+
+    -- Workshop Productivity
+    --Question with Naveed Bhai here we don't have emp only location . How to Calculate .
+    V_Workshop_Productivity :=  Incentive_workshop_productivity(LOC.WT_LOCATION,'',P_PERIOD);
+
+    --MCI Complaint Factor
+        SELECT COUNT(*) INTO V_MCI_Complaint_Factor
+        FROM APEX_INBOUND_STATUS_CCM98
+         WHERE LOC_ASSIGN = LOC.WT_LOCATION AND SOURCE = 6
+         AND TO_CHAR(CDATE,'RRRRMM') = P_PERIOD;
+
+   --Factor D          =  [ Workshop Productivity % X 0.7]          +   [MCI Complaint Factor X 0.3]
+   v_Factor_D         :=  ( V_Workshop_Productivity * 0.7)          +   (V_MCI_Complaint_Factor * 0.3);
+
+
+DECLARE
+BEGIN
+--Factor E                      = 0.3 +                [Service contract Factor X 0.7]
+
+   --Service contract Factor
+
+   select count(*) INTO  V_Ser_cont_Count FROM work_contract_cust_mst
+    WHERE  APP IS NULL and CRE_BY='2554' ;
+
+      if V_Ser_cont_Count < 3 then  V_Ser_cont_Factor:=0;
+      elsif V_Ser_cont_Count < 4 then V_Ser_cont_Factor:=0.5;
+      elsif V_Ser_cont_Count < 5 then V_Ser_cont_Factor:=0.75;
+      elsif V_Ser_cont_Count >= 5 then  V_Ser_cont_Factor:=1;
+      end if;
+
+    v_Factor_E   :=  0.3 + (V_Ser_cont_Factor * 0.7);
+
+    
+            V_NARRATION := V_NARRATION || ' (Service contract Factor:='|| NVL( V_Ser_cont_Factor,0)|| ')';
+            V_NARRATION := V_NARRATION || ' (v_Factor_E:='|| v_Factor_E|| ')';
+
+     EXCEPTION WHEN NO_DATA_FOUND THEN
+                NULL;
+            WHEN TOO_MANY_ROWS THEN
+                NULL;
+    END;
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+
+--7. Service manager Incentive
+--7.1.  Base Incentive
+DECLARE
+   V_MONTH_DAYS NUMBER;
+   V_MONTH_BUDGET NUMBER;
+   V_LAB_SAL_RANGE NUMBER;
+   V_ACT_LB_SALE  NUMBER;
+   V_BASE_INCENTIVE NUMBER;
+   V_Monthly_Incentive number;
+   V_EMP_WORK_DAYS NUMBER;
+   V_Working_Day_Per number;
+Begin
+   NULL;
+
+          --Actual Labor Sales
+         Select NVL(sum(round(NVL(JM_LABOUR_CHARGE,0),2)),0)  --/LR_LABOUR_RATE
+                INTO V_LAB_SAL_RANGE
+                from work_job_master                
+                where JM_LOCATION = LOC.WT_LOCATION
+               AND jm_service_advisor = '2554'  --TO_CHAR(TRIM(LOC.WT_EMP_NO)) --:receiptionist_id   ----SUPERVISOR STEP----
+                and TO_CHAR(trunc(jm_invoice_date),'rrrrmm') =  P_PERIOD  --'202104'--between TO_DATE('01'||TO_CHAR(trunc(:SYSDATE),'MMRRRR'),'DDMMRRRR') AND LAST_DAY(trunc(:SYSDATE))
+               -- AND NVL(JM_CLASS_TYPE,'M') = LOC.WT_CLASS
+                and Jm_status = 3;
+
+      --Base Incentive
+      IF V_LAB_SAL_RANGE <200000 THEN
+         V_BASE_INCENTIVE := (0.009 * V_LAB_SAL_RANGE) + 1000;
+       ELSIF V_LAB_SAL_RANGE < 400000 THEN
+         V_BASE_INCENTIVE := (0.008 * V_LAB_SAL_RANGE) + 1300;
+      ELSIF V_LAB_SAL_RANGE < 600000 THEN
+         V_BASE_INCENTIVE := (0.007 * V_LAB_SAL_RANGE) + 1400;
+      ELSIF V_LAB_SAL_RANGE < 800000 THEN
+         V_BASE_INCENTIVE := (0.0065 * V_LAB_SAL_RANGE) + 1500;
+      ELSIF V_LAB_SAL_RANGE < 1000000 THEN
+         V_BASE_INCENTIVE := (0.0055 * V_LAB_SAL_RANGE) + 1750;
+      ELSIF V_LAB_SAL_RANGE >= 1000000 THEN
+         V_BASE_INCENTIVE := (0.005 * V_LAB_SAL_RANGE ) + 2000; -- V_ACT_LB_SALE
+      END IF;
+
+      --Working Days %
+       select MONTH_DAYS --,MONTH_BUDGET
+         into V_MONTH_DAYS --,V_MONTH_BUDGET
+      from BUDGET_FORMAT_VIEW
+      where PERIOD = P_PERIOD --'202301'
+      and location_code =  LOC.WT_LOCATION --'280'
+      and FRANCHISE = '01'
+      and MONTH_BUDGET is not null;
+
+         --Total Number of Days Working By Empolyee
+         select COUNT(*) INTO V_EMP_WORK_DAYS  from hcm_timecardn
+         where EMP_NO = '2554'
+         and (REMARKS = 'Business Travel' or TIME_IN is not null)
+         and to_char(START_TIME,'rrrrmm') = P_PERIOD ; --'202301'
+
+V_Working_Day_Per := round ((V_EMP_WORK_DAYS /V_MONTH_DAYS) / 100,2);
+         
+
+--7.2.  Service manager monthly incentive calculations:
+--    Monthly Incentive     = Base Incentive   X     Factor A     X      Factor B    X       Factor C        X       Factor D      X     Working Days %
+V_Monthly_Incentive    := V_BASE_INCENTIVE   *     v_Factor_A     *      v_Factor_B    *       v_Factor_C        *       v_Factor_D      *    V_Working_Day_Per ;
+
+
+     EXCEPTION WHEN NO_DATA_FOUND THEN
+                NULL;
+            WHEN TOO_MANY_ROWS THEN
+                NULL;
+End;
+
+DECLARE
+BEGIN
+NULL;
+
+-- 8. Reception Supervisor Incentive
+-- 8.1. Base Incentive
+-- The base incentive amount should be calculated using the following formula based on the labor sales of the location:
+-- Basic Incentive                   =                [ Team Labour Sales   X     0.003 ]      +       1500
+
+         -- Help : Team Labour Sales
+         -- select *
+         --      --   Round(sum(nvl(NEW_PER,0)),2) as amont
+
+         --        --   into temp
+         --           from new_sold_time
+         --          where --st_emp_no =2554 and
+         --            trunc(st_credit_date) =   trunc(sysdate) --between trunc(starttime_) and trunc(endtime_)
+         --            and ST_CREDIT_DATE is not null;
+
+
+
+-- 8.2. Reception Supervisor monthly incentive calculations:
+--        Monthly Incentive           = Base Incentive   X     Factor A     X      Factor B    X       Factor C        X       Working Days %
+
+END;
+
+
+DECLARE
+Begin
+null;
+   -- 9.  Workshop Supervisor Incentive
+   -- 9.1.  Base Incentive
+   -- Basic Incentive                   =                [ Team Invoiced Hours   X     2 SAR ]
+
+     --Team Invoiced Hours
+      --  select Round(sum(nvl(NEW_TIME,0)),2)
+      --  --   into temp
+      --     from new_sold_time
+      --    where --st_emp_no =2554 and
+      --      trunc(st_credit_date) =   trunc(sysdate) --between trunc(starttime_) and trunc(endtime_)
+      --      and ST_CREDIT_DATE is not null;
+
+
+
+   -- Monthly Incentive                 = Base Incentive  X Factor A  X Factor D  X Working Days %
+
+
+end;
+
+
+DECLARE
+Begin
+Null;
+-- 10.  Team Leader Incentive
+-- 10.1.  Base Incentive
+
+      --Team Invoiced Hours
+      -- select  Round(sum(nvl(NEW_TIME,0)),2)
+      --  --   into Team_Invoice_Hours
+      --    from new_sold_time
+      --    where --st_emp_no =2554 and
+      --      trunc(st_credit_date) =   trunc(sysdate) --between trunc(starttime_) and trunc(endtime_)
+      --      and ST_CREDIT_DATE is not null;
+
+-- Basic Incentive                   =                [ Team Invoiced Hours   X     2.5 SAR ]
+
+--Monthly Incentive                  =  Base Incentive          X             Factor A               X                  Working Days %
+
+
+
+End;
+
+DECLARE
+V_LAB_SALE NUMBER;
+V_LAB_SALE_PCT NUMBER;
+V_TARGET_PCT NUMBER;
+V_BASIC_BONUS NUMBER;
+V_BASE_INCENTIVE NUMBER;
+Begin
+Null;
+   -- 11. Service Advisor Incentive
+   --    11.1.  Labor Sales incentive %:
+   --   Base Incentive      =      Service Advisor Labor Sales        X       Service Advisor Labor Sales Incentive %       X      Basic Incentive Bonus.
+
+               --Service Advisor Labor Sales
+               Select NVL(sum(round(NVL(JM_LABOUR_CHARGE,0),2)),0)  --/LR_LABOUR_RATE
+                INTO V_LAB_SALE
+                from work_job_master                where
+                JM_LOCATION = LOC.WT_LOCATION
+                AND jm_service_advisor = '2554'  --TO_CHAR(TRIM(LOC.WT_EMP_NO)) --:receiptionist_id   ----SUPERVISOR STEP----
+                and TO_CHAR(trunc(jm_invoice_date),'rrrrmm') =  '202302'   --P_PERIOD  --'202104'--between TO_DATE('01'||TO_CHAR(trunc(:SYSDATE),'MMRRRR'),'DDMMRRRR') AND LAST_DAY(trunc(:SYSDATE))
+                --Discuss With Naveed Bhai about WT_Class
+                --AND NVL(JM_CLASS_TYPE,'M') = LOC.WT_CLASS
+                and Jm_status = 3;
+
+              --Service Advisor Labor Sales Incentive %
+               IF V_LAB_SALE BETWEEN 1 AND 49999 THEN
+                  V_LAB_SALE_PCT := 0.80;
+               ELSIF V_LAB_SALE BETWEEN 50000 AND 99999 THEN
+                  V_LAB_SALE_PCT := 0.90;
+               ELSIF V_LAB_SALE BETWEEN 100000 AND 149999 THEN
+                  V_LAB_SALE_PCT := 1.10;
+               ELSIF V_LAB_SALE BETWEEN 150000 AND 199999 THEN
+                  V_LAB_SALE_PCT := 1.40;
+               ELSIF V_LAB_SALE BETWEEN 200000 AND 249999 THEN
+                  V_LAB_SALE_PCT := 1.42;
+               ELSIF V_LAB_SALE BETWEEN 250000 AND 299999 THEN
+                  V_LAB_SALE_PCT := 1.44;
+               ELSIF V_LAB_SALE BETWEEN 300000 AND 349999 THEN
+                  V_LAB_SALE_PCT := 1.46;
+               ELSIF V_LAB_SALE BETWEEN 350000 AND 399999 THEN
+                  V_LAB_SALE_PCT := 1.48;
+               ELSIF V_LAB_SALE BETWEEN 400000 AND 449999 THEN
+                  V_LAB_SALE_PCT := 1.49;
+               ELSIF V_LAB_SALE BETWEEN 450000 AND 500000 THEN
+                  V_LAB_SALE_PCT := 1.50;
+               ELSIF V_LAB_SALE BETWEEN 500000 AND 549999 THEN
+                  V_LAB_SALE_PCT := 1.51;
+               ELSIF V_LAB_SALE BETWEEN 550000 AND 599999 THEN
+                  V_LAB_SALE_PCT := 1.52;
+               ELSIF V_LAB_SALE BETWEEN 600000 AND 649999 THEN
+                  V_LAB_SALE_PCT := 1.53;
+               END IF;
+
+
+               SELECT TARGET_CNT_PCT INTO V_TARGET_PCT
+                FROM LOCATION_MANPOWER_23
+                WHERE EMP_NO = 2554;
+
+              --Basic Incentive Bonus.
+               IF V_TARGET_PCT > 100 THEN
+                  IF V_TARGET_PCT <= 110 THEN
+                      V_BASIC_BONUS := 5;
+                  ELSIF V_TARGET_PCT<= 120 THEN
+                      V_BASIC_BONUS := 10;
+                  ELSIF V_TARGET_PCT> 120 THEN
+                        V_BASIC_BONUS := 15;
+                  END IF;
+                  V_BASE_INCENTIVE := V_LAB_SALE * V_LAB_SALE_PCT * V_BASIC_BONUS;
+               END IF;
+
+
+
+            -- 11.2.  Service advisor monthly incentive calculations:
+            --    Monthly Incentive      =  Base Incentive        X        Factor A         X         Factor B         X          Factor C         X        Factor E
+
+
+End;
+
+DECLARE
+
+V_TOT_DAYS NUMBER;
+V_WORK_DAYS NUMBER;
+V_IS_ELIGIBLE NUMBER := 0;
+V_BODY_SHOP NUMBER; V_BODY_HF NUMBER; V_BODY_BI NUMBER; V_BODY_MI NUMBER;
+V_REPAIR NUMBER; V_REPAIR_HF NUMBER; V_REPAIR_BI NUMBER; V_REPAIR_MI NUMBER;
+V_QUICK NUMBER; V_QUICK_HF NUMBER; V_QUICK_BI NUMBER; V_QUICK_MI NUMBER;
+V_TOT_IH NUMBER;
+V_OVERTIME NUMBER;
+V_IH_AF NUMBER;
+
+BEGIN
+NULL;
+-- 12.  Technician Incentive
+-- 12.1.  For any technician to get the incentive, he needs to attend at least 65% of the working days during the month.(Hint Wssr37)
+-- 12.2.  As a precondition, the Technician needs to achieve his monthly targeted hours at least to be eligible for the incentive as per the criteria in the table below:
+
+
+--12.1
+--Total Days:
+   -- select  count(distinct(ATTENDANCE_DATE)) INTO V_TOT_DAYS  from hcm_timecardn
+   -- where   to_char(ATTENDANCE_DATE,'rrrrmm') = '202302'
+   -- and  EMP_NO ='2554'
+   -- ORDER BY 1;
+
+--Working Days:
+   -- select count(distinct(ATTENDANCE_DATE))  INTO V_WORK_DAYS from hcm_timecardn
+   -- where  (REMARKS = 'Business Travel' or TIME_IN is not null)
+   -- and to_char(START_TIME,'rrrrmm') = '202302'
+   -- and  EMP_NO ='2554'
+
+-- For Mechinical: 160 Hours
+-- For Body Shop : 180 Hours
+IF V_WORK_DAYS > 0 THEN
+   IF ((V_WORK_DAYS/V_TOT_DAYS) * 100) >= 65 THEN
+   V_IS_ELIGIBLE := 1;
+   END IF;
+ELSE
+   V_IS_ELIGIBLE := 0;
+END IF;
+
+ IF V_IS_ELIGIBLE = 1 THEN
+--Quick SOld
+      -- select Round(sum(nvl(NEW_TIME,0)),2) into V_QUICK
+      -- from new_sold_time,work_job_master w
+      --    where st_emp_no = 2554 --wj_emp_no_
+      --      and to_char(trunc(st_credit_date),'rrrrmm') = '202302'--trunc(starttime_)
+      --      and ST_CREDIT_DATE is not null
+      --      and ji_job_no = W.JM_JOB_NO
+      --      and w.jm_campaign_code is not null
+      --      and nvl(JM_CLASS_TYPE,'M') <> 'B';
+
+--Other_Other
+      --   Select Round(sum(nvl(NEW_TIME,0)),2) into V_REPAIR
+      --   from new_sold_time,work_job_master w
+      --    where st_emp_no = wj_emp_no_
+      --      and trunc(st_credit_date) = trunc(starttime_)
+      --      and ST_CREDIT_DATE is not null
+      --      and ji_job_no = W.JM_JOB_NO
+      --      and w.jm_campaign_code is null
+      --      and nvl(JM_CLASS_TYPE,'M') <> 'B';
+
+
+--Body_Shop
+      --   Select Round(sum(nvl(NEW_TIME,0)),2) into V_BODY_SHOP
+      --   from new_sold_time,work_job_master w
+      --    where st_emp_no = wj_emp_no_
+      --      and trunc(st_credit_date) = trunc(starttime_)
+      --      and ST_CREDIT_DATE is not null
+      --      and ji_job_no = W.JM_JOB_NO
+      --      and nvl(JM_CLASS_TYPE,'M') = 'B';
+
+--Over time
+--create or replace function R28_overtime_hr(wj_location1_ varchar2,WJ_EMP_NO_ VARCHAR2,STARTTIME_ DATE) return number is
+      --   Declare
+      --       --2 Over time
+      --       abcd number; --varchar2(20);
+      --       abc number;
+      --       abc_DAYOFF number;
+      --    Begin
+
+      --          --DAY OFF OVERTIME
+      --          Select
+      --          round(
+      --          (
+      --          NVL((select sum(nvl(TOTAL_HOURS,0))
+      --          from hcm_timecardn
+      --          where emp_no= WJ_EMP_NO_
+      --          and TRUNC(ATTENDANCE_DATE) =  TRUNC(STARTTIME_)
+      --          AND UPPER(REMARKS) = TRIM(UPPER('Day Off'))) ,0)
+      --          )/60,2)
+      --          into abc_DAYOFF From Dual;
+
+
+      --          IF abc_DAYOFF > 0 then
+      --          RETURN abc_DAYOFF;
+      --          END IF;
+
+
+      --          --REGULAR TIME OVER TIME
+      --          Select
+      --          round(
+      --          (
+      --          NVL((select sum(nvl(ADDITIONAL_OUT,0))
+      --          from hcm_timecardn
+      --          where emp_no= WJ_EMP_NO_
+      --          and TRUNC(ATTENDANCE_DATE) =  TRUNC(STARTTIME_) ) ,0)
+      --          )/60,2)
+      --          into abc From Dual;
+
+
+      --          if abc < 0 then
+      --          return 0;
+      --          elsif abc >= 24 then
+      --          return abc-24;
+      --          else
+      --          return abc;
+      --          end if;
+      --    End;
+
+--V_OVERTIME := R28_overtime_hr(wj_location1_ varchar2,WJ_EMP_NO_ VARCHAR2,STARTTIME_ DATE);
+---------Total Invoiced Hours
+V_TOT_IH := V_BODY_SHOP + V_REPAIR + V_QUICK - V_OVERTIME;
+---------DEFINE IF EMPLOYEE IS OF BODYSHOP OR MECHANICAL
+IF V_BODY_SHOP > 180 OR V_REPAIR + V_QUICK > 160 THEN
+IF V_BODY_SHOP > V_REPAIR + V_QUICK THEN
+V_IH_AF := V_TOT_IH/180;
+ELSE
+V_IH_AF := V_TOT_IH/160;
+END IF;
+
+-----------Hour Factor Calculation
+IF V_TOT_IH < 150 THEN
+   V_BODY_HF := 0;
+   V_REPAIR_HF := 0;
+   V_QUICK_HF := 0;
+ELSIF V_TOT_IH < 160 THEN
+   V_BODY_HF := 0;
+   V_REPAIR_HF := 4;
+   V_QUICK_HF := 3;
+ELSIF V_TOT_IH < 180 THEN
+   V_BODY_HF := 0;
+   V_REPAIR_HF := 6;
+   V_QUICK_HF := 5;
+ELSIF V_TOT_IH < 200 THEN
+   V_BODY_HF := 4;
+   V_REPAIR_HF := 8;
+   V_QUICK_HF := 7;
+ELSIF V_TOT_IH < 250 THEN
+   V_BODY_HF := 9;
+   V_REPAIR_HF := 9;
+   V_QUICK_HF := 8;
+ELSIF V_TOT_IH < 300 THEN
+   V_BODY_HF := 11;
+   V_REPAIR_HF := 10;
+   V_QUICK_HF := 9;
+ELSIF V_TOT_IH >= 300 THEN
+   V_BODY_HF := 15;
+   V_REPAIR_HF := 10;
+   V_QUICK_HF := 9;
+END IF;
+------------- Base Incentive Calculation
+V_BODY_BI := V_TOT_IH * V_BODY_HF;
+V_REPAIR_BI := V_TOT_IH * V_REPAIR_HF;
+V_QUICK_BI := V_TOT_IH * V_QUICK_HF;
+
+-------------12.4 Technician Monthly Incentive Calculation
+V_BODY_MI := V_BODY_BI * (0.4 + V_IH_AF * 0.6);
+V_REPAIR_MI := V_REPAIR_BI * (0.8 + V_IH_AF * 0.2);
+V_QUICK_MI := V_QUICK_BI * (0.6 + V_IH_AF * 0.4);
+END IF;
+END IF;
+END;
+
+DECLARE
+V_Q_14_SCORE NUMBER;
+BEGIN
+NULL;
+-- 13.	Quality Controller
+-- 13.1.	Base Incentive
+-- The base incentive amount should be calculated using the following formula based on the 1500 * FIR % * Working Days % of the location:
+      -- 1.	Basic Incentive                   =                [1500       X       Centre Overall FIR %      X        Working Days %]
+
+-- 13.2.	Team leader monthly incentive calculations:
+-- Monthly Incentive                                 =	Base Incentive          X           [0.9     +      0.1 X Managing Factor]
+
+      --Centre Overall FIR % 
+       select NVL(round(avg(INDEX_)),95) INDEX_ INTO  V_Q_14_SCORE from MV_Qlik_KPI_APEX_QUES_LOC
+            where QUESTION  in (14)
+            and  to_char(to_date('01'||'-'||MONTH_||'-'||YEAR_,'dd-mm-rrrr'),'rrrrmm')=P_PERIOD
+            and FRANCHISE='MAZDA'
+            AND BRANCH_CODE = LOC.WT_LOCATION;
+
+
+END;
+
+
+DECLARE
+BEGIN
+Null;
+-- 14.	Warranty Processor
+-- 14.1.	Base Incentive
+-- The base incentive amount should be calculated using the following formula based on the Warranty Invoiced HRs of the location: 
+-- Basic Incentive                   =              [Warranty Invoiced HRS    X      3     X       Working Days %]
+
+-- 14.2.	Team leader monthly incentive calculations:
+-- Warranty Processor             =	Base Incentive          X            [0.9     +      0.1*Managing Factor]         X         On-Time Submission Rate
+
+--Hint : On-Time Submission Rate  = 1   (As Per Discusssion With Mr. Ashraf )
+
+
+END;
+
+DECLARE
+V_Workshop_Productivity_JC Number;
+BEGIN
+NULL;
+
+-- 15.	Job Controller
+-- 15.1.	Base Incentive
+-- The base incentive amount should be calculated using the following formula based on the Warranty Invoiced HRs of the location: 
+-- Basic Incentive                   =               [Location Invoiced HRs     X     1.5     X      Working Days %]
+
+-- 15.2.	Team leader monthly incentive calculations:
+-- Job Controller                      =	Base Incentive    X        [0.9     +      0.1*Managing Factor]         X     Workshop Productivity %
+
+  V_Workshop_Productivity_JC :=  Incentive_workshop_productivity(LOC.WT_LOCATION,'',P_PERIOD);
+
+END;
+
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+
+
+    /*Base-Line
+    WB_INVOICED_AMOUNT = BASE LINE
+
+    Base Line will be if Less than 200,000 take the achieved budget and multiply with 0.009 + 500 , lets say location achievied 110000 then
+    (110000 X 0.009) + 500 = 1490
+    in case of more than 200,000 then add + 1000 like below
+    ( 350000 X 0.009 ) + 1000 = 4150
+    lets take 1490 as base line for one location */
+
+     BEGIN
+        SELECT WB_INVOICED_AMOUNT INTO V_WB_INVOICED_AMOUNT
+        FROM work_budget_amounts
+        WHERE WB_PERIOD = P_PERIOD  --'202104'
+                and WB_LOCATION = LOC.WT_LOCATION
+                and nvl(franchise,'99') <> '07';
+        EXCEPTION WHEN NO_DATA_FOUND THEN
+                NULL;
+            WHEN TOO_MANY_ROWS THEN
+                NULL;
+    END;
+
+        IF V_WB_INVOICED_AMOUNT < 200000 then
+           V_BASE_LINE := ROUND((V_WB_INVOICED_AMOUNT * 0.009) + 500,2);
+          --V_BASE_LINE := ROUND((V_WB_INVOICED_AMOUNT * 0.0078) + 500,2);
+        ELSe--IF V_WB_INVOICED_AMOUNT >= 200000 AND V_WB_INVOICED_AMOUNT <= 499999  then
+         V_BASE_LINE := ROUND((V_WB_INVOICED_AMOUNT * 0.009) +1000,2);
+           -- V_BASE_LINE := ROUND((V_WB_INVOICED_AMOUNT * 0.0065) +750,2);
+            --ELSE
+            --V_BASE_LINE := ROUND( (V_WB_INVOICED_AMOUNT * 0.006) + 1000,2);
+        END IF;
+
+    /*
+    finally location manager incentive will be
+    (Base-incentive  X  Factor-A    X    Factor-B)
+    1490 X 1.06 X  0.814 =  1285.63 SAR Incentive
+    */
+
+  V_MANAGER_INCENTIVE := ROUND( NVL(V_BASE_LINE,0) * NVL(V_FACTOR_A,0) * NVL(V_FACTOR_B,0) ) ;
+
+     IF V_WB_PERCENTAGE  < 100  or  V_MANAGER_INCENTIVE < 0  then
+       V_MANAGER_INCENTIVE := 0;
+     END IF;
+
+  V_NARRATION := V_NARRATION || ' (INVOICED_AMOUNT:='|| V_WB_INVOICED_AMOUNT|| ')';
+  V_NARRATION := V_NARRATION || ' (BASE_LINE:='|| V_BASE_LINE|| ')';
+  V_NARRATION := V_NARRATION || ' (MANAGER INCENTIVE:='|| V_MANAGER_INCENTIVE|| ')';
+
+
+
+FOR  TL IN ( select distinct WT_EMP_NO,WT_SECTION from work_team_details where   WT_LOCATION = LOC.WT_LOCATION AND WT_SECTION in ('08') AND WT_EMP_STATUS = 'A' AND NVL(ASTON_MARTIN_FLAG,'M') <> 'Y' ) LOOP
+NULL;
+
+    --IF V_MANAGER_INCENTIVE > 0 THEN
+      -- NULL;
+
+
+         INSERT INTO work_emp_incentives(WI_EMP_NO,WI_LOCATION, WI_PERIOD,WI_EMP_SEC,WI_INC_AMOUNT,WI_NON_MECH,WI_CLASS,WI_INC_BEF_DED,FRANCHISE,NARRATION)
+                                 VALUES( TL.WT_EMP_NO,LOC.WT_LOCATION, P_PERIOD, TL.WT_SECTION, V_MANAGER_INCENTIVE,1,NULL,V_MANAGER_INCENTIVE,'01',V_NARRATION );
+    --END IF;
+
+
+END LOOP;
+
+    dbms_output.put_line(V_NARRATION);
+  END LOOP;
+
+    commit;
+    dbms_output.put_line(' Procedure Successful ');
+EXCEPTION
+     WHEN others THEN
+  dbms_output.put_line(' SQL Error Msg='||SQLERRM);
+
+END;
+/]]></n0:source>
+		</n0:createOracleProcedure>
+	</changeSet>
+</databaseChangeLog>

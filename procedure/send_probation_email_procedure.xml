@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="bd1a14271d3b3500d6131daf62dbc0affcfc69ad" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleProcedure objectName="SEND_PROBATION_EMAIL" objectType="PROCEDURE" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "HHA_PROD"."SEND_PROBATION_EMAIL" (empno_ number, type_ varchar2, lang_ varchar2 default 'en') is
+email_addr  varchar2(200);
+email_subject varchar2(200);
+emp_name varchar2(200);
+emp_job  varchar2(200);
+emp_loc  varchar2(200);
+join_date date;
+subject   varchar2(200);
+msg varchar2(2000);
+
+begin
+select decode(lang_,'en',DESC_ENG,DESC_ARB) into MSG
+from codes_descriptions
+where main_code = '260' 
+and MAJOR_CODE = '6'
+and MINOR_CODE <> '0'
+and VALUE_1 = type_;
+
+IF type_ = 'EP' THEN
+   subject:='Extend Probation - '||empno_;
+ELSIF type_ = 'CE' THEN
+   subject:='Confirm Employment - '||empno_;
+ELSIF type_ = 'EE' THEN
+  subject:='End Employment - '||empno_;
+END IF;
+  
+
+begin
+
+  select ltrim(rtrim(st_ename)),st_gdoj, get_branch_codedesc(ST_brcd), job_name, emp_email
+  into emp_name, join_date, emp_loc, emp_job, email_addr
+  from pastatic
+  where st_empcd = empNo_;
+
+email_subject:= subject||'-'||emp_name||'/'||emp_job||'/'||emp_loc||'/'||join_date;  
+
+-------------------------send email
+send_mail2(p_sender =>'hr@hha.com.sa' ,p_recipient => email_addr,p_subject => email_subject,p_message => MSG);
+exception when no_data_found then
+  null;
+end;
+
+exception when no_data_found then
+  null;
+end;
+
+/]]></n0:source>
+		</n0:createOracleProcedure>
+	</changeSet>
+</databaseChangeLog>

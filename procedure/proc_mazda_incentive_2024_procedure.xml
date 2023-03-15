@@ -1,0 +1,282 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="4d8a9521346f93945b01a4d78990d773a0e2fecf" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleProcedure objectName="PROC_MAZDA_INCENTIVE_2024" objectType="PROCEDURE" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "HHA_PROD"."PROC_MAZDA_INCENTIVE_2024" (P_PERIOD VARCHAR2)  --MAZDA MANAGER INCENTIVE
+IS
+
+
+--FACTOR A--
+ V_WB_PERCENTAGE NUMBER ; --
+
+ V_FACTOR_A NUMBER;
+ V_FACTOR_A_VALUE_2 NUMBER;
+ V_MANAGEMENT_FACTOR NUMBER;  --
+ V_NPS NUMBER;  --
+ V_FIRFT NUMBER;   --
+
+v_A_Month_Budget NUMBER;
+V_A_JM_LABOUR_CHARGE NUMBER;
+
+
+ --FACTOR B--
+ V_Q1_SCORE NUMBER; --
+ V_Q14_SCORE NUMBER; --
+ V_FACTOR_B_Q1_VALUE_1 NUMBER; --
+ V_FACTOR_B_Q14_VALUE_1 NUMBER;--
+ V_FACTOR_B_Q1_VALUE_2 NUMBER;
+ V_FACTOR_B_Q14_VALUE_2 NUMBER;
+ V_FACTOR_B_Q1 NUMBER; --
+ V_FACTOR_B_Q14 NUMBER; --
+ V_FACTOR_B NUMBER;
+
+--FACTOR C--
+v_Factor_C number;
+V_Q_6_12_SCORE NUMBER;
+V_WIP_FACTOR number;
+
+v_Factor_D number;
+
+v_Factor_E number;
+
+--BASE LINE--
+V_WB_INVOICED_AMOUNT NUMBER;
+V_BASE_LINE NUMBER;
+
+--MANAGER INCENTIVE--
+V_MANAGER_INCENTIVE NUMBER;
+
+V_NARRATION VARCHAR2(2000);
+
+V_AI_MANG_EVAL NUMBER;
+V_AI_MANG_EVAL_VALUE_2 NUMBER;
+
+V_WIP_MONTHLY_DATA NUMBER;
+ V_WIP_MONTHLY_FACTOR NUMBER;
+
+V_Ser_cont_Count NUMBER;
+ V_Ser_cont_Factor NUMBER;
+
+
+V_Workshop_Productivity number;
+
+
+ V_MCI_Complaint_Factor NUMBER;
+
+BEGIN
+
+
+
+ FOR LOC IN (select Distinct LOC_No as WT_LOCATION from LOCATION_MANPOWER_23 where Period = P_Period) Loop
+-- FOR LOC IN (Select distinct WT_LOCATION/*,WT_EMP_NO*/ from work_team_details where  NVL(ASTON_MARTIN_FLAG,'M') <> 'Y') LOOP
+--FACTOR A--
+ V_WB_PERCENTAGE := 0 ; --
+
+ V_FACTOR_A := 0;
+ V_FACTOR_A_VALUE_2 := 0;
+ V_MANAGEMENT_FACTOR := 0;  --
+ V_NPS := 0;  --
+ V_FIRFT := 0;  --
+
+ --FACTOR B--
+ V_Q1_SCORE := 0; --
+ V_Q14_SCORE := 0; --
+ V_FACTOR_B_Q1_VALUE_1 := 0; --
+ V_FACTOR_B_Q14_VALUE_1 := 0;--
+ V_FACTOR_B_Q1_VALUE_2 := 0;
+ V_FACTOR_B_Q14_VALUE_2 := 0;
+ V_FACTOR_B_Q1 := 0; --
+ V_FACTOR_B_Q14 := 0; --
+ V_FACTOR_B := 0;
+
+--BASE LINE--
+V_WB_INVOICED_AMOUNT := 0;
+V_BASE_LINE := 0;
+
+--MANAGER INCENTIVE--
+V_MANAGER_INCENTIVE := 0;
+
+V_NARRATION := NULL;
+
+V_AI_MANG_EVAL := 0;
+V_AI_MANG_EVAL_VALUE_2 := 0;
+
+V_WIP_MONTHLY_DATA := 0;
+ V_WIP_MONTHLY_FACTOR := 0;
+
+
+/*Factor-A
+- Labor sales achivement -> take it from factor table and multiply with 0.9
+(Labor sales achivement - is achieved budget percentage)
+Lets say location achieved 110 % of the buget so 110 factor is 1.10
+(1.10 X  0.9 )  = 0.99
+*/
+
+        --LOCATION ACHIEVED % OF THE BUDGET
+        BEGIN
+
+            -- SELECT round(WB_PERCENTAGE) INTO V_WB_PERCENTAGE -- Total Busdget Amount -- A
+            -- FROM work_budget_amounts
+            -- WHERE WB_PERIOD = P_PERIOD  --'202104'
+            -- and WB_LOCATION = LOC.WT_LOCATION
+            -- and nvl(franchise,'99') <> '07';
+
+            select MONTH_BUDGET into v_A_Month_Budget 
+            from BUDGET_FORMAT_VIEW
+            where period = P_PERIOD
+            and Location_Code = LOC.WT_LOCATION
+               and WS_MECH_BODY_TYPE = 'M';
+
+           BEGIN
+               Select NVL(sum(round(NVL(JM_LABOUR_CHARGE,0),2)),0)  --/LR_LABOUR_RATE
+                INTO V_A_JM_LABOUR_CHARGE
+                from work_job_master                 
+                WHERE JM_LOCATION = TO_CHAR(LOC.WT_LOCATION) 
+               and TO_CHAR(trunc(jm_invoice_date),'rrrrmm') = P_PERIOD  --'202104'--between TO_DATE('01'||TO_CHAR(trunc(:SYSDATE),'MMRRRR'),'DDMMRRRR') AND LAST_DAY(trunc(:SYSDATE))
+               AND NVL(JM_CLASS_TYPE,'M') = 'M' --LOC.WT_CLASS
+                --AND JM_CLASS_TYPE = 'B'
+                and Jm_status = 3;
+       
+            END;
+      
+        V_WB_PERCENTAGE :=  ROUND((V_A_JM_LABOUR_CHARGE/v_A_Month_Budget)/100,2);
+
+        -- and WB_SECTION = LOC.WT_SECTION;    ---ADD
+        EXCEPTION WHEN NO_DATA_FOUND THEN
+                NULL;
+             WHEN TOO_MANY_ROWS THEN
+                NULL;
+        END;
+
+
+
+        --FACTOR OF THE LOCATION ACHIEVED BUDGET
+        BEGIN
+          IF  V_WB_PERCENTAGE <70 THEN
+            V_FACTOR_A_VALUE_2 := 0;
+          ELSIF  V_WB_PERCENTAGE > 120 THEN
+            V_FACTOR_A_VALUE_2 := 1.2;
+          ELSE
+            Select  VALUE_2 INTO  V_FACTOR_A_VALUE_2  ---SOME VALUE NOT EXIST
+            from codes_descriptions where MAIN_CODE= '430' --430 --192
+            and MINOR_CODE!=0
+            AND VALUE_1 = V_WB_PERCENTAGE ;  --V_PS_ALL_SOLD
+          END IF;
+        EXCEPTION WHEN NO_DATA_FOUND THEN
+                     NULL;
+                WHEN TOO_MANY_ROWS THEN
+                    NULL;
+        END;
+
+
+
+
+/* Management factor -> take it also into factor table and multiply with 0.1
+( Management factor - This percentage will be entered for each month by the Regionl manager)
+if management factor score for the location is 90 then take factor which is 0.7 so calucalution will be
+( 0.7 X 0.1 ) = 0.07
+Factor-A = 0.99 + .07 = 1.06 */
+
+     
+        DECLARE
+        BEGIN
+        /*
+                Select ai_mang_eval INTO V_AI_MANG_EVAL
+                from MAZDA_MANAGEMENT_FACTOR
+                where ai_period = P_PERIOD  --'202104'
+                AND ai_location = LOC.WT_LOCATION
+                AND ai_section = '08';
+        */
+--Hint: Managing Factor   (Take From Excel File For Each Empolee where its Used in Formula)
+select MANAGING_FACTOR into V_AI_MANG_EVAL from LOCATION_MANPOWER_23 where Period = P_Period and EMP_NO = '2554'   ;
+
+
+        EXCEPTION WHEN NO_DATA_FOUND THEN
+               V_AI_MANG_EVAL := 100 ;  ---SPECIAL CASE
+                            NULL;
+                        WHEN TOO_MANY_ROWS THEN
+                            NULL;
+        END;
+
+        BEGIN
+          IF  V_AI_MANG_EVAL <70 THEN
+            V_AI_MANG_EVAL_VALUE_2 := 0;
+          ELSIF  V_AI_MANG_EVAL > 120 THEN
+            V_AI_MANG_EVAL_VALUE_2 := 1.2;
+          ELSE
+
+            Select  VALUE_2 
+            INTO  V_AI_MANG_EVAL_VALUE_2  ---SOME VALUE NOT EXIST
+            from codes_descriptions where MAIN_CODE='430' --192
+            and MINOR_CODE!=0
+            AND VALUE_1 = V_AI_MANG_EVAL ;  --V_PS_ALL_SOLD
+           
+          END IF;
+        EXCEPTION WHEN NO_DATA_FOUND THEN
+                     NULL;
+                WHEN TOO_MANY_ROWS THEN
+                    NULL;
+        END;
+
+        BEGIN
+        select sum(tot)/count(tot) INTO V_WIP_MONTHLY_DATA
+        from (
+        select count(*) tot,JM_SERVICE_ADVISOR sr from WIP_MONTHLY_DATA
+        where jm_location = LOC.WT_LOCATION
+        AND PERIOD = P_PERIOD
+        group by JM_SERVICE_ADVISOR
+        ) ;
+
+             IF V_WIP_MONTHLY_DATA  <= 3 OR NVL(V_WIP_MONTHLY_DATA,0) = 0 THEN
+                V_WIP_MONTHLY_FACTOR := 1;
+            ELSIF V_WIP_MONTHLY_DATA >3 AND V_WIP_MONTHLY_DATA <= 6 THEN
+                V_WIP_MONTHLY_FACTOR := 0.75;
+            ELSIF V_WIP_MONTHLY_DATA >6 AND V_WIP_MONTHLY_DATA <=8 THEN
+                V_WIP_MONTHLY_FACTOR := .50;
+            ELSIF V_WIP_MONTHLY_DATA >8 AND V_WIP_MONTHLY_DATA <=10 THEN
+                V_WIP_MONTHLY_FACTOR :=.25;
+            ELSE
+                V_WIP_MONTHLY_FACTOR := 0;
+            END IF;
+
+        EXCEPTION WHEN NO_DATA_FOUND THEN
+                     NULL;
+                WHEN TOO_MANY_ROWS THEN
+                    NULL;
+        END;
+
+
+    --6.1    Factor A                  =  [ Labour sales achievement Factor X 0.9]  +                   [ Managing Factor X 0.1]
+    V_MANAGEMENT_FACTOR := NVL(V_AI_MANG_EVAL_VALUE_2 * (0.1*V_WIP_MONTHLY_FACTOR),0) ;
+    V_FACTOR_A := NVL(V_FACTOR_A_VALUE_2*0.9,0) + NVL(V_MANAGEMENT_FACTOR,0) ;
+
+   V_NARRATION := V_NARRATION || ' (MAZDA MANAGER INCENTIVE )';
+   V_NARRATION := V_NARRATION || ' (LOC:= '||LOC.WT_LOCATION || ')';
+   V_NARRATION := V_NARRATION || ' (WB_PERCENTAGE:='|| V_WB_PERCENTAGE|| ')';
+   V_NARRATION := V_NARRATION || ' (CD_FACTOR_A_VALUE_1:='|| V_WB_PERCENTAGE|| ')';
+   V_NARRATION := V_NARRATION || ' (CD_FACTOR_A_VALUE_2:='|| V_FACTOR_A_VALUE_2|| ')';
+   V_NARRATION := V_NARRATION || ' (V_WIP_MONTHLY_FACTOR:='|| V_WIP_MONTHLY_FACTOR|| ')';
+   V_NARRATION := V_NARRATION || ' (MANAGEMENT_FACTOR:='|| V_MANAGEMENT_FACTOR|| ')';
+   V_NARRATION := V_NARRATION || ' (FACTOR_A:='|| V_FACTOR_A|| ')' ||'<BR>';
+
+
+    dbms_output.put_line(V_NARRATION);
+  END LOOP;
+
+    commit;
+    dbms_output.put_line(' Procedure Successful ');
+EXCEPTION
+     WHEN others THEN
+  dbms_output.put_line(' SQL Error Msg='||SQLERRM);
+
+END;
+/]]></n0:source>
+		</n0:createOracleProcedure>
+	</changeSet>
+</databaseChangeLog>

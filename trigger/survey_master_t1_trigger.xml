@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="cf56e15fa773ba5821eabf11cab76f072b8e0a99" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleTrigger objectName="SURVEY_MASTER_T1" objectType="TRIGGER" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE TRIGGER "HHA_PROD"."SURVEY_MASTER_T1" 
+BEFORE
+insert on "SURVEY_MASTER"
+for each row
+begin
+:NEW.RECORD_DATE := TRUNC(SYSDATE);
+:NEW.USER_KEY := DBMS_RANDOM.STRING('U',5)||SYS_GUID()||TO_CHAR(SYSDATE,'SSMI');
+end;
+
+/
+/
+ALTER TRIGGER "HHA_PROD"."SURVEY_MASTER_T1" ENABLE;]]></n0:source>
+		</n0:createOracleTrigger>
+	</changeSet>
+</databaseChangeLog>

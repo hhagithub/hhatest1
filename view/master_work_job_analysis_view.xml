@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="b3774c80ef28a151965a353ec8f88f66fb3d0a21" author="(HHA_PROD)-Generated"     >
+		<n0:createSxmlObject objectName="MASTER_WORK_JOB_ANALYSIS" objectType="VIEW" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  <VIEW xmlns="http://xmlns.oracle.com/ku" version="1.0">
+   <SCHEMA>HHA_PROD</SCHEMA>
+   <NAME>MASTER_WORK_JOB_ANALYSIS</NAME>
+   <COL_LIST>
+      <COL_LIST_ITEM>
+         <NAME>JM_COMP_CODE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>JM_DEPT_NO</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>JM_LOCATION</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>JM_MASTER_JOB_NO</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>MASTER_JC_PROMISED_DATE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>MASTER_JC_RECV_DATE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>MASTER_JC_DELV_SMS_DATE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>MASTER_JC_INVOICE_DATE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>MASTER_JC_DELIVERY_TIME</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>MASTER_TOT_SUBJC</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>INVOICED</NAME>
+      </COL_LIST_ITEM>
+   </COL_LIST>
+   <SUBQUERY>select distinct jm_COMP_CODE,JM_DEPT_NO, Jm_LOCATION ,jM_MASTER_JOB_NO, 
+ max(JM_PROMISED_DATE) as Master_JC_Promised_Date,
+ min(JM_JOB_CRE_DT) as Master_JC_Recv_Date,
+ max( jM_CMPT_SMS_DATE) as Master_JC_Delv_Sms_Date,
+ max(JM_INVOICE_DATE) Master_JC_Invoice_Date,
+CASE WHEN  max(jM_CMPT_SMS_DATE) IS NULL THEN
+    max(JM_INVOICE_DATE)
+ELSE
+    max( jM_CMPT_SMS_DATE)
+END  Master_JC_Delivery_Time,
+count(jm_job_no) as Master_ToT_SubJC,
+min(jm_status) Invoiced
+ 
+
+ 
+--(select COUNT(jm_status)  from work_job_master  where JM_MASTER_JOB_NO = w.jM_MASTER_JOB_NO and jm_status =1) 
+  -- '' as Tot_Not_invoiced
+ -- Decode(jm_status,2,'Proforma Inv',3,'Inv') status
+/*
+(select DISTINCT 'NO'  from work_job_master ww
+    where ww.JM_MASTER_JOB_NO = w.JM_MASTER_JOB_NO
+    and ww.jm_status =1
+    and ww.jm_location != '211'
+) as IS_MASTER_INVOICED 
+*/
+from work_job_master w
+where JM_MASTER_JOB_NO is not null
+--and jm_status in (1,2,3) 
+--and jm_job_type = '01'
+and jm_location != '211'
+
+--and JM_INVOICE_NO is not null
+group by jm_COMP_CODE,JM_DEPT_NO, Jm_LOCATION ,jM_MASTER_JOB_NO
+</SUBQUERY>
+</VIEW>]]></n0:source>
+		</n0:createSxmlObject>
+	</changeSet>
+</databaseChangeLog>

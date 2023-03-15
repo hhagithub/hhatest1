@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="f955b71f4acc5666cb944dbb9b640f6ed7641727" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleProcedure objectName="SEND_ASSETS_EMAIL_BACKUP" objectType="PROCEDURE" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "HHA_PROD"."SEND_ASSETS_EMAIL_BACKUP" is  --, type_ varchar2, lang_ varchar2 default 'en'
+--email_addr  varchar2(200);
+--email_subject varchar2(200);
+--emp_name varchar2(200);
+--emp_job  varchar2(200);
+--emp_loc  varchar2(200);
+--join_date date;
+--subject   varchar2(200);
+--msg varchar2(2000);
+
+
+V_EXIST NUMBER;
+V_Assets_Details varchar2(2000);
+
+
+email1 varchar2(500);
+NAME1 VARCHAR2(500);
+email1_e varchar2(500);
+email1_c varchar2(500);
+NAME1_e VARCHAR2(500);
+app1  VARCHAR2(500);
+emp1  number(8);
+emp1_e  number(8);
+flag varchar2(100);
+Item_Type_ VARCHAR2(500);
+Serial_NO_ VARCHAR2(500);
+DESCRIPTION_ VARCHAR2(500);
+TO_USER_ VARCHAR2(500);
+st_ename_ VARCHAR2(500);
+location_ VARCHAR2(500);
+rej_rem_ VARCHAR2(500);
+termination_e date;
+
+begin
+
+FOR ST IN (SELECT ST_EMPCD AS EMPNO_ FROM PASTATIC WHERE /*TERMINATION_DT_SUBMITED*/ TERMINATION_DT_APPROVED IS NOT NULL  AND NVL(ASSET_EMAIL,'N') = 'N') LOOP
+
+BEGIN
+select st_empcd,EMP_EMAIL,st_ename  into emp1,email1,NAME1 from pastatic where st_empcd = (
+select DIRECT_MANAGER_NUMBER from pastatic where st_empcd = ST.empno_);
+
+select st_empcd,EMP_EMAIL,st_ename,TERMINATION_DT_APPROVED into   emp1_e,email1_e,NAME1_e,termination_e from pastatic where st_empcd = ST.empno_;
+
+Select  DISTINCT 1 INTO V_EXIST from assets where to_user = ST.empno_ ;
+
+IF V_EXIST = 1 THEN
+
+
+For ass in 
+(
+      SELECT ITEM_TYPE,ITEM_SNO,DESCRIPTION,ITEM_MODEL 
+      from assets
+      where to_user = ST.empno_
+      --AND ASSET_STATUS = 1
+      order by location,to_number(division),item_type     
+ ) Loop
+      V_Assets_Details   := V_Assets_Details || 
+' <tr>
+    <td>'||ass.Item_Type||'</td>
+    <td>'||ass.ITEM_SNO||'</td>
+    <td>'||ass.DESCRIPTION||'</td>
+    <td>'||ass.ITEM_MODEL||'</td>
+</tr>' ;
+
+ end Loop;
+
+--has  the below Asset under his name.
+--$EMP_name , Employee number $Emp_no last working day  is DD/MM/YYYY.
+
+
+
+send_email_html('misoper@hha.com.sa','naveed@hha.com.sa','Assets Notification Of '||emp1_e||'-'||rtrim(NAME1_e),
+'Dear '||''|| NAME1||','||'<br><br><font size="3">'||'The Employee '||emp1_e||' - '||rtrim(NAME1_e)||' last working day  is ' ||termination_e || '<br>The following assets  are currently registered with this employee .<br> ( Please note that No additional  assets can now be transferred to this employee.) 
+                '||'<br><br></font>'||'<font size="4">'
+
+||'<br><br></b>' ||'
+<style>
+table, th, td {
+  border: 1px solid black;
+  border-collapse: collapse;
+}
+th, td {
+  padding: 5px;
+}
+th {
+  text-align: left;
+}
+</style>
+ <table style="width:100%">
+  <tr>
+    <th>Item Type</th>
+    <th>Serial No</th>
+    <th>Item Name</th>
+    <th>ITEM_MODEL</th>
+  </tr>'
+  || V_Assets_Details ||
+'</table>' ||
+'<br><br><p>
+Kindly reply to this email to instruct  whom each asset should be assigned to:<br>
+-	Yourself<br>
+-	Another employee ( Please provide Employee Number ) <br>
+-	Returned to IT Department <br>
+The Clearance from IT can be processed once all assets have either been returned to IT , or transferred to an other employee and once that employee has confirm acceptance of the Asset.<br><br>
+Best regards,<br>
+IT Department
+</p>'
+
+
+
+
+
+
+);
+ 
+
+
+
+
+end if;
+
+  
+
+      update pastatic
+      set asset_email = 'Y'
+      WHERE TERMINATION_DT_APPROVED IS NOT NULL
+      AND NVL(ASSET_EMAIL,'N') = 'N'
+      AND ST_EMPCD =  ST.empno_;
+
+
+exception when no_data_found then
+
+
+send_email_html('misoper@hha.com.sa','naveed@hha.com.sa','Assets Notification Of '||emp1_e||'-'||rtrim(NAME1_e),
+'Dear '||''|| NAME1||','||'<br><br><font size="3">'||'The Employee '||emp1_e||' - '||rtrim(NAME1_e)||' last working day  is ' ||termination_e ||  '<br>There are no assets currently registered with this employee.<br> ( Please note that No additional  assets can now be transferred to this employee.)
+                '||'<br>The clearance process can start.<br><br><br>Best regards,<br>IT Department'
+);
+
+
+      update pastatic
+      set asset_email = 'Y'
+      WHERE TERMINATION_DT_APPROVED IS NOT NULL
+      AND NVL(ASSET_EMAIL,'N') = 'N'
+      AND ST_EMPCD =  ST.empno_;
+
+end;
+END LOOP;
+END;
+/]]></n0:source>
+		</n0:createOracleProcedure>
+	</changeSet>
+</databaseChangeLog>

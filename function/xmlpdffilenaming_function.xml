@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="80e48d79bcf898529fed993226541dda49bdd5ce" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="XMLPDFFILENAMING" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."XMLPDFFILENAMING" 
+(
+Cmb_InvoiceNo   varchar2,
+Msk_InvoiceDate varchar2,
+TRNTIME         varchar2,
+VatRegNo        varchar2,
+FileExtn        varchar2 default '.PDF'
+) return varchar2 is
+
+DOCNO   varchar2(200);
+DateStr varchar2(200);
+
+begin
+
+DateStr := DateStr || 'T' || TRNTIME;
+/*
+DateStr = Remove_SingleQuote(DateStr, "-")
+DateStr = Remove_SingleQuote(DateStr, "/")
+DateStr = Remove_SingleQuote(DateStr, "\")
+DateStr = Remove_SingleQuote(DateStr, ":")
+DOCNO = Cmb_InvoiceNo.AXValue
+DOCNO = Trim(DOCNO)
+DOCNO = Remove_SingleQuote(DOCNO, "\", True, "-")
+DOCNO = Remove_SingleQuote(DOCNO, "/", True, "-")
+DOCNO = Remove_SingleQuote(DOCNO, "_", True, "-")
+DOCNO = Remove_SingleQuote(DOCNO, " ", True, "-")
+*/
+return  VatRegNo || '_' || DateStr || '_' || DOCNO || FileExtn;
+-- & IIf(Left(UCase(Trim(FileExtn)), 1) <> ".", "." & UCase(Trim(FileExtn)), UCase(Trim(FileExtn)))
+--'3xxxxxxxxx1xxx3_20210526T132400_2021-05-26-23555.xml'
+
+end;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

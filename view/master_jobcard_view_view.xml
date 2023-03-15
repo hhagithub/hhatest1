@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="8cc73d6dd99b327f935d282aee3c39eac1c55f7c" author="(HHA_PROD)-Generated"     >
+		<n0:createSxmlObject objectName="MASTER_JOBCARD_VIEW" objectType="VIEW" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  <VIEW xmlns="http://xmlns.oracle.com/ku" version="1.0">
+   <SCHEMA>HHA_PROD</SCHEMA>
+   <NAME>MASTER_JOBCARD_VIEW</NAME>
+   <COL_LIST>
+      <COL_LIST_ITEM>
+         <NAME>JM_COMP_CODE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>JM_DEPT_NO</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>JM_LOCATION</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>JM_MASTER_JOB_NO</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>MASTER_JC_PROMISED_DATE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>MASTER_JC_RECV_DATE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>MASTER_JC_DELV_SMS_DATE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>MASTER_JC_FIRST_PUNCH</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>MASTER_JC_LAST_PUNCH</NAME>
+      </COL_LIST_ITEM>
+   </COL_LIST>
+   <SUBQUERY>SELECT  jm_COMP_CODE,JM_DEPT_NO, Jm_LOCATION ,jM_MASTER_JOB_NO,
+  --MJB.Master_JC_Promised_Date,MJB.Master_JC_Recv_Date,MJB.Master_JC_Delv_Sms_Date,Punch.Master_JC_First_Punch,punch.Master_JC_Last_Punch
+
+
+( select max(JM_PROMISED_DATE) from work_job_master where JM_MASTER_JOB_NO=w.JM_MASTER_JOB_NO ) Master_JC_Promised_Date,
+( select min(JM_JOB_DATE) from work_job_master where JM_MASTER_JOB_NO=w.JM_MASTER_JOB_NO )   Master_JC_Recv_Date,
+( select max( jM_CMPT_SMS_DATE) from work_job_master where JM_MASTER_JOB_NO =w.JM_MASTER_JOB_NO ) Master_JC_Delv_Sms_Date,
+(select min(WJ_START_TIME)    from work_job_time where WJ_JOB_NO in (select jm_job_no from  work_job_master where JM_MASTER_JOB_NO =w.JM_MASTER_JOB_NO )) Master_JC_First_Punch,
+(select max(WJ_START_TIME)    from work_job_time where WJ_JOB_NO in (select jm_job_no from  work_job_master where JM_MASTER_JOB_NO =w.JM_MASTER_JOB_NO )) Master_JC_Last_Punch
+
+FROM work_job_master w
+where w.JM_MASTER_JOB_NO  is not null
+/*
+,
+
+(select max(JM_PROMISED_DATE) as Master_JC_Promised_Date,
+ min(JM_JOB_DATE) as Master_JC_Recv_Date,
+ max( jM_CMPT_SMS_DATE) as Master_JC_Delv_Sms_Date
+from work_job_master where JM_MASTER_JOB_NO=w.JM_MASTER_JOB_NO) MJB,
+
+( select min(WJ_START_TIME)    Master_JC_First_Punch,
+   max(WJ_START_TIME) Master_JC_Last_Punch
+  from work_job_time where WJ_JOB_NO in (select jm_job_no from  work_job_master where JM_MASTER_JOB_NO =w.JM_MASTER_JOB_NO )) Punch
+
+*/
+
+
+
+</SUBQUERY>
+</VIEW>]]></n0:source>
+		</n0:createSxmlObject>
+	</changeSet>
+</databaseChangeLog>

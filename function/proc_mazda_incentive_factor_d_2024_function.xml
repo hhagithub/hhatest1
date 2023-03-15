@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="c332ded5dc3451309f238b175ee5274b34d1326e" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="PROC_MAZDA_INCENTIVE_FACTOR_D_2024" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."PROC_MAZDA_INCENTIVE_FACTOR_D_2024" (P_LOC VARCHAR2,P_PERIOD VARCHAR2,P_EMP_NO VARCHAR2) return VARCHAR2 --MAZDA MANAGER INCENTIVE
+IS
+
+V_Factor_D number;
+V_Total_Vehicles number;
+V_MCI_Complaint number;
+V_MCI_Complaint_Factor NUMBER;
+V_Workshop_Productivity number;
+V_Workshop_Productivity_HOURS NUMBER;
+V_Workshop_Productivity_CIG NUMBER;
+
+V_NARRATION VARCHAR2(2000);
+--V_EMP_NO VARCHAR2(20);
+
+V_Workshop_Productivity_FACTOR NUMBER;
+
+V_Hours number;
+
+BEGIN
+
+V_Workshop_Productivity_HOURS := 0;
+V_Workshop_Productivity_CIG := 0;
+
+ FOR LOC IN (select Distinct LOC_No as WT_LOCATION from LOCATION_MANPOWER_23 where Period = P_Period AND LOC_NO = P_LOC) Loop
+-- FOR LOC IN (Select distinct WT_LOCATION/*,WT_EMP_NO*/ from work_team_details where  NVL(ASTON_MARTIN_FLAG,'M') <> 'Y') LOOP
+V_Factor_D := 0;
+V_MCI_Complaint_Factor := 0;
+V_Workshop_Productivity := 0;
+
+V_NARRATION := NULL;
+--V_EMP_NO := '182613';
+
+
+--Factor D          = [ Workshop Productivity % X 0.7]          +   [MCI Complaint Factor X 0.3]
+
+    -- Workshop Productivity
+    --Question with Naveed Bhai here we don't have emp only location . How to Calculate .
+  
+
+
+/*
+V_Workshop_Productivity_CIG :=  V_Workshop_Productivity_CIG + Incentive_workshop_productivity_CIG(P_LOC,P_PERIOD,'');
+
+  For E in (  select Distinct ST_EMP_NO EMP_NO from new_sold_time 
+            where to_char(trunc(st_credit_date),'rrrrmm') = P_Period  
+             and JI_LOCATION = P_LOC   
+            and ST_CREDIT_DATE is not null) LOOP
+
+                     -- For E in (SELECT Distinct  to_number(w.WJ_EMP_NO) EMP_NO 
+                     -- FROM WORK_JOB_TIME W 
+                     -- WHERE to_number(wj_location) = P_LOC  --between :P229_BRANCH1 and :P229_BRANCH1
+                     -- --and to_number(wj_emp_no) = decode(:P229_USERS,null,to_number(wj_emp_no),:P229_USERS)
+                     -- AND  to_char(trunc(wj_start_time),'rrrrmm') = P_Period  
+                     -- AND REGEXP_LIKE(WJ_EMP_NO, '^[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$')
+                     -- ) Loop
+
+
+
+   V_Hours := Incentive_workshop_productivity_HOURS(LOC.WT_LOCATION,P_PERIOD,E.emp_no);
+    V_Workshop_Productivity_HOURS :=  V_Workshop_Productivity_HOURS + V_Hours;  --E.emp_no
+   -- V_Workshop_Productivity_HOURS :=  V_Workshop_Productivity_HOURS + Incentive_workshop_productivity_Sold_Others_Hours(LOC.WT_LOCATION,P_PERIOD,E.emp_no);
+    
+      dbms_output.put_line('E.EMp :=' || E.EMp_No   || ' Hours :=' || V_Hours || ' CIG :=' || V_Workshop_Productivity_CIG);
+ End loop;
+
+  
+
+      IF V_Workshop_Productivity_HOURS > 0  THEN
+            --RETURN round((V_sold_cig/ (V_HOURS+V_OVERTIME+abc_DAYOFF))*100,2);
+            V_Workshop_Productivity := round(( V_Workshop_Productivity_CIG / (V_Workshop_Productivity_HOURS))*100);
+      ELSE
+            V_Workshop_Productivity := 0;
+      END IF;
+
+      */
+
+      
+
+      BEGIN
+               Select sum(Hours),sum(sold_cig),Round(  sum (sold_cig) /sum(Hours)*100) into V_Workshop_Productivity_HOURS,V_Workshop_Productivity_CIG,V_Workshop_Productivity from wssr37_tbl where period = P_PERIOD and wj_location = P_LOC;
+   --dbms_output.put_line(V_Workshop_Productivity);
+          IF  V_Workshop_Productivity <70 THEN
+            V_Workshop_Productivity_FACTOR := 0;
+          ELSIF  V_Workshop_Productivity > 120 THEN
+            V_Workshop_Productivity_FACTOR  := 1.2;
+          ELSE
+            Select  VALUE_2 INTO  V_Workshop_Productivity_FACTOR  ---SOME VALUE NOT EXIST
+            from codes_descriptions where MAIN_CODE= '430' --430 --192
+            and MINOR_CODE!=0
+            AND VALUE_1 = V_Workshop_Productivity ;  --V_PS_ALL_SOLD
+          END IF;
+        EXCEPTION WHEN NO_DATA_FOUND THEN
+                     NULL;
+                WHEN TOO_MANY_ROWS THEN
+                    NULL;
+        END;
+
+
+
+
+    --MCI Complaint Factor
+    Begin
+        SELECT COUNT(*) INTO V_MCI_Complaint
+        FROM APEX_INBOUND_STATUS_CCM98
+         WHERE LOC_ASSIGN = LOC.WT_LOCATION AND SOURCE = 6
+         AND TO_CHAR(CDATE,'RRRRMM') = P_PERIOD;
+
+
+     Select count(Distinct JM_CHASSIS_NO)  --/LR_LABOUR_RATE
+                INTO V_Total_Vehicles
+                from work_job_master                 
+                WHERE JM_LOCATION = TO_CHAR(LOC.WT_LOCATION) 
+               and TO_CHAR(trunc(jm_invoice_date),'rrrrmm') = P_PERIOD  --'202104'--between TO_DATE('01'||TO_CHAR(trunc(:SYSDATE),'MMRRRR'),'DDMMRRRR') AND LAST_DAY(trunc(:SYSDATE))
+              -- AND NVL(JM_CLASS_TYPE,'M') = 'M' --LOC.WT_CLASS
+                --AND JM_CLASS_TYPE = 'B'
+                and Jm_status = 3;
+
+
+
+
+ V_MCI_Complaint_Factor := round((V_MCI_Complaint/V_Total_Vehicles),2);
+
+ --MCT Complaint Achievement MCI Complaint Factor
+If V_MCI_Complaint_Factor > 100 then 
+   V_MCI_Complaint_Factor := 0;
+Elsif V_MCI_Complaint_Factor <= 100 then 
+   V_MCI_Complaint_Factor := 0.25;
+Elsif  V_MCI_Complaint_Factor <= 70 then 
+   V_MCI_Complaint_Factor :=0.5;
+Elsif  V_MCI_Complaint_Factor <= 50 then 
+   V_MCI_Complaint_Factor :=0.75;
+Elsif  V_MCI_Complaint_Factor <= 20 then 
+   V_MCI_Complaint_Factor := 1;
+end if;
+
+         Exception When No_Data_Found then
+         Null;
+    End;
+   --Factor D          =  [ Workshop Productivity % X 0.7]          +   [MCI Complaint Factor X 0.3]
+   v_Factor_D         :=  ( V_Workshop_Productivity_FACTOR * 0.7)          +   (V_MCI_Complaint_Factor * 0.3);
+
+    V_NARRATION := V_NARRATION || ' Factor D Calculation : ' ;
+ -- V_NARRATION := V_NARRATION || ' (LOC:= '||LOC.WT_LOCATION || ')';
+ -- V_NARRATION := V_NARRATION || ' (EMP NO:= '||P_EMP_NO || ')';
+   V_NARRATION := V_NARRATION || ' (CIG :='|| NVL(V_Workshop_Productivity_CIG,0)|| ')';
+   V_NARRATION := V_NARRATION || ' (Hours :='|| NVL(V_Workshop_Productivity_HOURS,0)|| ')';
+   V_NARRATION := V_NARRATION || ' (Workshop Productivity  %:='|| NVL(V_Workshop_Productivity,0)|| ')';
+   V_NARRATION := V_NARRATION || ' (Workshop Productivity  Ach Factor %:='|| NVL(V_Workshop_Productivity_FACTOR,0)|| ')';
+   V_NARRATION := V_NARRATION || ' (MCI Complaint Vehicles:= '|| NVL(V_MCI_Complaint,0)|| ')';
+   V_NARRATION := V_NARRATION || ' (Total Vehicle:= '|| NVL(V_Total_Vehicles,0)|| ')';
+   V_NARRATION := V_NARRATION || ' (MCI Complaint Factor:= '|| NVL(V_MCI_Complaint_Factor,0)|| ')';
+   V_NARRATION := V_NARRATION || ' (Factor D:='|| NVL(v_Factor_D,0)|| ')';
+
+    dbms_output.put_line(V_NARRATION);
+  END LOOP;
+   return V_Factor_D;
+    --commit;
+    dbms_output.put_line(' Procedure Successful ');
+EXCEPTION
+     WHEN others THEN
+  dbms_output.put_line(' SQL Error Msg='||SQLERRM);
+  return null;
+
+END;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

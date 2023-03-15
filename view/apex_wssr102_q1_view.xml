@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="3f9b1d66ea825529e6656fe8d4e1fe465198f351" author="(HHA_PROD)-Generated"     >
+		<n0:createSxmlObject objectName="APEX_WSSR102_Q1" objectType="VIEW" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  <VIEW xmlns="http://xmlns.oracle.com/ku" version="1.0">
+   <SCHEMA>HHA_PROD</SCHEMA>
+   <NAME>APEX_WSSR102_Q1</NAME>
+   <COL_LIST>
+      <COL_LIST_ITEM>
+         <NAME>RECEIPT_NO</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>RECEIPT_AMOUNT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>RECEIPT_DATE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>RECEIPT_REMARKS</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>RECEIPT_CUSTOMER_NAME_ENG</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>RECEIPT_BRANCH_CODE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>PAYMENT_MODE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>CHEQUE_NO</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>CHEQUE_DATE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>APPROVAL_NO</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>BANK_CODE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>CREATED_DATE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>CREATED_BY</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>JOB_CARD_NO</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>RECEIPT_REVERSAL_REFNO</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>RECEIPT_LOCATION</NAME>
+      </COL_LIST_ITEM>
+   </COL_LIST>
+   <SUBQUERY>SELECT
+    RECEIPT_NO,
+    RECEIPT_AMOUNT,
+    RECEIPT_DATE,
+    RECEIPT_REMARKS,
+    RECEIPT_CUSTOMER_NAME_ARB    RECEIPT_CUSTOMER_NAME_ENG,
+    RECEIPT_LOCATION    RECEIPT_BRANCH_CODE,
+    RECEIPT_PAYMENT_MODE    PAYMENT_MODE,
+     RECEIPT_CHEQUE_NO CHEQUE_NO,
+     RECEIPT_CHEQUE_DATE CHEQUE_DATE,
+     RECEIPT_APPROVAL_NO APPROVAL_NO,
+     RECEIPT_BANK_CODE BANK_CODE, 
+     CREATED_DATE, CREATED_BY,
+JOB_CARD_NO  ,RECEIPT_REVERSAL_REFNO,RECEIPT_LOCATION
+ FROM  work_cash_receipt_header
+/*
+WHERE  RECEIPT_LOCATION BETWEEN :branch1 AND :branch2
+
+-----------AND TO_DATE(TO_CHAR(RECEIPT_DATE ,'DD-MON-RR'),'DD-MON-RR') BETWEEN TO_DATE(:DATE1,'DD-MON-RR')  AND TO_DATE(:DATE2,'DD-MON-RR')
+
+AND trunc(RECEIPT_DATE) BETWEEN :DATE1 AND :DATE2
+
+AND RECEIPT_PAYMENT_MODE = DECODE(:PAY_MODE,NULL,RECEIPT_PAYMENT_MODE,:PAY_MODE)
+*/
+
+ORDER BY    RECEIPT_BRANCH_CODE, PAYMENT_MODE,  RECEIPT_NO
+</SUBQUERY>
+</VIEW>]]></n0:source>
+		</n0:createSxmlObject>
+	</changeSet>
+</databaseChangeLog>

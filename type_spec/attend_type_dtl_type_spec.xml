@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="2caaef3b554fbc056a45c063300d917a551f3f59" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleTypeSpec objectName="ATTEND_TYPE_DTL" objectType="TYPE_SPEC" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE TYPE "HHA_PROD"."ATTEND_TYPE_DTL" as object
+(
+EMP_NO            varchar2(200),
+MONTH_YEAR        varchar2(200),
+P_DATE            varchar2(200),
+ST_ENAME          varchar2(200),
+LEGAL_EMPLOYER    varchar2(200),
+LOC_CODE          varchar2(200),
+COMPINATION       varchar2(200),
+ATTENDANCE_DATE   varchar2(200),
+PATTERN_NAME      varchar2(200),
+TIME_IN           varchar2(200),
+TIME_OUT          varchar2(200),
+TOTAL_HOURS       varchar2(200),
+TOTAL_HOURS_FORMAT varchar2(200),
+TOTAL_HOURS_EMP    varchar2(200),
+TOTAL_HOURS_EMP_FORMAT varchar2(200),
+ADDITIONAL_IN          varchar2(200),
+ADDITIONAL_IN_FORMAT   varchar2(200),
+ADDITIONAL_IN_EMP      varchar2(200),
+ADDITIONAL_IN_EMP_FORMAT varchar2(200),
+SHORTAGE_IN              varchar2(200),
+SHORTAGE_IN_FORMAT       varchar2(200),
+SHORTAGE_IN_EMP          varchar2(200),
+SHORTAGE_IN_EMP_FORMAT   varchar2(200),
+ADDITIONAL_OUT           varchar2(200),
+ADDITIONAL_OUT_FORMAT    varchar2(200),
+ADDITIONAL_OUT_EMP       varchar2(200),
+ADDITIONAL_OUT_EMP_FORMAT varchar2(200),
+SHORTAGE_OUT              varchar2(200),
+SHORTAGE_OUT_FORMAT       varchar2(200),
+SHORTAGE_OUT_EMP          varchar2(200),
+SHORTAGE_OUT_EMP_FORMAT   varchar2(200),
+SCHEDULED_HOURS           varchar2(200),
+SCHEDULED_HOURS_FORMAT    varchar2(200),
+SCHEDULED_HOURS_EMP       varchar2(200),
+SCHEDULED_HOURS_EMP_FORMAT varchar2(200),
+DEDUCTIBLE_HOURS           varchar2(200),
+DEDUCTIBLE_HOURS_FORMAT    varchar2(200),
+DEDUCTIBLE_HOURS_EMP       varchar2(200),
+DEDUCTIBLE_HOURS_EMP_FORMAT varchar2(200),
+REMARKS                     varchar2(200),
+REMARKS1                    varchar2(200),
+TOT_DEDUCTABLE_AM           varchar2(200)
+)
+/]]></n0:source>
+		</n0:createOracleTypeSpec>
+	</changeSet>
+</databaseChangeLog>

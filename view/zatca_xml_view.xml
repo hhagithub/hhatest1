@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="abcac76c1cd6612b35d0c2de444dc19a84a8dc83" author="(HHA_PROD)-Generated"     >
+		<n0:createSxmlObject objectName="ZATCA_XML" objectType="VIEW" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  <VIEW xmlns="http://xmlns.oracle.com/ku" version="1.0">
+   <SCHEMA>HHA_PROD</SCHEMA>
+   <NAME>ZATCA_XML</NAME>
+   <COL_LIST>
+      <COL_LIST_ITEM>
+         <NAME>XML</NAME>
+      </COL_LIST_ITEM>
+   </COL_LIST>
+   <SUBQUERY>select 
+  '&#60;Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2" xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2" xmlns:ext="urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2">'
+  ||Zatca_Invoice1(z.id)  
+  ||ZATCA_invoiceline1(z.id) 
+  ||'&#60;/Invoice>' as XML 
+From Zatca_hha_Invoice z
+where ID = 100
+
+--SELECT XMLSERIALIZE(Document XMLTYPE ((select  trim(XML) from zatca_xml)) as CLOB INDENT SIZE = 2) as xml FROM DUAL
+--SELECT INVOICE_HASH((select  (XML) from zatca_xml)) from dual
+  --||Zatca_UBLExtensions()
+</SUBQUERY>
+</VIEW>]]></n0:source>
+		</n0:createSxmlObject>
+	</changeSet>
+</databaseChangeLog>

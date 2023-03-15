@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="dbf3e49b9dfbd903c47e6a9599f73d17b69ceea1" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="ZATCA_DECODEBASE64" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."ZATCA_DECODEBASE64" (InBase64Char IN CLOB) RETURN CLOB IS
+
+    blob_loc BLOB;
+    clob_trim CLOB;
+    res CLOB;
+
+    lang_context INTEGER := DBMS_LOB.DEFAULT_LANG_CTX;
+    dest_offset INTEGER := 1;
+    src_offset INTEGER := 1;
+    read_offset INTEGER := 1;
+    warning INTEGER;
+    ClobLen INTEGER := DBMS_LOB.GETLENGTH(InBase64Char);
+
+    amount INTEGER := 1440; -- must be a whole multiple of 4
+    buffer RAW(1440);
+    stringBuffer VARCHAR2(1440);
+    -- BASE64 characters are always simple ASCII. Thus you get never any Mulit-Byte character and having the same size as 'amount' is sufficient
+
+BEGIN
+
+    IF InBase64Char IS NULL OR NVL(ClobLen, 0) = 0 THEN 
+        RETURN NULL;
+    ELSIF ClobLen<= 32000 THEN
+        RETURN UTL_RAW.CAST_TO_VARCHAR2(UTL_ENCODE.BASE64_DECODE(UTL_RAW.CAST_TO_RAW(InBase64Char)));
+    END IF;        
+    -- UTL_ENCODE.BASE64_DECODE is limited to 32k, process in chunks if bigger    
+
+    -- Remove all NEW_LINE from base64 string
+    ClobLen := DBMS_LOB.GETLENGTH(InBase64Char);
+    DBMS_LOB.CREATETEMPORARY(clob_trim, TRUE);
+    LOOP
+        EXIT WHEN read_offset > ClobLen;
+        stringBuffer := REPLACE(REPLACE(DBMS_LOB.SUBSTR(InBase64Char, amount, read_offset), CHR(13), NULL), CHR(10), NULL);
+        DBMS_LOB.WRITEAPPEND(clob_trim, LENGTH(stringBuffer), stringBuffer);
+        read_offset := read_offset + amount;
+    END LOOP;
+
+    read_offset := 1;
+    ClobLen := DBMS_LOB.GETLENGTH(clob_trim);
+    DBMS_LOB.CREATETEMPORARY(blob_loc, TRUE);
+    LOOP
+        EXIT WHEN read_offset > ClobLen;
+        buffer := UTL_ENCODE.BASE64_DECODE(UTL_RAW.CAST_TO_RAW(DBMS_LOB.SUBSTR(clob_trim, amount, read_offset)));
+        DBMS_LOB.WRITEAPPEND(blob_loc, DBMS_LOB.GETLENGTH(buffer), buffer);
+        read_offset := read_offset + amount;
+    END LOOP;
+
+    DBMS_LOB.CREATETEMPORARY(res, TRUE);
+    DBMS_LOB.CONVERTTOCLOB(res, blob_loc, DBMS_LOB.LOBMAXSIZE, dest_offset, src_offset,  DBMS_LOB.DEFAULT_CSID, lang_context, warning);
+
+    DBMS_LOB.FREETEMPORARY(blob_loc);
+    DBMS_LOB.FREETEMPORARY(clob_trim);
+    RETURN res;    
+
+END ;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

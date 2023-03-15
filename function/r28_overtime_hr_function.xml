@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="05c19ecce8e181809abbf7100eaff63ec80e70cb" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="R28_OVERTIME_HR" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."R28_OVERTIME_HR" (wj_location1_ varchar2,WJ_EMP_NO_ VARCHAR2,STARTTIME_ DATE) return number is
+--2 Over time
+abcd number; --varchar2(20);
+abc number;
+abc_DAYOFF number;
+begin
+
+--DAY OFF OVERTIME
+
+Select 
+round(
+(
+NVL((select sum(nvl(TOTAL_HOURS,0))
+from hcm_timecardn
+where emp_no= WJ_EMP_NO_
+and TRUNC(ATTENDANCE_DATE) =  TRUNC(STARTTIME_) 
+AND UPPER(REMARKS) = TRIM(UPPER('Day Off'))) ,0)
+)/60,2)
+into abc_DAYOFF From Dual;
+
+
+IF abc_DAYOFF > 0 then
+  RETURN abc_DAYOFF;
+END IF;
+
+
+--REGULAR TIME OVER TIME
+Select 
+round(
+(
+NVL((select sum(nvl(ADDITIONAL_OUT,0))
+from hcm_timecardn
+where emp_no= WJ_EMP_NO_
+and TRUNC(ATTENDANCE_DATE) =  TRUNC(STARTTIME_) ) ,0)
+)/60,2)
+into abc From Dual;
+
+
+if abc < 0 then
+return 0;
+elsif abc >= 24 then
+return abc-24;
+else
+return abc;
+end if;
+
+
+   -- OVERTIME IN WSSR28 REPORT    
+--     select round((nvl(Sum(OT_END_TIME-OT_START_TIME),0)*24),2 )  
+--     into abcd
+--     from work_over_time 
+--    where ot_end_time is not null
+--      --and WJ_OVER_TIME = '2'
+--      and trunc(OT_START_TIME) = trunc(STARTTIME_)
+--      and OT_EMP_NO = WJ_EMP_NO_
+-- group by trunc(OT_start_time),OT_EMP_NO;
+-- return (abcd);
+-- exception when others then return null;
+
+
+
+
+
+
+
+  /*
+          LPAD(floor(sum(((to_char(OT_END_TIME,'hh24')*60 +to_number(to_char(OT_END_TIME,'mi')))
+            -
+       (to_char(OT_START_TIME,'hh24')*60 + to_number(to_char(OT_START_TIME,'mi')))))/60),2,0)||':'||
+       LPAD(mod(sum(((to_char(OT_END_TIME,'hh24')*60 +to_number(to_char(OT_END_TIME,'mi')))
+        -
+       (to_char(OT_START_TIME,'hh24')*60 + to_number(to_char(OT_START_TIME,'mi'))))),60),2,0)
+   */
+       
+
+
+
+
+
+end;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

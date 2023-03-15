@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="b8c84fe7b926b8ebf4a9ee1f1efa157c26323eb6" author="(HHA_PROD)-Generated"     >
+		<n0:createSxmlObject objectName="SOAP_MAT_ITEM" objectType="VIEW" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  <VIEW xmlns="http://xmlns.oracle.com/ku" version="1.0">
+   <SCHEMA>HHA_PROD</SCHEMA>
+   <NAME>SOAP_MAT_ITEM</NAME>
+   <COL_LIST>
+      <COL_LIST_ITEM>
+         <NAME>DMSPOSNR</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ITEMKEY</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>QUANTITY</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>PRIMARYDEFECTPART</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>RECONDITIONEDPARTCODE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>RETURNPARTSCLAIMANT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>VALUE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>PARTSDISCOUNTPERC</NAME>
+      </COL_LIST_ITEM>
+   </COL_LIST>
+   <SUBQUERY>SELECT
+--&#60;MAT_Item>
+'005'   DMSPosNr,
+'51261017283' ItemKey, 
+'4'  Quantity,
+'1'  PrimaryDefectPart,
+'' ReconditionedPartCode,
+'' ReturnPartsClaimant,
+'554' Value,
+''    PartsDiscountPerc
+--&#60;/MAT_Item>
+FROM DUAL
+</SUBQUERY>
+</VIEW>]]></n0:source>
+		</n0:createSxmlObject>
+	</changeSet>
+</databaseChangeLog>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="2fad1b83e7b20b9265eba16ed4ace84d82e555fc" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="CRYPTO_HASH" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."CRYPTO_HASH" (v_input clob, v_hash_typ BINARY_INTEGER) 
+RETURN RAW DETERMINISTIC
+AS
+   PRAGMA UDF;
+BEGIN
+   RETURN dbms_crypto.hash(utl_raw.cast_to_raw(v_input), v_hash_typ);
+END CRYPTO_HASH ;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

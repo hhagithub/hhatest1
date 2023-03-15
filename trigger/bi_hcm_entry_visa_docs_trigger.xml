@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="4a1d47885b7a9bca8e36dee7d2e0d2158689ce87" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleTrigger objectName="BI_HCM_ENTRY_VISA_DOCS" objectType="TRIGGER" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE TRIGGER "HHA_PROD"."BI_HCM_ENTRY_VISA_DOCS" 
+  before insert on  HCM_ENTRY_VISA_DOCS
+  for each row
+begin
+  if :NEW.ID is null then
+    select NVL(MAX(ID),0)+1 into :NEW.ID from HCM_ENTRY_VISA_DOCS;
+  end if;
+end;
+
+/
+/
+ALTER TRIGGER "HHA_PROD"."BI_HCM_ENTRY_VISA_DOCS" ENABLE;]]></n0:source>
+		</n0:createOracleTrigger>
+	</changeSet>
+</databaseChangeLog>

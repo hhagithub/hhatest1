@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="6c6a538657c1aa89186e912f3fc6b2ff181f3b18" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="R28_OTHER_SOLD" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."R28_OTHER_SOLD" (wj_emp_no_ VARCHAR2,starttime_ DATE)  return Number is
+--10 SOLD O
+    temp number(20,2);
+
+begin
+
+        select sum(nvl(NEW_TIME,0))
+
+           into temp
+
+        from new_sold_time,work_job_master w
+
+         where st_emp_no = wj_emp_no_
+
+           and trunc(st_credit_date) = trunc(starttime_)
+
+           and ST_CREDIT_DATE is not null
+
+           and ji_job_no = W.JM_JOB_NO 
+
+           and w.jm_campaign_code is null
+           
+          and nvl(JM_CLASS_TYPE,'M') <> 'B';
+
+return Round(nvl(temp,0),2);
+          
+
+exception 
+	when others then 
+	return null;
+
+end;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

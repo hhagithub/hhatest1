@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="c94d25d96ec6fcd975073b6a8db444c672a983f8" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="GENERATEQRCODE" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."GENERATEQRCODE" (datetime_ varchar2, net_amt varchar2, vat_amt varchar2, lang varchar2 default 'E') return blob is
+comp_   varchar2(2000):='الحاج حسين علي رضا وشركاه المحدودة';
+vat_no_ varchar2(2000):='300210958810003';
+base64_ varchar2(2000);
+QRblob blob;
+begin
+
+select QR_CODE_BLOB(comp_ , vat_no_ , ISO8601(to_date(datetime_,'dd/mm/yyyy hh24:mi:ss')), net_amt ,vat_amt)
+into base64_
+from dual;
+select qr_code_blob_10g(base64_) into QRblob from dual;
+return QRblob;
+exception when others then
+return QRblob;
+end;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

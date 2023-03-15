@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="e75b4f04e161a32803c02153d7bae70c0422b920" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleProcedure objectName="PROC_ASTON_MARTIN_INCENTIVE_FRONT_OFFICE" objectType="PROCEDURE" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "HHA_PROD"."PROC_ASTON_MARTIN_INCENTIVE_FRONT_OFFICE" (P_PERIOD VARCHAR2)   
+IS
+   V_WB_PERCENTAGE NUMBER;
+   V_Incentive_on_Basic NUMBER;
+   V_DED_PER NUMBER;
+
+  V_WI_INC_AMOUNT NUMBER;
+  V_WI_INC_BEF_DED NUMBER;
+
+  V_PS_ASTON_TECH_ACHIEVED NUMBER;
+
+  V_NARRATION VARCHAR2(2000);
+   V_BASIC NUMBER;
+BEGIN
+   FOR LOC IN (Select  distinct WT_LOCATION from work_team_details d where  ASTON_MARTIN_FLAG = 'Y') LOOP
+
+     --DELETE FROM work_emp_incentives WHERE  WI_LOCATION = LOC.WT_LOCATION AND WI_PERIOD = P_PERIOD ;
+
+     -- FOR FRONT OFFICE
+     FOR EP IN (SELECT WT_EMP_NO,WT_SECTION From work_team_details WHERE WT_SECTION not in ('01','02','13','14') and WT_LOCATION = LOC.WT_LOCATION   AND WT_EMP_STATUS = 'A' and ASTON_MARTIN_FLAG = 'Y' /*and WT_EMP_NO=181616*/) LOOP
+         V_WB_PERCENTAGE  := 0;
+         V_Incentive_on_Basic:= 0;
+         V_DED_PER:= 0;
+         V_WI_INC_BEF_DED := 0;
+         V_WI_INC_AMOUNT := 0; 
+         V_NARRATION :=NULL;
+          V_BASIC := 0;
+
+        V_NARRATION := V_NARRATION || ' ( ASTON MARTIN FRONT OFFICE)';
+       V_NARRATION := V_NARRATION || ' (WT_LOCATION:= '||LOC.WT_LOCATION || ')';
+       V_NARRATION := V_NARRATION || ' (WT_EMP_NO:= '||EP.WT_EMP_NO || ')';  
+       V_NARRATION := V_NARRATION || ' (WT_SECTION:= '||EP.WT_SECTION || ')';  
+
+       BEGIN
+        SELECT (WB_PERCENTAGE) INTO V_WB_PERCENTAGE -- Total Busdget Amount -- A
+        FROM work_budget_amounts
+        WHERE WB_PERIOD = P_PERIOD  --'202104'
+        and WB_LOCATION = LOC.WT_LOCATION
+        and nvl(franchise,'99')  = '07';
+       EXCEPTION WHEN NO_DATA_FOUND THEN
+            NULL;
+        END ;
+        
+         V_NARRATION := V_NARRATION || ' (V_WB_PERCENTAGE:= '||V_WB_PERCENTAGE || ')';  
+       -- and WB_SECTION = LOC.WT_SECTION;    ---ADD
+
+      --  IF V_WB_PERCENTAGE >= 60  THEN   --ACHIEVED % >= 60
+
+           select round(st_basic*4/12)  into V_Incentive_on_Basic from pastatic
+           where st_empcd = EP.WT_EMP_NO ;
+
+            V_NARRATION := V_NARRATION || ' (V_Incentive_on_Basic:= '||V_Incentive_on_Basic || ')'; 
+                --REVIEW POINTS....EACH FIELD HAS 10 POINT IF 'N'
+              
+                BEGIN
+                    SELECT DECODE(AI_FRONT_CSI,'N',13.3,0)+ DECODE(AI_FRONT_WIP_OV20,'N',13.3,0)+ DECODE(AI_FRONT_TRAING_ACAD,'N',113.3,0)
+                    INTO V_DED_PER 
+                    From ASTON_INCEN_CRITERIA
+                    where AI_PERIOD = P_PERIOD
+                    AND AI_LOCATION = LOC.WT_LOCATION
+                    AND AI_SECTION = EP.WT_SECTION
+                    AND AI_EMP_NO = 	EP.WT_EMP_NO; 
+
+               
+                EXCEPTION WHEN NO_DATA_FOUND THEN
+                    NULL;
+                END;
+
+            V_NARRATION := V_NARRATION || ' (V_DED_PER:= '||V_DED_PER || ')'; 
+
+            V_WI_INC_BEF_DED := ROUND(v_Incentive_on_Basic * V_WB_PERCENTAGE /100); 
+            V_WI_INC_AMOUNT := ROUND(V_WI_INC_BEF_DED - nvl((V_WI_INC_BEF_DED * V_DED_PER / 100),0) ); ---AMOUNT AFTER REVIEW POINT
+
+          
+            BEGIN
+                SELECT ((ST_BASIC*33)/100) INTO V_BASIC FROM PASTATIC 
+                WHERE ST_EMPCD = EP.WT_EMP_NO;
+            EXCEPTION WHEN NO_DATA_FOUND THEN
+                NULL;
+            END;
+               
+             IF V_WI_INC_AMOUNT > V_BASIC THEN
+                V_WI_INC_AMOUNT := V_BASIC;
+             END IF;
+
+             IF V_WB_PERCENTAGE > 120 THEN
+               V_WI_INC_AMOUNT := V_WI_INC_AMOUNT *1.2;
+             END IF;
+             
+              IF V_WB_PERCENTAGE < 60  or V_WI_INC_AMOUNT <0 THEN 
+                V_WI_INC_AMOUNT := 0 ;
+                V_WI_INC_BEF_DED := 0 ;
+              END IF;
+
+
+          V_NARRATION := V_NARRATION || ' (V_BASIC_33:= '||V_BASIC || ')'; 
+            V_NARRATION := V_NARRATION || ' (V_WI_INC_BEF_DED:= '||V_WI_INC_BEF_DED || ')'; 
+             V_NARRATION := V_NARRATION || ' (V_WI_INC_AMOUNT:= '||V_WI_INC_AMOUNT || ')'; 
+
+
+
+           INSERT INTO work_emp_incentives(WI_EMP_NO,WI_LOCATION, WI_PERIOD,WI_EMP_SEC,WI_INC_AMOUNT,WI_NON_MECH,WI_CLASS,WI_INC_BEF_DED,FRANCHISE,NARRATION)
+            VALUES( EP.WT_EMP_NO,LOC.WT_LOCATION, P_PERIOD, EP.WT_SECTION,V_WI_INC_AMOUNT,1,NULL,V_WI_INC_BEF_DED,'07',V_NARRATION ); 
+                
+        --END IF;
+
+          dbms_output.put_line(V_NARRATION);
+     END LOOP; 
+     
+   END LOOP;
+
+    commit;
+  
+    dbms_output.put_line(' Procedure Successful ');
+EXCEPTION
+     WHEN others THEN
+  dbms_output.put_line(' SQL Error Msg='||SQLERRM);
+
+END;
+/]]></n0:source>
+		</n0:createOracleProcedure>
+	</changeSet>
+</databaseChangeLog>

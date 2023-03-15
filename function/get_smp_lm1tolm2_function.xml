@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="ed02578f853d1e3946fe0cc5ff3a2a7e8858bbe4" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="GET_SMP_LM1TOLM2" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."GET_SMP_LM1TOLM2" (emp number) return number is
+temp number;
+begin
+SELECT DISTINCT EMPNO into temp
+FROM
+(
+SELECT B.PA_EMP_NO AS EMPNO , PROB_EVAL_NO
+FROM HCM_PROB_APPROVAL B
+WHERE --B.PA_EMP_NO = '181179' AND
+B.PA_APP_REQ_BY_DESC = 'LM2' AND B.APPROVED_REJECTED IS NULL
+and EXISTS(
+SELECT 1--T.PA_EMP_NO EMPNO
+FROM HCM_PROB_APPROVAL T
+WHERE T.PA_APP_REQ_BY_DESC = 'LM1' AND T.APPROVED_REJECTED = 'A' AND TRUNC(APP_REJ_DATE) < TRUNC(SYSDATE) AND T.PA_EMP_NO = B.PA_EMP_NO AND T.PROB_EVAL_NO= B.PROB_EVAL_NO
+)
+and NOT EXISTS(
+SELECT 1--T.PA_EMP_NO EMPNO
+FROM HCM_PROB_APPROVAL D
+WHERE D.PA_APP_REQ_BY_DESC = 'HRR' AND D.APPROVED_REJECTED IS NOT NULL AND D.PA_EMP_NO = B.PA_EMP_NO AND D.PROB_EVAL_NO= B.PROB_EVAL_NO
+)
+) ABC , pastatic P
+WHERE ABC.EMPNO = P.ST_EMPCD
+AND NVL(PROB_CHNGD_REG,'N') = 'N'
+AND TRUNC(NVL(PROB_END_FIN_DATE2,PROB_END_FIN_DATE)) >= TRUNC(SYSDATE)
+AND ST_STATUS <= '15'
+AND EMPNO=emp;
+return 1;
+exception
+  when no_data_found then
+   return 0;
+   when others then
+   return 0;
+end;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

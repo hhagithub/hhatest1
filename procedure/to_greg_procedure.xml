@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="26aac84894c5aa8a3fce16bb3d9926f8d3ab5098" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleProcedure objectName="TO_GREG" objectType="PROCEDURE" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "HHA_PROD"."TO_GREG" ( HDATE IN DATE , GDATE IN OUT DATE ) IS
+  H_YEAR   NUMBER;
+  H_MTH    NUMBER;
+  H_DAY    NUMBER;
+BEGIN
+  H_DAY := TO_NUMBER(SUBSTR(TO_CHAR(HDATE,'DD/MM/YYYY'),1,2));
+  H_MTH := TO_NUMBER(SUBSTR(TO_CHAR(HDATE,'DD/MM/YYYY'),4,2));
+  H_YEAR:= TO_NUMBER(SUBSTR(TO_CHAR(HDATE,'DD/MM/YYYY'),7,4));
+
+  SELECT GREG_DATE
+  INTO   GDATE
+  FROM   DATES
+  WHERE  HIJ_YEAR  = H_YEAR
+  AND    HIJ_MONTH = H_MTH ;
+
+  GDATE := GDATE + H_DAY - 1;
+END;
+/]]></n0:source>
+		</n0:createOracleProcedure>
+	</changeSet>
+</databaseChangeLog>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="78b5c9ba518f9d0335bc0d6d92f8acc44ba0d07d" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleRefConstraint objectName="EBA_SB_QUESTIONS_SECTIONS_FK" objectType="REF_CONSTRAINT" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  ALTER TABLE "HHA_PROD"."EBA_SB_QUESTIONS" ADD CONSTRAINT "EBA_SB_QUESTIONS_SECTIONS_FK" FOREIGN KEY ("SECTION_ID")
+	  REFERENCES "HHA_PROD"."EBA_SB_SECTIONS" ("ID") ON DELETE CASCADE ENABLE;]]></n0:source>
+		</n0:createOracleRefConstraint>
+	</changeSet>
+</databaseChangeLog>

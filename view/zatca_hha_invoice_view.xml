@@ -1,0 +1,301 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="73dddc7cf5931805026ed2a79f2b033336212b46" author="(HHA_PROD)-Generated"     >
+		<n0:createSxmlObject objectName="ZATCA_HHA_INVOICE" objectType="VIEW" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  <VIEW xmlns="http://xmlns.oracle.com/ku" version="1.0">
+   <SCHEMA>HHA_PROD</SCHEMA>
+   <NAME>ZATCA_HHA_INVOICE</NAME>
+   <COL_LIST>
+      <COL_LIST_ITEM>
+         <NAME>INVOICE_ID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ENTITY</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>PROFILEID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>UUID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ISSUEDATE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ISSUETIME</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>INVOICETYPECODE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>INVOICETYPENAME</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>CURRENCYID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>TAXCURRENCYCODE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>BILLINGREFERENCEID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ICV</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>PIH</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>QRCODE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>CRYPTOGRAPHICSTAMP</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ACTUALDELIVERYDATE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>PAYMENTMEANSCODE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>CREDIT_REASON</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>INSTRUCTIONNOTE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ALL_CHARGEINDICATOR</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ALL_AMOUNT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ALL_CURRENCYID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ALL_TAXCATEGORYID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ALL_TAXCATEGORYPERCENT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ALL_TAXCATEGORYTAXSCHEMEID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>LINEEXTENSIONAMOUNT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ALLOWANCETOTALAMOUNT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>TAXEXCLUSIVEAMOUNT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>TAXAMOUNT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>TAXAMOUNT68</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>TAXINCLUSIVEAMOUNT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>PAYABLEAMOUNT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>TAXABLEAMOUNT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>TAXSUBTOTAL_TAXAMOUNT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>TAXCATEGORYID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>TAXPERCENT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>TAXEXEMPTIONREASONCODE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>TAXEXEMPTIONREASON</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>TAXSCHEMEID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>S_ID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>S_SCHEMEID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>S_STREETNAME</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>S_BUILDINGNUMBER</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>S_PLOTIDENTIFICATION</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>S_CITYNAME</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>S_POSTALZONE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>S_CITYSUBDIVISIONNAME</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>S_IDENTIFICATIONCODE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>S_COMPANYID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>S_ID_TAXSCHEME</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>S_REGISTRATIONNAME</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>B_ID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>B_SCHEMEID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>B_STREETNAME</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>B_BUILDINGNUMBER</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>B_PLOTIDENTIFICATION</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>B_CITYNAME</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>B_POSTALZONE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>B_CITYSUBDIVISIONNAME</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>B_IDENTIFICATIONCODE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>B_COMPANYID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>B_ID_TAXSCHEME</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>B_REGISTRATIONNAME</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ACCOUNTINGSUPPLIERPARTY</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ACCOUNTINGCUSTOMERPARTY</NAME>
+      </COL_LIST_ITEM>
+   </COL_LIST>
+   <SUBQUERY>SELECT
+INVOICE_NUMBER INVOICE_ID,
+LINE_OF_BUSS ENTITY,
+TRIM(REP_TYPE) ProfileID,--4                    --'reporting:1.0'
+INVOICE_NUMBER ID,--5                           --'100'
+INVOICE_UUID UUID,--6                           --'3cf5ee18-ee25-44ea-a444-2c37ba7f28be'
+INVOICE_ISS_DATE  IssueDate,--7                 --'2021-04-25'
+INVOICE_ISS_TIME IssueTime,--8                  --'15:30:00'
+TRIM(INVVOICE_TYPE_CODE) InvoiceTypeCode,--9    --'388'
+INVOICE_TYPE_TRANS InvoiceTypeName,--10         --010000
+TRIM(INVOICE_CURR_CODE) currencyID,--12         --'SAR'
+TRIM(TAX_CURR_CODE) TaxCurrencyCode,--13        --'SAR'
+billing_ref_id BillingReferenceID,-- 15 (Mandatory For Debit &#38; Credit Note)
+'' ICV, --17
+'' PIH, --18
+'' QRCode, --19
+'' CryptographicStamp,--20
+
+supply_start_date ActualDeliveryDate,  --45  (Conditional) --'2022-04-25'
+PAY_MEANS_TYPE_CODE PaymentMeansCode, --47 (Optional)
+CREDIT_REASON, --48
+'' InstructionNote,  --48 (Mandatory For Debit &#38; Credit Note)
+
+--Allowance (discount) at document level
+'false' All_ChargeIndicator,  --51
+'0.00' All_Amount,  --53
+'SAR' All_currencyID, --54
+'S' All_TaxCategoryID,   --57
+'15' All_TaxCategoryPercent, --58
+'VAT' All_TaxCategoryTaxSchemeID,   --59
+
+Sum_Inv_Amt	LineExtensionAmount, --60 I            --900
+0.00	AllowanceTotalAmount, --62 I                    --0
+Inv_Tot_WO_VAT	TaxExclusiveAmount,  --64 I         --900
+Inv_Tot_VAT	TaxAmount,--66.                        --135
+Inv_Tot_VAT_ACC  TaxAmount68 ,  --68.              --135
+
+Inv_Tot_With_VAT	TaxInclusiveAmount,  --70 I      --1035
+Amt_Due_for_Payment	PayableAmount, --74 I         --1035
+
+VAT_Taxable_Amt	TaxableAmount, --76.             --900
+VAT_CAT_TAX_AMT  TaxSubtotal_TaxAmount,--78.       --135
+vat_cat_code  TaxCategoryID,--80.                  --'S'    --VAT category code	S Z E O
+vat_cat_rate   TaxPercent,--81.                    --15
+'' TaxExemptionReasonCode,--82C
+'' TaxExemptionReason,--83C
+TRIM(TAX_scheme_ID) TaxSchemeID, --84.              --'VAT'
+
+--SELLER
+crno S_ID, --21  --'123457890'
+'CRN' S_schemeID,   --21.1  --'CRN FIXED FOR SELLER'
+addr_street S_StreetName, --22  --'Bab makkah'
+nvl(decode(addr_addl_buildi,'HHA','0000'),'0000') S_BuildingNumber, --24  --1234
+0000 S_PlotIdentification, --25  --1234
+addr_city S_CityName,  --26  --'Jeddah'
+addr_postal_code S_PostalZone,  --27  --12643
+--ADDR_PROVINCE CountrySubentity,   --28  --'Makkah Region'  --Optional
+addr_district S_CitySubdivisionName,--29  --'Bab Makkah'
+addr_country_code S_IdentificationCode,   --30, --'SA'
+'300210958810003' S_CompanyID,   --vat_reg_no --31  HHA VAT  --300210958810003      SandBox--300075588700003
+'VAT' S_ID_TAXSCHEME,  --31.1  --'VAT'
+cmpny_desc S_RegistrationName,   --32   --'Haji Husein Alireza Co. Ltd'  --Al Salam Supplies Co. LTD
+
+--BUYER
+cust_id B_ID, --33                              --'123457890'
+'CRN' B_schemeID,   --33.1                      --'MLS'  --Conditional
+Nvl(cust_street,'0000') B_StreetName, --34                  --'Bab makkah'
+Nvl(cust_building,'0000') B_BuildingNumber, --36            --1234
+'0000' B_PlotIdentification,   --37               --1234  -Optional For Buyer
+Nvl(cust_city,'0000') B_CityName,  --38                     --'Jeddah'
+Nvl(cust_postal,'00000') B_PostalZone, --39                  --12643
+--CUST_DISTRICT B_CountrySubentity,--40         --'Makkah Region'  --Optional
+Nvl(cust_district,'0000') B_CitySubdivisionName,--41        --'Bab Makkah'
+Nvl(cust_country_code,'SA') B_IdentificationCode,--42     --'SA'
+cust_vat_no B_CompanyID, --43                   -- sdk Vat 300055184400003   API Vat 300075588700003  HHA VAT  --300210958810003   --300210958810003
+'VAT' B_ID_TAXSCHEME,  --43.1                   --'VAT'
+cust_name B_RegistrationName, --44              --'Haji Husein Alireza Co. Ltd'  --Al Salam Supplies Co. LTD
+
+
+INVOICE_NUMBER AccountingSupplierParty,         --123457890
+INVOICE_NUMBER AccountingCustomerParty          --'123C12345678'
+FROM ZATCA_MAPPING_MASTER   --ZATCA_MAPPING_MASTER@to_appidev.hha.local   --ZATCA_MAPPING_MASTER_APEX
+--where invoice_number = 'SI2800179066'
+</SUBQUERY>
+</VIEW>]]></n0:source>
+		</n0:createSxmlObject>
+	</changeSet>
+</databaseChangeLog>

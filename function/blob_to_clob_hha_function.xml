@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="3af64ea045dfc73c99558bf486ac89971befc66b" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="BLOB_TO_CLOB_HHA" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."BLOB_TO_CLOB_HHA" (blob_in IN BLOB)
+RETURN NCLOB
+AS
+v_clob NCLOB;
+v_varchar VARCHAR2(32767);
+v_start INTEGER := 1;
+v_buffer INTEGER := 32767;
+
+
+V_LEN NUMBER := 9999999999;
+V_TXT NCLOB;--VARCHAR2(32767);
+HTTP_RESP     UTL_HTTP.RESP;
+CHECK_NUM1     NUMBER := 1;
+SOAP_RESPOND1 NCLOB;
+SOAP_RESPOND  NCLOB;
+CHECK_NUM      NUMBER;
+
+
+BEGIN
+
+
+--FOR I IN 1 .. CEIL(V_LEN / 32767) 
+FOR i IN 1..CEIL(DBMS_LOB.GETLENGTH(blob_in) / v_buffer)
+LOOP
+BEGIN
+
+--V_TXT :=  UTL_RAW.CAST_TO_VARCHAR2(DBMS_LOB.SUBSTR(blob_in, 32767, v_start));
+
+
+V_TXT := UTL_RAW.CAST_TO_VARCHAR2(utl_encode.base64_encode (DBMS_LOB.SUBSTR(blob_in, v_buffer, v_start)));
+SOAP_RESPOND := SOAP_RESPOND || (V_TXT); -- build up CLOB
+v_start := v_start + v_buffer;
+END;
+END LOOP;
+RETURN SOAP_RESPOND;
+END blob_to_clob_HHA;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

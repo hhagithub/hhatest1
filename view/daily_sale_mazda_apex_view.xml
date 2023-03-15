@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="23887b73aa91745eb435eb74523e109b95b823a0" author="(HHA_PROD)-Generated"     >
+		<n0:createSxmlObject objectName="DAILY_SALE_MAZDA_APEX" objectType="VIEW" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  <VIEW xmlns="http://xmlns.oracle.com/ku" version="1.0">
+   <SCHEMA>HHA_PROD</SCHEMA>
+   <NAME>DAILY_SALE_MAZDA_APEX</NAME>
+   <COL_LIST>
+      <COL_LIST_ITEM>
+         <NAME>REGION_CODE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>RCODE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>LOCATION_CODE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>REGION_NAME</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>STG_SOURCE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>LAST_DAY_SALE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>LAST_2RD_SALE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>LAST_3RD_SALE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>LAST_4TH_SALE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>LAST_5TH_SALE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>MTD_SALE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>MONTH_TARGET</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>VARY_TO_TARGET</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>YTD_SALE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>CURENT_YEAR_TARGET</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>YEAR_PROJECTION</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>PREVIOUS_YR_SALE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>VARY_TO_PREVIOUS_YEAR</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>MANAGER_NAME</NAME>
+      </COL_LIST_ITEM>
+   </COL_LIST>
+   <SUBQUERY>(
+select region_code,  region_code rcode,LOCATION_CODE,
+ (select region_desc_eng  
+   from regions
+    where region_code = b.REGION_CODE) Region_name  ,
+ STG_SOURCE ,
+(select nvl(LAST_DAY_SALE,0) from vss_stag_last_day_sale_apex_kk@to_appi.hha.local where LOCATION=LOCATION_CODE and source_=STG_SOURCE) last_day_sale,
+(select nvl(SECOND_DAY_SALE,0) from VSS_STAG_LST_2DAY_SALE_APEX_KK@to_appi.hha.local where LOCATION=LOCATION_CODE and source_=STG_SOURCE) last_2rd_sale,
+(select nvl(THIRD_DAY_SALE,0) from vss_staging_lst_3dy_sale_apex@to_appi.hha.local where LOCATION=LOCATION_CODE and source_=STG_SOURCE) last_3rd_sale,
+(select nvl(FOURTH_DAY_SALE,0) from vss_staging_lst_4dy_sale_apex@to_appi.hha.local where LOCATION=LOCATION_CODE and source_=STG_SOURCE) last_4th_sale,
+(select nvl(FIFTH_DAY_SALE,0) from vss_staging_lst_5dy_sale_apex@to_appi.hha.local where LOCATION=LOCATION_CODE and source_=STG_SOURCE) last_5th_sale,
+
+
+MTD_SALE,to_number(MONTH_TARGET) MONTH_TARGET, VARY_TO_TARGET VARY_TO_TARGET,YTD_SALE,to_number(CURENT_YEAR_TARGET) CURENT_YEAR_TARGET,
+YEAR_PROJECTION,PREVIOUS_YR_SALE,VARY_TO_PREVIOUS_YEAR  VARY_TO_PREVIOUS_YEAR,
+
+
+
+
+(CASE STG_SOURCE when '1' then
+    'Management' 
+else
+
+
+
+
+(select   
+(Select initcap(USER_NAME_E) from users  where USER_CODE=manager_code ) 
+ from branches b , BRANCHE_DEPARTMENTS bd,BRANCH_TYPE_MANAGER bm
+where b.branch_code=bd.branch_code
+and bd.department_code=21
+--and b.branch_code=285
+and bm.branch_code=b.branch_code
+and bm.position=1
+and bm.dept_code=bd.department_code
+and b.loc_status='A'
+and MANAGER_CODE in(select st_empcd from pastatic where st_status &#60;=15)
+and SALE_TYPE_CODE=STG_SOURCE and b.BRANCH_CODE=LOCATION_CODE
+and bm.mk_code=1) 
+ END)  Manager_Name
+
+ from VSS_BUDGET_VS_TARGET_apex@to_appi.hha.local ,branches b where branch_code=LOCATION_CODE
+
+--order by   decode(to_number(Region_code),4,1,5,2,3,3) 
+and LOCATION_CODE in(214,540,481)
+
+
+---order by  rcode,LOCATION_CODE
+
+union all
+
+-------------- below query is for bring whole sale, fleet and retail as a single line
+
+select region_code,  rcode,LOCATION_CODE,Region_name,
+'3' STG_SOURCE, sum(last_day_sale) last_day_sale, sum(last_2rd_sale) last_2rd_sale,  
+sum(last_3rd_sale) last_3rd_sale,sum(last_4th_sale) last_4th_sale,sum(last_5th_sale) last_5th_sale,
+/*sum(MTD_SALE) MTD_SALE, 0 month_target, 
+0 vary_to_target,
+sum(YTD_SALE) YTD_SALE,
+0 curent_year_target,
+0 year_projection,
+0 previous_yr_sale,
+'0' vary_to_previous_year,
+null manager_name
+
+*/
+
+sum(MTD_SALE) MTD_SALE, sum(month_target) month_target , 
+sum(vary_to_target) vary_to_target ,
+sum(YTD_SALE) YTD_SALE,
+sum(curent_year_target) curent_year_target,
+sum(year_projection) year_projection,
+sum(previous_yr_sale) previous_yr_sale ,
+sum(vary_to_previous_year) vary_to_previous_year,
+null manager_name
+
+
+
+
+
+ from 
+ (
+ 
+ 
+select region_code, region_code rcode,LOCATION_CODE,MTD_SALE , 
+ (select region_desc_eng  
+   from regions
+    where region_code = b.REGION_CODE) Region_name  ,
+    '3' STG_SOURCE,
+
+(select nvl(LAST_DAY_SALE,0) from vss_stag_last_day_sale_apex_kk@to_appi.hha.local where LOCATION=LOCATION_CODE and source_=STG_SOURCE) last_day_sale,
+(select nvl(SECOND_DAY_SALE,0) from VSS_STAG_LST_2DAY_SALE_APEX_KK@to_appi.hha.local where LOCATION=LOCATION_CODE and source_=STG_SOURCE) last_2rd_sale,
+(select nvl(THIRD_DAY_SALE,0) from vss_staging_lst_3dy_sale_apex@to_appi.hha.local where LOCATION=LOCATION_CODE and source_=STG_SOURCE) last_3rd_sale,
+(select nvl(FOURTH_DAY_SALE,0) from vss_staging_lst_4dy_sale_apex@to_appi.hha.local where LOCATION=LOCATION_CODE and source_=STG_SOURCE) last_4th_sale,
+(select nvl(FIFTH_DAY_SALE,0) from vss_staging_lst_5dy_sale_apex@to_appi.hha.local where LOCATION=LOCATION_CODE and source_=STG_SOURCE) last_5th_sale,
+YTD_SALE,vary_to_previous_year,previous_yr_sale,year_projection,curent_year_target,vary_to_target,month_target
+
+/*
+
+0 MONTH_TARGET, 0 VARY_TO_TARGET,YTD_SALE,0 CURENT_YEAR_TARGET,
+0 YEAR_PROJECTION,0 PREVIOUS_YR_SALE,'0'   VARY_TO_PREVIOUS_YEAR,
+
+
+ null   Manager_Name
+*/
+ from VSS_BUDGET_VS_TARGET_apex@to_appi.hha.local ,branches b where branch_code=LOCATION_CODE
+
+--order by   decode(to_number(Region_code),4,1,5,2,3,3) 
+and LOCATION_CODE not  in(214,540,481)
+
+)
+group by REGION_CODE,RCODE,LOCATION_CODE,Region_name,STG_SOURCE
+)
+
+order by  rcode,LOCATION_CODE
+</SUBQUERY>
+</VIEW>]]></n0:source>
+		</n0:createSxmlObject>
+	</changeSet>
+</databaseChangeLog>

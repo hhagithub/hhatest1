@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="2be34edeb3f22e5f44523e1ba287f61e1db25c48" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleProcedure objectName="JWT_DECODE" objectType="PROCEDURE" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "HHA_PROD"."JWT_DECODE" (jwt_token varchar2) is
+    l_token apex_jwt.t_token;
+    l_keys  apex_t_varchar2;
+    output1 varchar2(4000);
+    output2 varchar2(4000);
+    output3 varchar2(4000);
+begin
+    l_token := apex_jwt.decode(jwt_token);
+--                  p_value => 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dnZWRJbkFzIjoiYWRtaW4iLCJpYXQiOjE0MjI3Nzk2Mzh9.gzSraSYS8EXBxLN_oWnFSRgCzcmJmMjLiuyu5CSpyHI' );
+    sys.dbms_output.put_line('--- Header ---');
+    apex_json.parse(l_token.header);
+    l_keys := apex_json.get_members('.');
+
+    for i in 1 .. l_keys.count loop
+        sys.dbms_output.put_line(l_keys(i)||'='||apex_json.get_varchar2(l_keys(i)));
+        output1 := apex_json.get_varchar2(l_keys(i));
+    end loop;
+
+    sys.dbms_output.put_line('--- Payload ---');
+    apex_json.parse(l_token.payload);
+    l_keys := apex_json.get_members('.');
+
+    for i in 1 .. l_keys.count loop
+        sys.dbms_output.put_line(l_keys(i)||'='||apex_json.get_varchar2(l_keys(i)));
+        output2 := apex_json.get_varchar2(l_keys(i));
+    end loop;
+    /*
+    sys.dbms_output.put_line('--- signature ---');
+    apex_json.parse(l_token.signature);
+    l_keys := apex_json.get_members('.');
+    
+    for i in 1 .. l_keys.count loop
+        sys.dbms_output.put_line(l_keys(i)||'='||apex_json.get_varchar2(l_keys(i)));
+        output3 := apex_json.get_varchar2(l_keys(i));
+    end loop;
+    */
+end;
+/]]></n0:source>
+		</n0:createOracleProcedure>
+	</changeSet>
+</databaseChangeLog>

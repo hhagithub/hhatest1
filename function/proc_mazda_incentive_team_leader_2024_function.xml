@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="b98127c3a1ceba8f643db003e8fb52dc7d79fed1" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="PROC_MAZDA_INCENTIVE_TEAM_LEADER_2024" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."PROC_MAZDA_INCENTIVE_TEAM_LEADER_2024" (P_LOC VARCHAR2,P_PERIOD VARCHAR2,P_EMP_NO VARCHAR2) return varchar2 --MAZDA MANAGER INCENTIVE
+IS
+V_Factor_A NUMBER;
+V_Factor_B Number;
+V_Factor_C Number;
+V_Factor_D Number;
+
+-- --8 Reception Supervisor
+--  V_Team_Labour_Sales NUMBER;
+--  V_Basic_Incentive NUMBER;
+-- V_EMP_WORK_DAYS NUMBER;
+-- V_MONTH_DAYS NUMBER;
+-- V_Working_Day_Per number;
+-- V_Monthly_Incentive NUMBER;
+
+
+--9 Workshop Supervisor
+
+-- V_Team_Invoiced_Hours NUMBER;
+-- V_EMP_WORK_DAYS NUMBER;
+-- V_MONTH_DAYS NUMBER;
+-- V_Working_Day_Per number;
+-- V_Basic_Incentive NUMBER;
+-- V_Monthly_Incentive NUMBER;
+
+
+--10 Team Leader 
+V_Team_Invoiced_Hours NUMBER; 
+V_Working_Day_Per NUMBER;
+ V_Basic_Incentive NUMBER;
+V_Monthly_Incentive NUMBER;
+
+   V_NARRATION VARCHAR2(2000);
+  -- V_EMP_NO NUMBER;
+
+
+
+Begin
+
+   -- 481     Workshop Supervisor 
+   -- Basic Incentive                   =                [ Team Invoiced Hours   X     2.5 SAR ]
+   -- Monthly Incentive                  =	Base Incentive          X             Factor A               X         Working Days %
+
+   V_NARRATION := V_NARRATION || ' ( 10.	Team Leader Incentive )';
+        dbms_output.put_line(V_NARRATION);
+   For TL in ( SELECT Distinct LOC_NO,MGR_EMP_NO WT_EMP_NO FROM LOCATION_MANPOWER_23 WHERE MGR_JOB_TITLE = 'Team Leader' AND LOC_NO = P_LOC AND PERIOD  = P_PERIOD  AND MGR_EMP_NO=P_EMP_NO) LOOP
+   --FOR  TL IN ( select distinct WT_EMP_NO,WT_SECTION from work_team_details where   WT_LOCATION = LOC.WT_LOCATION AND WT_SECTION in ('08') AND WT_EMP_STATUS = 'A' AND NVL(ASTON_MARTIN_FLAG,'M') <> 'Y' ) LOOP
+   
+     
+      V_NARRATION := V_NARRATION || ' (LOC:= '||TL.LOC_NO || ')';
+      V_NARRATION := V_NARRATION || ' (EMP NO:= '||TL.WT_EMP_NO || ')';
+      dbms_output.put_line(V_NARRATION);
+      V_NARRATION := Null;
+
+      V_Factor_A := PROC_MAZDA_INCENTIVE_Factor_A_2024(TL.LOC_NO,P_PERIOD,TL.WT_EMP_NO);
+    --  V_Factor_B := PROC_MAZDA_INCENTIVE_Factor_B_2024(TL.LOC_NO,P_PERIOD,TL.WT_EMP_NO);
+    --  V_Factor_C := PROC_MAZDA_INCENTIVE_Factor_C_2024(TL.LOC_NO,P_PERIOD,TL.WT_EMP_NO);
+   --   V_Factor_D := PROC_MAZDA_INCENTIVE_Factor_D_2024(TL.LOC_NO,P_PERIOD,TL.WT_EMP_NO);
+   
+   BEGIN
+      -- Help : Team_Invoiced_Hours
+
+      Begin
+       select Round(sum(nvl(NEW_TIME,0)),2)
+         into V_Team_Invoiced_Hours
+          from new_sold_time
+         where st_emp_no in (select EMP_NO from LOCATION_MANPOWER_23 where MGR_JOB_CODE = TL.WT_EMP_NO)
+         and to_char(trunc(st_credit_date),'rrrrmm') =   P_PERIOD  --trunc(sysdate) --between trunc(starttime_) and trunc(endtime_)
+           and JI_LOCATION = TL.LOC_NO
+           and ST_CREDIT_DATE is not null;
+
+         V_Basic_Incentive  :=    ( V_Team_Invoiced_Hours  *    2.5 );
+
+    
+
+        
+         Exception When No_Data_Found then 
+         Null;
+       End;
+
+     V_Working_Day_Per := Incentive_Working_Days_Per( P_Loc,P_PERIOD,TL.WT_EMP_NO);
+
+     V_Monthly_Incentive  := V_Basic_Incentive  * V_Factor_A    *  V_Working_Day_Per;
+   
+   V_NARRATION := V_NARRATION || ' (EMP NO:= '||TL.WT_EMP_NO || ')';
+   V_NARRATION := V_NARRATION || ' (Team_Invoiced_Hours  :='|| NVL(V_Team_Invoiced_Hours,0)|| ')';
+    V_NARRATION := V_NARRATION || ' (Base Incentive  :='|| NVL( V_Basic_Incentive,0)|| ')';
+   V_NARRATION := V_NARRATION || ' (Factor A:='|| NVL(v_Factor_A,0)|| ')';
+   --V_NARRATION := V_NARRATION || ' (Factor B:='|| NVL(v_Factor_B,0)|| ')';
+  -- V_NARRATION := V_NARRATION || ' (Factor C:='|| NVL(v_Factor_C,0)|| ')';
+   -- V_NARRATION := V_NARRATION || ' (Factor D:='|| NVL(v_Factor_D,0)|| ')';
+   V_NARRATION := V_NARRATION || ' (Working Days % :='|| NVL(V_Working_Day_Per,0)|| ')';
+   V_NARRATION := V_NARRATION || ' (Monthly Incentive :='|| NVL(V_Monthly_Incentive,0)|| ')';
+   
+   dbms_output.put_line(V_NARRATION);
+
+  EXCEPTION WHEN NO_DATA_FOUND THEN 
+      NULL;
+   WHEN TOO_MANY_ROWS THEN
+      NULL;
+   END;
+  
+  
+ END LOOP;
+
+   dbms_output.put_line(' Procedure Successful ');
+   return Null;
+    --commit;
+    
+
+EXCEPTION
+
+   
+     WHEN others THEN
+  dbms_output.put_line(' SQL Error Msg='||SQLERRM);
+  return null;
+
+END;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

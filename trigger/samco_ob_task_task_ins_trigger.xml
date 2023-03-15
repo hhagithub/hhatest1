@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="7c2fea3cafe323da50cb57bab5a609192e84e654" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleTrigger objectName="samco_ob_task_task_INS" objectType="TRIGGER" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE TRIGGER "HHA_PROD"."samco_ob_task_task_INS" before insert on SAMCO_TRAINING_ONBOARD_TASKS for each row
+begin
+ SELECT samco_ob_task_task_seq.nextval INTO :NEW.LINEID FROM DUAL;
+end;
+
+/
+/
+ALTER TRIGGER "HHA_PROD"."samco_ob_task_task_INS" ENABLE;]]></n0:source>
+		</n0:createOracleTrigger>
+	</changeSet>
+</databaseChangeLog>

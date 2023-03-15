@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="d1e8ddccd2fe97e62d0544432aa198bbb1f6c1f5" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleDbLink objectName="PENYGON.HHA.LOCAL" objectType="DB_LINK" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE DATABASE LINK "PENYGON.HHA.LOCAL"
+   CONNECT TO "PARTS" IDENTIFIED BY VALUES ':1'
+   USING '(DESCRIPTION = (ADDRESS_LIST = (ADDRESS = (PROTOCOL = TCP)(HOST=hha-parts)(PORT=1521))) (CONNECT_DATA = (SID = myprts)))';]]></n0:source>
+		</n0:createOracleDbLink>
+	</changeSet>
+</databaseChangeLog>

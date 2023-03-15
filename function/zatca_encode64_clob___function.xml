@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="810044f05473e8163b89fab590b7a92376ad86a1" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="ZATCA_ENCODE64_CLOB__" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."ZATCA_ENCODE64_CLOB__" (IN_CLOB CLOB) RETURN CLOB IS
+       --The chunk size must be a multiple of 48
+       CHUNKSIZE INTEGER := 576;
+       PLACE   INTEGER := 1;
+       FILE_SIZE INTEGER;
+       TEMP_CHUNK VARCHAR(4000);
+       OUT_CLOB  CLOB;
+       v_clob clob;
+BEGIN
+
+      select xmlserialize( Document  xmltype(in_clob) as clob NO INDENT ) into v_clob from dual;
+      v_clob := trim(regexp_replace(v_clob,'><', '> <'));
+
+       FILE_SIZE := LENGTH(v_clob);
+       WHILE (PLACE <= FILE_SIZE)
+       LOOP
+              TEMP_CHUNK := SUBSTR(v_clob, PLACE, CHUNKSIZE);
+              OUT_CLOB := OUT_CLOB 
+              || UTL_RAW.CAST_TO_VARCHAR2(UTL_ENCODE.BASE64_ENCODE(UTL_RAW.CAST_TO_RAW(TEMP_CHUNK)));
+              PLACE := PLACE + CHUNKSIZE;
+       END LOOP;
+       --out_clob := replace(replace(OUT_CLOB,chr(10),''),chr(13),'');
+      --SELECT utl_raw.cast_to_varchar2 (utl_encode.base64_encode(v_input))   INTO V_BASE FROM DUAL; 
+      -- select replace(replace(V_BASE,chr(10),''),chr(13),'') into v_base from dual;
+     
+     
+
+      RETURN  replace(replace(OUT_CLOB,chr(10),''),chr(13),'');
+
+
+END;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

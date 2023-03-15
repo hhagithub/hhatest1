@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="bf80443ad9399750472bed837142db55a831788f" author="(HHA_PROD)-Generated"     >
+		<n0:createSxmlObject objectName="PARTS_LABOUR_GRAPH_MAT" objectType="MATERIALIZED_VIEW" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  <MATERIALIZED_VIEW xmlns="http://xmlns.oracle.com/ku" version="1.0">
+   <SCHEMA>HHA_PROD</SCHEMA>
+   <NAME>PARTS_LABOUR_GRAPH_MAT</NAME>
+   <COL_LIST>
+      <COL_LIST_ITEM>
+         <NAME>JM_JOB_NO</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>JM_SUPL_CODE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>JM_MASTER_JOB_NO</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>JM_JOB_CRE_DT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>JM_IN_SYSDATE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>JM_LOCATION</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>JM_CHASSIS_NO</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>JM_CUSTOMER_NAME</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>JM_MOBILE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>JM_INVOICE_DATE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>NOT_APPROVED_LABOUR</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>NOT_APPROVED_PARTS</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>APPROVED_LABOUR</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>APPROVED_PARTS</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>EST_OTH_ESTIMATE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>EST_OTH_APPROVED</NAME>
+      </COL_LIST_ITEM>
+   </COL_LIST>
+   <PHYSICAL_PROPERTIES>
+      <HEAP_TABLE>
+         <SEGMENT_ATTRIBUTES>
+            <SEGMENT_CREATION_IMMEDIATE></SEGMENT_CREATION_IMMEDIATE>
+            <PCTFREE>10</PCTFREE>
+            <PCTUSED>40</PCTUSED>
+            <INITRANS>1</INITRANS>
+            <STORAGE>
+               <INITIAL>65536</INITIAL>
+               <NEXT>1048576</NEXT>
+               <MINEXTENTS>1</MINEXTENTS>
+               <MAXEXTENTS>2147483645</MAXEXTENTS>
+               <PCTINCREASE>0</PCTINCREASE>
+               <FREELISTS>1</FREELISTS>
+               <FREELIST_GROUPS>1</FREELIST_GROUPS>
+               <BUFFER_POOL>DEFAULT</BUFFER_POOL>
+               <FLASH_CACHE>DEFAULT</FLASH_CACHE>
+               <CELL_FLASH_CACHE>DEFAULT</CELL_FLASH_CACHE>
+            </STORAGE>
+            <TABLESPACE>USERS</TABLESPACE>
+            <LOGGING>Y</LOGGING>
+         </SEGMENT_ATTRIBUTES>
+         <COMPRESS>N</COMPRESS>
+      </HEAP_TABLE>
+   </PHYSICAL_PROPERTIES>
+   <BUILD>IMMEDIATE</BUILD>
+   <REFRESH>
+      <LOCAL_ROLLBACK_SEGMENT>
+         <DEFAULT></DEFAULT>
+      </LOCAL_ROLLBACK_SEGMENT>
+      <CONSTRAINTS>ENFORCED</CONSTRAINTS>
+   </REFRESH>
+   <SUBQUERY>Select JM_JOB_NO,
+JM_SUPL_CODE,
+JM_MASTER_JOB_NO,
+JM_JOB_CRE_DT,
+JM_IN_SYSDATE,
+JM_LOCATION,
+JM_CHASSIS_NO,
+JM_CUSTOMER_NAME,
+JM_MOBILE,
+jm_invoice_date,
+
+
+NVL((
+select  LR_LABOUR_RATE * ( SELECT STD_TIME 
+FROM (SELECT SUM(STD_TIME) STD_TIME FROM WORK_JOB_DETAILS_EST WHERE JI_JOB_NO = A.JM_JOB_NO))
+from work_labour_rates
+where lr_supl_code = (SELECT JM_SUPL_CODE FROM WORK_JOB_MASTER WHERE JM_JOB_NO = A.JM_JOB_NO)
+and lr_job_type = (SELECT JM_JOB_TYPE FROM WORK_JOB_MASTER WHERE JM_JOB_NO = A.JM_JOB_NO))
+,0)-NVL( JM_ESTIMATE_LABOUR,0) AS Not_Approved_Labour,
+
+NVL((
+select SUM(((nvl(QT_QTY,0)*nvl(QT_PRICE,0))-(nvl(QT_QTY,0)*nvl(QT_DISC,0)))) 
+from QUOTEESTIMATIONVEW aa
+where 
+(QT_JOBNUMBER,QT_CONCERNCODE,QT_REQSITIONCODE,QT_REQSITIONSLNO ) in (
+ select JR_JOB_NO,JR_CC_ID,JR_REQ_ID,JR_SNO
+ from WORK_JOB_REQS 
+ where JR_JOB_NO = A.JM_JOB_NO
+)
+and QT_JOBNUMBER = A.JM_JOB_NO
+),0) - NVL(JM_ESTIMATE_PARTS,0)  AS Not_Approved_Parts,
+
+
+NVL(JM_ESTIMATE_LABOUR,0) as Approved_labour,
+NVL(JM_ESTIMATE_Parts,0) as Approved_Parts,
+DECODE(NVL(EST_OTH_APPROVED,'P'), 'A', 0, Nvl(EST_OTHER,0)                    ) EST_OTH_ESTIMATE,
+DECODE(NVL(EST_OTH_APPROVED,'P'), 'A', Nvl(EST_OTHER,0) , 0)  + (select round(nvl(sum(nvl(SD_SELLING_PRICE,0)),0),2)  from WORK_SUNDRIES_DETAILS where  SD_JOB_CARD_NO=a.jm_job_no )    EST_OTH_APPROVED
+
+from work_job_master A 
+where jm_status = 3 
+and JM_ESTIMATE_JOB = 'Y' 
+and jm_location not in (140,214)</SUBQUERY>
+</MATERIALIZED_VIEW>]]></n0:source>
+		</n0:createSxmlObject>
+	</changeSet>
+</databaseChangeLog>

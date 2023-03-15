@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="008e03c47e743e60e7b0eb8665b2e9557a1c5bf7" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleComment objectName="DISP_ACTION_TYPES_NEW_ERR$_comments" objectType="COMMENT" ownerName="HHA_PROD" sourceType="STRING"  >
+			<n0:source><![CDATA[
+   COMMENT ON TABLE "HHA_PROD"."DISP_ACTION_TYPES_NEW_ERR$"  IS 'DML Error Logging table for "DISP_ACTION_TYPES_NEW"';]]></n0:source>
+		</n0:createOracleComment>
+	</changeSet>
+</databaseChangeLog>

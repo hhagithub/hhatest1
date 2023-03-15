@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="53a317b64eba31fa2ac2a495cef938886cefb520" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleProcedure objectName="VHSSOAPCALL" objectType="PROCEDURE" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "HHA_PROD"."VHSSOAPCALL" (user_id number) is
+l_envelope  CLOB;
+l_xml       XMLTYPE;
+f_index     number;
+l_str       varchar2(4000);
+str_xml     XMLTYPE;
+
+v varchar2(200);
+BEGIN
+        l_envelope := '<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+               xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+               xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <GetServiceOrderByID xmlns="http://www.wsautovhc.co.uk">
+      <request>
+        <CurrencyCode xmlns="http://autovhc.co.uk/">GBP</CurrencyCode>
+        <Locale xmlns="http://autovhc.co.uk/">en-GB</Locale>
+        <Username xmlns="http://autovhc.co.uk/">SBS</Username>
+        <Password xmlns="http://autovhc.co.uk/">Welcome18!</Password>
+        <Sitecode xmlns="http://autovhc.co.uk/">909888</Sitecode>
+        <JobCardNumber xmlns="http://autovhc.co.uk/">jc99999</JobCardNumber>
+        <IncludeParts xmlns="http://autovhc.co.uk/">true</IncludeParts>
+        <IncludeItemImageUrls xmlns="http://autovhc.co.uk/">true</IncludeItemImageUrls>
+        <IncludeItemVideoUrls xmlns="http://autovhc.co.uk/">true</IncludeItemVideoUrls>
+        <IncludeVhcUrl xmlns="http://autovhc.co.uk/">true</IncludeVhcUrl>
+        <IncludeCustomerInfo xmlns="http://autovhc.co.uk/">true</IncludeCustomerInfo>
+        <IntegrationId xmlns="http://autovhc.co.uk/">ebe9dc2d-d031-48ed-98ef-27d6b789bc95</IntegrationId>
+      </request>
+    </GetServiceOrderByID>
+  </soap:Body>
+</soap:Envelope>';
+
+l_xml := APEX_WEB_SERVICE.make_request(p_url      => 'http://integrationfacade.autovhc.net/integrationlayerproxyapi.asmx',
+                                       p_action   => 'http://www.wsautovhc.co.uk/GetServiceOrderByID',
+                                       p_envelope => l_envelope);
+--dbms_output.put_line ( l_xml.getCLOBVal() );
+/*
+l_str := APEX_WEB_SERVICE.parse_xml(p_xml   => l_xml,
+                                    p_xpath => '//ServiceOrderItems/ServiceOrderItemTransferObject',
+                                    p_ns    => 'xmlns="http://www.wsautovhc.co.uk"');
+
+--str_xml := SYS.XMLTYPE.CREATEXML('<?xml version="1.0" encoding="ISO-8859-6"?>'|| chr(10) || l_str); --XMLTYPE.createXML(to_clob(l_str));
+--str_xml := XMLTYPE('<?xml version="1.0" encoding="ISO-8859-6"?>'|| chr(10) || l_str);
+
+DELETE FROM VHS;
+INSERT INTO VHS(CLOV_VAL,VAR_VAL,XML_VAL)
+VALUES(l_xml.getClobVal(), l_str, str_xml);
+COMMIT;
+
+DELETE FROM VHS_PARTS;
+INSERT INTO VHS_PARTS(VHCID,VHCITEMID,ITEMDESCRIPTION)
+SELECT VHCID,VHCITEMID,ITEMDESCRIPTION
+FROM VHS X, XMLTABLE('/GetServiceOrderByIDResponse/GetServiceOrderByIDResult/ServiceOrder/ServiceOrderItems/ServiceOrderItemTransferObject' 
+            PASSING X.XML_VAL COLUMNS
+                      "VHCID"           VARCHAR2(200)  PATH 'VHCID',
+                      "VHCITEMID"       VARCHAR2(200)  PATH 'ItemTypeID',
+                      "ITEMDESCRIPTION" VARCHAR2(200)  PATH 'ItemDescription'
+                      ) XT;
+                      
+                      commit;
+*/
+                                    
+DELETE FROM VHS WHERE USERID = USER_ID;
+DELETE FROM VHS_PARTS WHERE USERID = USER_ID;
+--commit;
+f_index := 1;
+
+loop
+l_str := APEX_WEB_SERVICE.parse_xml(p_xml   => l_xml,
+                                    p_xpath => '//ServiceOrderItems/ServiceOrderItemTransferObject['||to_char(f_index)||']',
+                                    p_ns    => 'xmlns="http://www.wsautovhc.co.uk"');
+-- dbms_output.put_line(dbms_lob.substr(l_str,2000,1));
+
+if l_str is not null then
+   insert into VHS(xml_val, lineid, Userid)
+   values('<?xml version="1.0" encoding="ISO-8859-6"?>'|| replace(l_str,'xmlns="http://www.wsautovhc.co.uk"',''), f_index, user_id);
+   --commit;
+/*
+   FOR cur_rec IN (
+    SELECT xt.*
+   FROM  XMLTABLE('/ServiceOrderItemTransferObject'
+             PASSING XMLTYPE('<?xml version="1.0" encoding="ISO-8859-6"?>'|| replace(l_str,'xmlns="http://www.wsautovhc.co.uk"',''))
+             COLUMNS 
+               VHCID                VARCHAR2(20)  PATH 'VHCID',
+               ItemTypeID           VARCHAR2(20)  PATH 'ItemTypeID',
+               ItemDescription      VARCHAR2(200) PATH 'ItemDescription'
+             ) xt)
+  LOOP
+  v := cur_rec.vhcid;
+  v := cur_rec.itemtypeid;
+  v := cur_rec.itemdescription;
+  END LOOP;
+*/
+
+--INSERT INTO VHS_PARTS(VHCID,VHCITEMID,ITEMDESCRIPTION,LABOURTIME,LABOURPRICE,TIMESTAMP,COMMENTS)
+INSERT INTO VHS_PARTS(VHCID,VHCITEMID,ITEMDESCRIPTION,LABOURTIME,LABOURPRICE,TIMESTAMP,COMMENTS, USERID)
+SELECT VHCID,VHCITEMID,ITEMDESCRIPTION,LABOURTIME,LABOURPRICE,TIMESTAMP,COMMENTS, USER_ID
+FROM VHS X, XMLTABLE('/ServiceOrderItemTransferObject' PASSING X.XML_VAL COLUMNS
+                          "VHCID"        VARCHAR2(200) PATH 'VHCID',
+                          "VHCITEMID"    VARCHAR2(200) PATH 'VHCItemID',
+                          "ITEMDESCRIPTION" VARCHAR2(2000) PATH 'ItemDescription',
+                          "LABOURTIME"   VARCHAR2(200) PATH 'LabourTime',
+                          "LABOURPRICE"  VARCHAR2(200) PATH 'LabourPrice',
+                          "TIMESTAMP"    VARCHAR2(200) PATH 'TimeStamp',
+                          "COMMENTS"     VARCHAR2(2000) PATH 'Comments'
+                          ) XT
+                          where lineid = f_index
+                          and userid = user_id;
+                          --commit;
+                          
+
+  
+end if;
+
+f_index := f_index +1;
+exit WHEN l_str is null;
+end loop;
+commit;
+
+
+
+END;
+/]]></n0:source>
+		</n0:createOracleProcedure>
+	</changeSet>
+</databaseChangeLog>

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="fdaf285b90043710fbdfb90506beaded12eaa302" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="GET_ENC_VAL" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."GET_ENC_VAL" 
+(
+ p_in in varchar2,
+p_key in raw
+ )
+return raw is
+ l_enc_val raw (2000);
+ l_mod number := dbms_crypto.ENCRYPT_AES128
+ + dbms_crypto.CHAIN_CBC
+ + dbms_crypto.PAD_PKCS5;
+ begin
+ l_enc_val := dbms_crypto.encrypt
+ (
+ UTL_I18N.STRING_TO_RAW
+ (p_in, 'AL32UTF8'),
+ l_mod,
+ p_key
+ );
+ return l_enc_val;
+ end;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

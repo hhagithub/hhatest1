@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="05ee4d5caf393605de181af18ed10af65b84c652" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="PROC_MAZDA_INCENTIVE_FACTOR_C_2024" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."PROC_MAZDA_INCENTIVE_FACTOR_C_2024" (P_LOC VARCHAR2,P_PERIOD VARCHAR2,P_EMP_NO VARCHAR2) return varchar2 --MAZDA MANAGER INCENTIVE
+IS
+
+--FACTOR C--
+v_Factor_C number;
+V_Q_6_12_SCORE NUMBER;
+V_WIP_FACTOR number;
+
+V_NARRATION VARCHAR2(2000);
+--V_EMP_NO VARCHAR2(20);
+V_FACTOR_A_VALUE_2 NUMBER;
+
+BEGIN
+
+ FOR LOC IN (select Distinct LOC_No as WT_LOCATION from LOCATION_MANPOWER_23 where Period = P_Period and LOC_No= P_LOC) Loop
+-- FOR LOC IN (Select distinct WT_LOCATION/*,WT_EMP_NO*/ from work_team_details where  NVL(ASTON_MARTIN_FLAG,'M') <> 'Y') LOOP
+
+
+v_Factor_C := 0;
+V_Q_6_12_SCORE := 0;
+V_WIP_FACTOR := 0 ;
+
+V_NARRATION := NULL;
+
+ --V_EMP_NO := '181178';
+
+--Factor C               =  [ Service Quality Attribute Ach % X 0.5]              + [ WIP Ach% X 0.5]
+
+ 
+    BEGIN
+        
+        Begin
+            select NVL(round(avg(INDEX_)),95) INDEX_ INTO  V_Q_6_12_SCORE from MV_Qlik_KPI_APEX_QUES_LOC
+            where QUESTION in (6,7,8,9,11,12)
+            and  to_char(to_date('01'||'-'||MONTH_||'-'||YEAR_,'dd-mm-rrrr'),'rrrrmm')=P_PERIOD
+            and FRANCHISE='MAZDA'
+            AND BRANCH_CODE = LOC.WT_LOCATION;
+
+                     BEGIN
+                        IF  V_Q_6_12_SCORE <70 THEN
+                           V_FACTOR_A_VALUE_2 := 0;
+                        ELSIF  V_Q_6_12_SCORE > 120 THEN
+                           V_FACTOR_A_VALUE_2 := 1.2;
+                        ELSE
+                           Select  VALUE_2 INTO  V_FACTOR_A_VALUE_2  ---SOME VALUE NOT EXIST
+                           from codes_descriptions where MAIN_CODE= '430' --430 --192
+                           and MINOR_CODE!=0
+                           AND VALUE_1 = V_Q_6_12_SCORE ;  --V_PS_ALL_SOLD
+                        END IF;
+                     EXCEPTION WHEN NO_DATA_FOUND THEN
+                                    NULL;
+                              WHEN TOO_MANY_ROWS THEN
+                                 NULL;
+                     END;
+
+               
+                V_Q_6_12_SCORE := V_FACTOR_A_VALUE_2;
+
+            
+            Exception when No_Data_Found THEN
+            Null;
+         End;
+
+         -- WIP Ach%
+         --Report 208  WIP FACTORS
+
+      
+         Begin
+            SELECT WIP_FACTOR  into V_WIP_FACTOR        -- EMP_NO,EMP_NO EMP_NAME,LOCATION,PERIOD,SECTION
+            FROM WORK_WIP_FACTOR
+            WHERE period = P_PERIOD --:P208_PERIOD
+            and LOCATION = NVL( LOC.WT_LOCATION,LOCATION)
+            and EMP_NO = P_EMP_NO;
+            Exception when No_Data_Found THEN
+               V_WIP_FACTOR := 1;  --Naveed Bhai
+         End;   
+            
+            -- AND  EXISTS  (SELECT 1 FROM USER_AUTH_BRANCHES  WHERE
+            ---- USER_CODE=:APP_USER AND    BRANCH_CODE = WORK_WIP_FACTOR.LOCATION )
+            ---- order by location,section,EMP_NO
+
+
+            --only for service manager Service Quality Attribute Ach will skip
+            if p_emp_no = '181906' THEN
+              V_Q_6_12_SCORE := 1;
+            end if;
+            v_Factor_C  :=   ( V_Q_6_12_SCORE * 0.5 ) + ( V_WIP_FACTOR * 0.5);
+
+
+         
+           -- V_NARRATION := V_NARRATION || '( Factor C =	[ Service Quality Attribute Ach % X 0.5]  +	[ WIP Ach% X 0.5])';
+            V_NARRATION := V_NARRATION || ' Factor C Calculation : ' ;
+            --V_NARRATION := V_NARRATION || ' (LOC:= '||LOC.WT_LOCATION || ')';
+            --V_NARRATION := V_NARRATION || ' (EMP NO:= '||P_EMP_NO || ')';
+            V_NARRATION := V_NARRATION || ' (Service Quality Attribute Ach:='|| NVL( V_Q_6_12_SCORE,0)|| ')';
+            V_NARRATION := V_NARRATION || ' (WIP Ach%:='|| (V_WIP_FACTOR)|| ')';
+            V_NARRATION := V_NARRATION || ' (Factor_C:= '|| v_Factor_C|| ')';
+      
+   EXCEPTION WHEN NO_DATA_FOUND THEN
+                NULL;
+            WHEN TOO_MANY_ROWS THEN
+                NULL;
+   END;
+
+
+    dbms_output.put_line(V_NARRATION);
+  END LOOP;
+   return v_Factor_C;
+    --commit;
+    dbms_output.put_line(' Procedure Successful ');
+EXCEPTION
+     WHEN others THEN
+  dbms_output.put_line(' SQL Error Msg='||SQLERRM);
+  return null;
+
+END;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

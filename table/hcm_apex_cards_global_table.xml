@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="d4efe177475838110c0fb30860acbe964416a23a" author="(HHA_PROD)-Generated"     >
+		<n0:createSxmlObject objectName="HCM_APEX_CARDS_GLOBAL" objectType="TABLE" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  <TABLE xmlns="http://xmlns.oracle.com/ku" version="1.0">
+   <GLOBAL_TEMPORARY></GLOBAL_TEMPORARY>
+   <SCHEMA>HHA_PROD</SCHEMA>
+   <NAME>HCM_APEX_CARDS_GLOBAL</NAME>
+   <RELATIONAL_TABLE>
+      <COL_LIST>
+         <COL_LIST_ITEM>
+            <NAME>EMP_NO</NAME>
+            <DATATYPE>NUMBER</DATATYPE>
+         </COL_LIST_ITEM>
+         <COL_LIST_ITEM>
+            <NAME>EMP_NAME</NAME>
+            <DATATYPE>VARCHAR2</DATATYPE>
+            <LENGTH>200</LENGTH>
+         </COL_LIST_ITEM>
+         <COL_LIST_ITEM>
+            <NAME>REMARKS</NAME>
+            <DATATYPE>VARCHAR2</DATATYPE>
+            <LENGTH>2000</LENGTH>
+         </COL_LIST_ITEM>
+         <COL_LIST_ITEM>
+            <NAME>USER_CODE</NAME>
+            <DATATYPE>VARCHAR2</DATATYPE>
+            <LENGTH>20</LENGTH>
+         </COL_LIST_ITEM>
+         <COL_LIST_ITEM>
+            <NAME>LATE</NAME>
+            <DATATYPE>NUMBER</DATATYPE>
+         </COL_LIST_ITEM>
+         <COL_LIST_ITEM>
+            <NAME>INCOMPLETE</NAME>
+            <DATATYPE>NUMBER</DATATYPE>
+         </COL_LIST_ITEM>
+         <COL_LIST_ITEM>
+            <NAME>ABSENT</NAME>
+            <DATATYPE>NUMBER</DATATYPE>
+         </COL_LIST_ITEM>
+         <COL_LIST_ITEM>
+            <NAME>DEDUCTABLE</NAME>
+            <DATATYPE>VARCHAR2</DATATYPE>
+            <LENGTH>20</LENGTH>
+         </COL_LIST_ITEM>
+      </COL_LIST>
+      <ON_COMMIT>DELETE</ON_COMMIT>
+   </RELATIONAL_TABLE>
+</TABLE>]]></n0:source>
+		</n0:createSxmlObject>
+	</changeSet>
+</databaseChangeLog>

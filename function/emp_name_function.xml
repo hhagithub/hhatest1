@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="10f4abc1efb2ba9d2e9ff45c451955c6ba623705" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="EMP_NAME" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."EMP_NAME" 
+(p_empno in VARCHAR2)
+return VARCHAR2
+is
+V_NAME VARCHAR2(1000);
+begin
+
+
+SELECT ST_EMPCD||'-'||ST_ENAME INTO V_NAME 
+FROM PASTATIC 
+WHERE ST_EMPCD = P_EMPNO;
+
+EXCEPTION WHEN NO_DATA_FOUND THEN
+   RETURN P_EMPNO;
+
+end;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

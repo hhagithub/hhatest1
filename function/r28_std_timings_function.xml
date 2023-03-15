@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="13b1249eb045694314bdc3fd59cff09f80fc139e" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="R28_STD_TIMINGS" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."R28_STD_TIMINGS" (wj_location1_ varchar2,WJ_EMP_NO_ VARCHAR2,STARTTIME_ DATE) return number is
+
+--1 HOURS
+abc number;--varchar2(80);
+begin
+
+
+
+select 
+round(
+(
+NVL(sum(nvl(DECODE(SCHEDULED_HOURS,570,510,540,510,SCHEDULED_HOURS),0)) ,0))/60,2) INTO ABC
+from hcm_timecardn     --@to_appidev.hha.local
+where emp_no= WJ_EMP_NO_
+and TRUNC(ATTENDANCE_DATE) =  TRUNC(STARTTIME_) 
+and upper(Nvl(remarks,'P')) not in(
+'WORLD CUP',
+'SICK LEAVE',
+'PATERNITY LEAVE',
+'NATIONAL DAY',
+'MATERNITY LEAVE',
+'MARRIAGE LEAVE',
+'LEGAL SUSPENSION',
+'HAJJ LEAVE',
+'FOUNDING DAY',
+'EID',
+'EDUCATION EXAM LEAVE',
+'DEATH LEAVE',
+'DAY OFF',
+'COVID-19 VACCINATION ABSENCE',
+'COVID-19 TEST ABSENCE',
+'CHRONIC DISEASE LEAVE',
+'ANNUAL LEAVE'
+) ;
+
+
+/*
+Select
+round(
+(
+NVL((select sum(nvl(DECODE(SCHEDULED_HOURS,570,510,540,510,SCHEDULED_HOURS),0))
+from hcm_timecardn     --@to_appidev.hha.local
+where emp_no= WJ_EMP_NO_
+and TRUNC(ATTENDANCE_DATE) =  TRUNC(STARTTIME_) 
+and upper(Nvl(remarks,'P')) not in(
+'WORLD CUP',
+'SICK LEAVE',
+'PATERNITY LEAVE',
+'NATIONAL DAY',
+'MATERNITY LEAVE',
+'MARRIAGE LEAVE',
+'LEGAL SUSPENSION',
+'HAJJ LEAVE',
+'FOUNDING DAY',
+'EID',
+'EDUCATION EXAM LEAVE',
+'DEATH LEAVE',
+'DAY OFF',
+'COVID-19 VACCINATION ABSENCE',
+'COVID-19 TEST ABSENCE',
+'CHRONIC DISEASE LEAVE',
+'ANNUAL LEAVE'
+) )
+
+ ,0)
+
+)/60,2)
+into abc From Dual;
+
+*/
+if abc = 0 then
+return 0;
+elsif abc< 0 then
+return 8.5;
+else
+return abc;
+end if;
+--return Round((nvl(R28_STD_TIMINGS_MNT1(wj_location1_,WJ_EMP_NO_,STARTTIME_),0)/60),2);
+
+end;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

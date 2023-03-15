@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="8d21872af319b62525ffb35f2894aaf4fba82552" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleTrigger objectName="EBA_QPOLL_RESULTS_BIU" objectType="TRIGGER" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE TRIGGER "HHA_PROD"."EBA_QPOLL_RESULTS_BIU" 
+   before insert or update on EBA_QPOLL_RESULTS
+   for each row
+begin
+   if :new.ID is null then
+      :new.id := to_number(sys_guid(),'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX');
+   end if;
+    if :new.row_key is null then
+       :new.row_key := eba_qpoll_fw.compress_int(eba_qpoll_seq.nextval);
+    end if;
+   if inserting then
+       if :new.apex_user is null then
+          :new.apex_user := nvl(v('APP_USER'),user);
+       end if;
+       if :new.apex_session_id is null then
+          :new.apex_session_id := nvl(v('SESSION_ID'),'unknown');
+       end if;
+       :new.created := current_timestamp;
+       if :new.created_by is null then
+          :new.created_by := nvl(wwv_flow.g_user,user);
+       end if;
+       :new.updated := current_timestamp;
+       if :new.updated_by is null then
+          :new.updated_by := nvl(wwv_flow.g_user,user);
+       end if;
+       :new.row_version_number := 1;
+   elsif updating then
+       :new.row_version_number := nvl(:old.row_version_number,1) + 1;
+   end if;
+   if :new.preactive_yn is null
+      then :new.preactive_yn := 'N';
+   end if;
+   :new.email := lower(:new.email);
+   if updating then
+       :new.updated := current_timestamp;
+       :new.updated_by := nvl(wwv_flow.g_user,user);
+   end if;
+end;
+
+/
+/
+ALTER TRIGGER "HHA_PROD"."EBA_QPOLL_RESULTS_BIU" ENABLE;]]></n0:source>
+		</n0:createOracleTrigger>
+	</changeSet>
+</databaseChangeLog>

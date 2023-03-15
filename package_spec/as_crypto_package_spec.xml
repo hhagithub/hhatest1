@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="e1a8d041ec7648af1441a5979d1a93b90ef1793b" author="(HHA_PROD)-Generated"     >
+		<n0:createOraclePackageSpec objectName="AS_CRYPTO" objectType="PACKAGE_SPEC" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE PACKAGE "HHA_PROD"."AS_CRYPTO" 
+is
+/*
+MIT License
+
+Copyright (c) 2016-2022 Anton Scheffer
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+    -- Hash Functions
+    HASH_MD4           CONSTANT PLS_INTEGER            :=     1;
+    HASH_MD5           CONSTANT PLS_INTEGER            :=     2;
+    HASH_SH1           CONSTANT PLS_INTEGER            :=     3;
+    HASH_SH224         CONSTANT PLS_INTEGER            :=     11;
+    HASH_SH256         CONSTANT PLS_INTEGER            :=     4;
+    HASH_SH384         CONSTANT PLS_INTEGER            :=     5;
+    HASH_SH512         CONSTANT PLS_INTEGER            :=     6;
+    HASH_RIPEMD160     CONSTANT PLS_INTEGER            :=     15;
+    -- MAC Functions
+    HMAC_MD4           CONSTANT PLS_INTEGER            :=     0;
+    HMAC_MD5           CONSTANT PLS_INTEGER            :=     1;
+    HMAC_SH1           CONSTANT PLS_INTEGER            :=     2;
+    HMAC_SH224         CONSTANT PLS_INTEGER            :=     10;
+    HMAC_SH256         CONSTANT PLS_INTEGER            :=     3;
+    HMAC_SH384         CONSTANT PLS_INTEGER            :=     4;
+    HMAC_SH512         CONSTANT PLS_INTEGER            :=     5;
+    HMAC_RIPEMD160     CONSTANT PLS_INTEGER            :=     14;
+    -- Block Cipher Algorithms
+    ENCRYPT_DES        CONSTANT PLS_INTEGER            :=     1;  -- 0x0001
+    ENCRYPT_3DES_2KEY  CONSTANT PLS_INTEGER            :=     2;  -- 0x0002
+    ENCRYPT_3DES       CONSTANT PLS_INTEGER            :=     3;  -- 0x0003
+    ENCRYPT_AES        CONSTANT PLS_INTEGER            :=     4;  -- 0x0004
+    ENCRYPT_PBE_MD5DES CONSTANT PLS_INTEGER            :=     5;  -- 0x0005
+    ENCRYPT_AES128     CONSTANT PLS_INTEGER            :=     6;  -- 0x0006
+    ENCRYPT_AES192     CONSTANT PLS_INTEGER            :=     7;  -- 0x0007
+    ENCRYPT_AES256     CONSTANT PLS_INTEGER            :=     8;  -- 0x0008
+    -- Block Cipher Chaining Modifiers
+    CHAIN_CBC          CONSTANT PLS_INTEGER            :=   256;  -- 0x0100
+    CHAIN_CFB          CONSTANT PLS_INTEGER            :=   512;  -- 0x0200
+    CHAIN_ECB          CONSTANT PLS_INTEGER            :=   768;  -- 0x0300
+    CHAIN_OFB          CONSTANT PLS_INTEGER            :=  1024;  -- 0x0400
+    CHAIN_OFB_REAL     CONSTANT PLS_INTEGER            :=  1280;  -- 0x0500
+    -- Block Cipher Padding Modifiers
+    PAD_PKCS5          CONSTANT PLS_INTEGER            :=  4096;  -- 0x1000
+    PAD_NONE           CONSTANT PLS_INTEGER            :=  8192;  -- 0x2000
+    PAD_ZERO           CONSTANT PLS_INTEGER            := 12288;  -- 0x3000
+    PAD_ORCL           CONSTANT PLS_INTEGER            := 16384;  -- 0x4000
+    PAD_OneAndZeroes   CONSTANT PLS_INTEGER            := 20480;  -- 0x5000
+    PAD_ANSI_X923      CONSTANT PLS_INTEGER            := 24576;  -- 0x6000
+    -- Stream Cipher Algorithms
+    ENCRYPT_RC4        CONSTANT PLS_INTEGER            :=   129;  -- 0x0081
+    -- Public Key Encryption Algorithm
+    PKENCRYPT_RSA_PKCS1_OAEP constant pls_integer := 1;
+    -- Public Key Type Algorithm
+    KEY_TYPE_RSA constant pls_integer := 1;
+    KEY_TYPE_EC constant pls_integer := 2;
+    KEY_TYPE_EdDSA constant pls_integer := 3;
+    -- Public Key Signature Type Algorithm
+    SIGN_SHA224_RSA      constant pls_integer   := 1; -- SHA 224 bit hash function with RSA
+    SIGN_SHA256_RSA      constant pls_integer   := 2; -- SHA 256 bit hash function with RSA
+    SIGN_SHA256_RSA_X931 constant pls_integer   := 3; -- SHA 256 bit hash function with RSA and X931 padding
+    SIGN_SHA384_RSA      constant pls_integer   := 4; -- SHA 384 bit hash function with RSA
+    SIGN_SHA384_RSA_X931 constant pls_integer   := 5; -- SHA 384 bit hash function with RSA and X931 padding
+    SIGN_SHA512_RSA      constant pls_integer   := 6; -- SHA 512 bit hash function with RSA
+    SIGN_SHA512_RSA_X931 constant pls_integer   := 7; -- SHA 512 bit hash function with RSA and X931 padding
+    SIGN_SHA1_RSA        constant pls_integer   := 8; -- SHA1 hash function with RSA
+    SIGN_SHA1_RSA_X931   constant pls_integer   := 9; -- SHA1 hash function with RSA and X931 padding
+    SIGN_SHA256withECDSA        constant pls_integer   := 10;
+    SIGN_SHA256withECDSAinP1363 constant pls_integer   := 11;
+    SIGN_SHA384withECDSA        constant pls_integer   := 12;
+    SIGN_SHA384withECDSAinP1363 constant pls_integer   := 13;
+    SIGN_SHA512withECDSA        constant pls_integer   := 14;
+    SIGN_SHA512withECDSAinP1363 constant pls_integer   := 15;
+    SIGN_Ed25519                constant pls_integer   := 16;
+--
+  function hash( src raw, typ pls_integer )
+  return raw;
+--
+  function mac( src raw, typ pls_integer, key raw )
+  return raw;
+--
+  function randombytes( number_bytes positive )
+  return raw;
+--
+  function encrypt( src raw, typ pls_integer, key raw, iv raw := null )
+  return raw;
+--
+  function decrypt( src raw, typ pls_integer, key raw, iv raw := null )
+  return raw;
+--
+  function pkEncrypt( src raw
+                    , pub_key raw
+                    , pubkey_alg binary_integer
+                    , enc_alg binary_integer
+                    )
+  return raw;
+--
+  function pkDecrypt( src raw
+                    , prv_key raw
+                    , pubkey_alg binary_integer
+                    , enc_alg binary_integer
+                    )
+  return raw;
+--
+  function sign( src raw
+               , prv_key raw
+               , pubkey_alg binary_integer
+               , sign_alg binary_integer
+               )
+  return raw;
+--
+  function verify( src raw
+                 , sign raw
+                 , pub_key raw
+                 , pubkey_alg binary_integer
+                 , sign_alg binary_integer
+                 )
+  return boolean;
+end;
+/]]></n0:source>
+		</n0:createOraclePackageSpec>
+	</changeSet>
+</databaseChangeLog>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="0a54ff5359f442e0c87f125544dbd6a2eabb2308" author="(HHA_PROD)-Generated"     >
+		<n0:createOraclePackageSpec objectName="EBA_QPOLL_EMAIL" objectType="PACKAGE_SPEC" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE PACKAGE "HHA_PROD"."EBA_QPOLL_EMAIL" as
+procedure send (
+   p_app_id              in   number,
+   p_template_static_id  in   varchar2,
+   p_placeholders        in   clob,
+   p_to                  in   varchar2,
+   p_from                in   varchar2,
+   p_cc                  in   varchar2  default null,
+   p_poll_id             in   number    default null,
+   p_community_id        in   number    default null,
+   p_respondent_id       in   number    default null,
+   p_email_id            out  number );
+   
+end eba_qpoll_email;
+/]]></n0:source>
+		</n0:createOraclePackageSpec>
+	</changeSet>
+</databaseChangeLog>

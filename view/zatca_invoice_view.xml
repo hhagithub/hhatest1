@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="b140f9d536de8d15df442a864e30ed7b25481ed3" author="(HHA_PROD)-Generated"     >
+		<n0:createSxmlObject objectName="ZATCA_INVOICE" objectType="VIEW" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  <VIEW xmlns="http://xmlns.oracle.com/ku" version="1.0">
+   <SCHEMA>HHA_PROD</SCHEMA>
+   <NAME>ZATCA_INVOICE</NAME>
+   <COL_LIST>
+      <COL_LIST_ITEM>
+         <NAME>INVOICE_ID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>PROFILEID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>UUID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ISSUEDATE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ISSUETIME</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>INVOICETYPECODE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>INVOICETYPENAME</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>CURRENCYID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>TAXCURRENCYCODE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>LINECOUNTNUMERIC</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>TAXAMOUNT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>TAXSUBTOTAL_TAXAMOUNT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>TAXAMOUNT68</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>TAXABLEAMOUNT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>LINEEXTENSIONAMOUNT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>TAXEXCLUSIVEAMOUNT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>TAXINCLUSIVEAMOUNT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ALLOWANCETOTALAMOUNT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>PAYABLEAMOUNT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>TAXCATEGORYID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>TAXPERCENT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>TAXSCHEMEID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>S_INVOICE_ID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>S_ID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>S_SCHEMEID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>S_STREETNAME</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>S_BUILDINGNUMBER</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>S_PLOTIDENTIFICATION</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>S_CITYSUBDIVISIONNAME</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>S_CITYNAME</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>S_POSTALZONE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>S_COUNTRYSUBENTITY</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>S_IDENTIFICATIONCODE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>S_COMPANYID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>S_ID_TAXSCHEME</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>S_REGISTRATIONNAME</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>B_ID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>B_SCHEMEID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>B_STREETNAME</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>B_BUILDINGNUMBER</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>B_PLOTIDENTIFICATION</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>B_CITYSUBDIVISIONNAME</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>B_CITYNAME</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>B_POSTALZONE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>B_COUNTRYSUBENTITY</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>B_IDENTIFICATIONCODE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>B_COMPANYID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>B_ID_TAXSCHEME</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>B_REGISTRATIONNAME</NAME>
+      </COL_LIST_ITEM>
+   </COL_LIST>
+   <SUBQUERY>SELECT 
+'100' INVOICE_ID, 
+'reporting:1.0' ProfileID,
+'100' ID,
+'3cf5ee18-ee25-44ea-a444-2c37ba7f28be' UUID,  --3cf5ee18-ee25-44ea-a444-2c37ba7f28be
+'2021-04-25' IssueDate,
+'15:30:00' IssueTime,
+'388' InvoiceTypeCode,
+'0100000' InvoiceTypeName,
+'SAR' currencyID,
+'SAR' TaxCurrencyCode,
+'2' LineCountNumeric ,
+--'2022-04-25' ActualDeliveryDate ,  --Conditional
+--'42' PaymentMeansCode,
+135	TaxAmount,   --66
+135	TaxSubtotal_TaxAmount,  --78
+135	TaxAmount68,  --68
+900	TaxableAmount,
+900	LineExtensionAmount,
+900	TaxExclusiveAmount,
+1035	TaxInclusiveAmount,
+0	AllowanceTotalAmount,
+1035	PayableAmount,
+'S'  TaxCategoryID,
+15   TaxPercent,
+'VAT' TaxSchemeID,
+
+'100' S_INVOICE_ID,
+'123457890' S_ID,
+'MLS' S_schemeID,
+'Bab makkah' S_StreetName,
+1234 S_BuildingNumber,
+1234 S_PlotIdentification,
+'Bab Makkah' S_CitySubdivisionName,
+'Jeddah' S_CityName,
+12643 S_PostalZone,
+'Makkah Region' S_CountrySubentity,
+'SA' S_IdentificationCode,
+'300075588700003' S_CompanyID,  -- sdk Vat 300055184400003   API Vat 300075588700003  HHA VAT  --300210958810003   --300210958810003
+'VAT' S_ID_TAXSCHEME,
+'Haji Husein Alireza Co. Ltd' S_RegistrationName,   --'Haji Husein Alireza Co. Ltd'  --Al Salam Supplies Co. LTD
+
+
+'123C12345678' B_ID,
+'SAG' B_schemeID,
+'King Abdullah Road' B_StreetName,
+3709 B_BuildingNumber,
+1004 B_PlotIdentification,
+'Al Mursalat' B_CitySubdivisionName,
+'Riyadh' B_CityName,
+11564 B_PostalZone,
+'Riyadh Region' B_CountrySubentity,
+'SA' B_IdentificationCode,
+NULL B_CompanyID,
+'VAT' B_ID_TAXSCHEME,
+'AL KAWTHAR MARKETS' B_RegistrationName
+
+
+
+--,
+--123457890 AccountingSupplierParty,
+--'123C12345678' AccountingCustomerParty
+FROM DUAL
+</SUBQUERY>
+</VIEW>]]></n0:source>
+		</n0:createSxmlObject>
+	</changeSet>
+</databaseChangeLog>

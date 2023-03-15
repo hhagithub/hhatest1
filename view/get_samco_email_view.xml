@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="23197e6de0e3f86c049ea415dd19299747c981f9" author="(HHA_PROD)-Generated"     >
+		<n0:createSxmlObject objectName="GET_SAMCO_EMAIL" objectType="VIEW" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  <VIEW xmlns="http://xmlns.oracle.com/ku" version="1.0">
+   <SCHEMA>HHA_PROD</SCHEMA>
+   <NAME>GET_SAMCO_EMAIL</NAME>
+   <COL_LIST>
+      <COL_LIST_ITEM>
+         <NAME>USER_CODE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>EMP_EMAIL</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ST_ENAME</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>LEVEL_ID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ROLE_TYPE_DESC</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ROLE_TYPE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>SERVICE_ID</NAME>
+      </COL_LIST_ITEM>
+   </COL_LIST>
+   <SUBQUERY>SELECT U.USER_CODE, P.emp_email, P.st_ename,S.LEVEL_ID,S.ROLE_TYPE_DESC,ROLE_TYPE,SERVICE_ID
+FROM USER_ROLES U,HCM_APPROVAL_SETUP S,PASTATIC P
+WHERE ROLE_CODE &#60;> 'USER'--'SAMTEST1'
+AND U.ROLE_CODE = S.ROLE_TYPE
+--and s.SERVICE_ID = 72
+AND P.ST_EMPCD = U.USER_CODE
+
+UNION ALL
+
+
+SELECT S.ROLE_TYPE USER_CODE, P.emp_email, P.st_ename,S.LEVEL_ID,S.ROLE_TYPE_DESC,ROLE_TYPE,SERVICE_ID
+FROM USER_ROLES U,HCM_APPROVAL_SETUP S,PASTATIC P
+WHERE ROLE_CODE = 'USER'
+AND U.ROLE_CODE = S.ROLE_TYPE
+--and s.SERVICE_ID = 72
+AND P.ST_EMPCD = S.ROLE_TYPE
+</SUBQUERY>
+</VIEW>]]></n0:source>
+		</n0:createSxmlObject>
+	</changeSet>
+</databaseChangeLog>

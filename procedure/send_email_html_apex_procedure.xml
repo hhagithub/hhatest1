@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="2f15992642364085389a368317a72e3e788f7fd8" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleProcedure objectName="SEND_EMAIL_HTML_APEX" objectType="PROCEDURE" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "HHA_PROD"."SEND_EMAIL_HTML_APEX" (
+                       p_sender varchar2
+                     , p_recipient varchar2
+                     , p_subject varchar2
+                     , p_message varchar2) is
+  E VARCHAR2(9999):=' ';
+  l_body       clob;
+  l_body_html  clob;
+   n_sender VARCHAR2(100):= 'it@hha.com.sa';
+begin
+
+begin
+
+  l_body      := p_subject;
+
+  l_body_html := '<!DOCTYPE html>
+                  <html lang="En"><head><title>'||p_subject||'</title></head><body>'
+                  ||p_message ||
+                 '</body></html>';
+
+  select decode((rtrim(ltrim(lower(p_sender)))),'misoper@hha.com.sa','it@hha.com.sa',p_sender) into n_sender from dual;
+
+   apex_mail.send(
+
+     p_to        => '" '||upper(substr(p_sender,1,instr(p_recipient,'@')-1)) ||' "'|| '<'||p_recipient||'>',
+     p_from      => '" '||upper(substr(p_sender,1,instr(n_sender,'@')-1)) ||' "'|| '<'||n_sender||'>',
+     p_body => l_body ,
+     p_body_html => l_body_html,
+     p_subj      => p_subject);
+
+apex_mail.push_queue;
+--  commit;
+--     p_body      => l_body,
+end;
+
+
+
+--   INSERT INTO HHA.EMAIL_SUCCESS_LOG@to_appi.hha.local (CURRENT_DT , SUCCESS_MESSAGE) VALUES (SYSDATE, substr(S,1,2000));
+  --  COMMIT;
+exception
+   when others then
+    --     E:= 'HOST: '||'localhost'||' SENDER: '||p_sender|| ' RECIPIENT: ' ||p_recipient||' SUB:'||p_subject||' : '|| sqlerrm;
+      --   INSERT INTO HHA.EMAIL_ERRORS_LOG@to_appi.hha.local (ERROR_DATE , ERROR_MESSAGE) VALUES (SYSDATE, substr(E,1,2000));
+        -- COMMIT;
+
+
+       NULL;
+end;
+/]]></n0:source>
+		</n0:createOracleProcedure>
+	</changeSet>
+</databaseChangeLog>

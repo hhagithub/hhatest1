@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="16bf82f0ea802e6f06f0f6bcbf3fe1c349205e70" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="CF_OPENJOBFORMULA" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."CF_OPENJOBFORMULA" (jm_man_reference_no_ varchar2, jm_location_ varchar2) return varchar2 is
+ chas varchar2(2000) := '' ;
+begin
+
+
+for c in
+(
+select distinct JM_MAN_REFERENCE_NO
+from work_job_master
+where jm_chassis_no in
+  (
+  select JM_CHASSIS_NO
+  from work_job_master
+  where JM_MAN_REFERENCE_NO = jm_man_reference_no_
+  and to_number(jm_location) = to_number(jm_location_)
+  )
+and JM_RECALL_FLAG is null
+and Jm_status != 3 and jm_location=jm_location_
+and jm_job_no <> jm_man_reference_no_
+)
+
+
+loop
+
+chas  :=  chas||','||c.JM_MAN_REFERENCE_NO;
+
+end loop;
+
+
+return ltrim(chas,',');
+
+
+END;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

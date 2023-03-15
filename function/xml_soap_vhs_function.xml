@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="b0120e27c2e8b155a75d02cee42c8255b0609a2a" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="XML_SOAP_VHS" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."XML_SOAP_VHS" RETURN VARCHAR2 IS
+
+        l_http_request   utl_http.req;
+        l_http_response  utl_http.resp;
+        l_buffer_size    NUMBER(10) := 512;
+        l_line_size      NUMBER(10) := 50;
+        l_lines_count    NUMBER(10) := 20;
+        l_string_request VARCHAR2(512);
+        l_line           VARCHAR2(128);
+        l_substring_msg  VARCHAR2(512);
+        l_raw_data       RAW(512);
+        l_clob_response  CLOB;
+        l_host_name      VARCHAR2(128) := 'http://autovhc.co.uk';
+        l_celsius             VARCHAR2(128) := '10'; -- Celsius is passed here
+        l_resp_xml            xmltype;
+        l_result_xml_node     VARCHAR2(128);
+        l_namespace_soap      VARCHAR2(128) := 'xmlns="http://www.w3.org/2003/05/soap-envelope"';
+        l_response_fahrenheit VARCHAR2(128);
+
+BEGIN
+        l_string_request := '<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+               xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+      <GetServiceOrderByID xmlns="http://www.wsautovhc.co.uk">
+          <request>
+          <CurrencyCode xmlns="http://autovhc.co.uk/">GBP</CurrencyCode>
+          <Locale xmlns="http://autovhc.co.uk/">en-GB</Locale>
+          <Username xmlns="http://autovhc.co.uk/">SBS</Username>
+          <Password xmlns="http://autovhc.co.uk/">Welcome18!</Password>
+          <Sitecode xmlns="http://autovhc.co.uk/">909888</Sitecode>
+          <JobCardNumber xmlns="http://autovhc.co.uk/">jc99999</JobCardNumber>
+          <IncludeParts xmlns="http://autovhc.co.uk/">true</IncludeParts>
+          <IncludeItemImageUrls xmlns="http://autovhc.co.uk/">true</IncludeItemImageUrls>
+          <IncludeItemVideoUrls xmlns="http://autovhc.co.uk/">true</IncludeItemVideoUrls>
+          <IncludeVhcUrl xmlns="http://autovhc.co.uk/">true</IncludeVhcUrl>
+          <IncludeCustomerInfo xmlns="http://autovhc.co.uk/">true</IncludeCustomerInfo>
+          <IntegrationId xmlns="http://autovhc.co.uk/">ebe9dc2d-d031-48ed-98ef-27d6b789bc95</IntegrationId>
+          </request>
+      </GetServiceOrderByID>
+  </soap:Body>
+</soap:Envelope>';
+        utl_http.set_transfer_timeout(60);
+        l_http_request := utl_http.begin_request(url          => 'http://www.w3schools.com/webservices/tempconvert.asmx'
+                                                ,method       => 'POST'
+                                                ,http_version => 'HTTP/1.1');
+        utl_http.set_header(l_http_request
+                           ,'User-Agent'
+                           ,'Mozilla/4.0');
+        utl_http.set_header(l_http_request
+                           ,'Connection'
+                           ,'close');
+        utl_http.set_header(l_http_request
+                           ,'Content-Type'
+                           ,'application/soap+xml; charset=utf-8');
+        utl_http.set_header(l_http_request
+                           ,'Content-Length'
+                           ,length(l_string_request));
+
+        <<request_loop>>
+        FOR i IN 0 .. ceil(length(l_string_request) / l_buffer_size) - 1
+        LOOP
+                l_substring_msg := substr(l_string_request
+                                         ,i * l_buffer_size + 1
+                                         ,l_buffer_size);
+
+                BEGIN
+                        l_raw_data := utl_raw.cast_to_raw(l_substring_msg);
+                        utl_http.write_raw(r    => l_http_request
+                                          ,data => l_raw_data);
+                EXCEPTION
+                        WHEN no_data_found THEN
+                                EXIT request_loop;
+                END;
+        END LOOP request_loop;
+
+        l_http_response := utl_http.get_response(l_http_request);
+        dbms_output.put_line('Response> status_code: "' || l_http_response.status_code || '"');
+        dbms_output.put_line('Response> reason_phrase: "' ||
+                             l_http_response.reason_phrase || '"');
+        dbms_output.put_line('Response> http_version: "' || l_http_response.http_version || '"');
+
+        BEGIN
+
+                <<response_loop>>
+                LOOP
+                        utl_http.read_raw(l_http_response
+                                         ,l_raw_data
+                                         ,l_buffer_size);
+                        l_clob_response := l_clob_response ||
+                                           utl_raw.cast_to_varchar2(l_raw_data);
+                END LOOP response_loop;
+
+        EXCEPTION
+                WHEN utl_http.end_of_body THEN
+                        utl_http.end_response(l_http_response);
+        END;
+
+        IF (l_http_response.status_code = 200)
+        THEN
+                -- Create XML type from response text
+                l_resp_xml := xmltype.createxml(l_clob_response);
+                -- Clean SOAP header
+                SELECT extract(l_resp_xml
+                              ,'Envelope/Body/node()'
+                              ,l_namespace_soap)
+                  INTO l_resp_xml
+                  FROM dual;
+                -- Extract Fahrenheit value
+                l_result_xml_node := '/CelsiusToFahrenheitResponse/CelsiusToFahrenheitResult';
+                dbms_output.put_line('Response from w3schools webservices:');
+
+                SELECT extractvalue(l_resp_xml
+                                   ,l_result_xml_node
+                                   ,'xmlns="http://www.w3schools.com/webservices/"')
+                  INTO l_response_fahrenheit
+                  FROM dual;
+
+        END IF;
+
+        dbms_output.put_line(l_celsius || ' Celsius =  ' || l_response_fahrenheit ||
+                             ' Fahrenheit');
+
+        IF l_http_request.private_hndl IS NOT NULL
+        THEN
+                utl_http.end_request(l_http_request);
+        END IF;
+
+        IF l_http_response.private_hndl IS NOT NULL
+        THEN
+                utl_http.end_response(l_http_response);
+        END IF;
+
+        RETURN l_celsius || ' Celsius =  ' || l_response_fahrenheit ||
+                             ' Fahrenheit';
+  END;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

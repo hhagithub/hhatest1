@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="980ed5b14fb894906fc8d1517e8765e691aba907" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="ZATCA_BASE64_ENCODE_CLOB___" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."ZATCA_BASE64_ENCODE_CLOB___" (a_input CLOB) return CLOB as --ZATCA
+l_chunk_size integer := 57;
+l_offset integer := 1;
+l_tmp clob;
+l_result clob;
+l_chunk raw(100);
+l_chunk_b64 varchar2(200);
+begin
+dbms_lob.createtemporary(l_tmp, false);
+while l_offset < dbms_lob.getlength(a_input)
+loop
+l_chunk := utl_raw.cast_to_raw(DBMS_LOB.SUBSTR(a_input,l_chunk_size,l_offset));
+l_chunk_b64 := utl_raw.cast_to_varchar2(utl_encode.base64_encode(l_chunk));
+
+l_chunk_b64 := regexp_replace(l_chunk_b64, '[[:space:]]', '');
+       -- l_chunk_b64 := replace(l_chunk_b64,'+','%2B');
+        -- l_chunk_b64 := replace(l_chunk_b64,'/','%2F');
+         --l_chunk_b64 := replace(l_chunk_b64,'=','%3D');
+
+
+dbms_lob.writeappend(l_tmp, length(l_chunk_b64), l_chunk_b64);
+l_offset := l_offset + l_chunk_size;
+end loop;
+l_result := l_tmp;
+dbms_lob.freetemporary(l_tmp);
+
+return l_result;
+end;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="0bb95e68ca3846ad4f870d014688db9b62408729" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="BLOB2CLOBASE642" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."BLOB2CLOBASE642" (
+ p_blob in blob,
+ p_escape in char default 'N'
+) return clob is
+ l_pos       pls_integer := 1;
+ l_buffer    CLOB;
+ l_res       clob;
+ l_lob_len   integer := dbms_lob.getlength (p_blob);
+begin
+ dbms_lob.createtemporary (l_res, true);
+ dbms_lob.open (l_res, dbms_lob.lob_readwrite);
+ loop
+  
+     l_buffer := utl_raw.cast_to_varchar2 (
+                   utl_encode.base64_encode (
+                       dbms_lob.substr (p_blob, 48, l_pos)
+                   )
+               );
+     if (p_escape = 'Y') then
+         l_buffer := replace(l_buffer,'+','%2B');
+         l_buffer := replace(l_buffer,'/','%2F');
+         l_buffer := replace(l_buffer,'=','%3D');
+     end if;
+  
+     if length (l_buffer) > 0 then
+         dbms_lob.writeappend (l_res, length (l_buffer), l_buffer);
+     end if;
+     l_pos := l_pos + 48;
+
+     exit when l_pos > l_lob_len;
+  
+ end loop;
+ return l_res;
+
+end blob2clobase64;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

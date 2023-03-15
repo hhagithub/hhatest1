@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="207e133c3e9177a837aa5514df69ae7c05709832" author="(HHA_PROD)-Generated"     >
+		<n0:createSxmlObject objectName="WORK_MANUAL_OPERATIONS_DUMMY" objectType="TABLE" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  <TABLE xmlns="http://xmlns.oracle.com/ku" version="1.0">
+   <SCHEMA>HHA_PROD</SCHEMA>
+   <NAME>WORK_MANUAL_OPERATIONS_DUMMY</NAME>
+   <RELATIONAL_TABLE>
+      <COL_LIST>
+         <COL_LIST_ITEM>
+            <NAME>WM_SUPL_CODE</NAME>
+            <DATATYPE>VARCHAR2</DATATYPE>
+            <LENGTH>9</LENGTH>
+            <NOT_NULL></NOT_NULL>
+         </COL_LIST_ITEM>
+         <COL_LIST_ITEM>
+            <NAME>WM_OPERATION_ID</NAME>
+            <DATATYPE>VARCHAR2</DATATYPE>
+            <LENGTH>75</LENGTH>
+            <NOT_NULL></NOT_NULL>
+         </COL_LIST_ITEM>
+         <COL_LIST_ITEM>
+            <NAME>WM_DESCRIPTION</NAME>
+            <DATATYPE>VARCHAR2</DATATYPE>
+            <LENGTH>750</LENGTH>
+         </COL_LIST_ITEM>
+         <COL_LIST_ITEM>
+            <NAME>WM_ARA_DESCRIPTION</NAME>
+            <DATATYPE>VARCHAR2</DATATYPE>
+            <LENGTH>450</LENGTH>
+         </COL_LIST_ITEM>
+         <COL_LIST_ITEM>
+            <NAME>WM_STD_TIME</NAME>
+            <DATATYPE>NUMBER</DATATYPE>
+            <PRECISION>7</PRECISION>
+            <SCALE>2</SCALE>
+         </COL_LIST_ITEM>
+         <COL_LIST_ITEM>
+            <NAME>WM_INACTIVE</NAME>
+            <DATATYPE>VARCHAR2</DATATYPE>
+            <LENGTH>3</LENGTH>
+         </COL_LIST_ITEM>
+         <COL_LIST_ITEM>
+            <NAME>SUPPLY_CODE</NAME>
+            <DATATYPE>VARCHAR2</DATATYPE>
+            <LENGTH>100</LENGTH>
+         </COL_LIST_ITEM>
+      </COL_LIST>
+      <PHYSICAL_PROPERTIES>
+         <HEAP_TABLE>
+            <SEGMENT_ATTRIBUTES>
+               <SEGMENT_CREATION_IMMEDIATE></SEGMENT_CREATION_IMMEDIATE>
+               <PCTFREE>10</PCTFREE>
+               <PCTUSED>40</PCTUSED>
+               <INITRANS>1</INITRANS>
+               <STORAGE>
+                  <INITIAL>65536</INITIAL>
+                  <NEXT>1048576</NEXT>
+                  <MINEXTENTS>1</MINEXTENTS>
+                  <MAXEXTENTS>2147483645</MAXEXTENTS>
+                  <PCTINCREASE>0</PCTINCREASE>
+                  <FREELISTS>1</FREELISTS>
+                  <FREELIST_GROUPS>1</FREELIST_GROUPS>
+                  <BUFFER_POOL>DEFAULT</BUFFER_POOL>
+                  <FLASH_CACHE>DEFAULT</FLASH_CACHE>
+                  <CELL_FLASH_CACHE>DEFAULT</CELL_FLASH_CACHE>
+               </STORAGE>
+               <TABLESPACE>USERS</TABLESPACE>
+               <LOGGING>Y</LOGGING>
+            </SEGMENT_ATTRIBUTES>
+            <COMPRESS>N</COMPRESS>
+         </HEAP_TABLE>
+      </PHYSICAL_PROPERTIES>
+   </RELATIONAL_TABLE>
+</TABLE>]]></n0:source>
+		</n0:createSxmlObject>
+	</changeSet>
+</databaseChangeLog>

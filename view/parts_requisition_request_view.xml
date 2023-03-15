@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="36a624aa38d648db36d4ac04f9de126acef398a2" author="(HHA_PROD)-Generated"     >
+		<n0:createSxmlObject objectName="PARTS_REQUISITION_REQUEST" objectType="VIEW" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  <VIEW xmlns="http://xmlns.oracle.com/ku" version="1.0">
+   <SCHEMA>HHA_PROD</SCHEMA>
+   <NAME>PARTS_REQUISITION_REQUEST</NAME>
+   <COL_LIST>
+      <COL_LIST_ITEM>
+         <NAME>JR_LOCATION</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>JR_JOB_NO</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>JR_CC_ID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>JR_REQ_ID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>JR_REQ_PART</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>JR_REQ_QTY</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>JR_SNO</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>CRE_BY</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>CRE_DATE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>VIN</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>JR_CC_DESC</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>PART_NO</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ISSUED_QTY</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>PICKING_QTY</NAME>
+      </COL_LIST_ITEM>
+   </COL_LIST>
+   <SUBQUERY>select JR_LOCATION,JR_JOB_NO,JR_CC_ID,
+JR_REQ_ID,JR_REQ_PART,JR_REQ_QTY,JR_SNO,CRE_BY,CRE_DATE,
+(SELECT JM_CHASSIS_NO FROM WORK_JOB_MASTER WHERE JM_JOB_NO = JR_JOB_NO ) VIN, 
+(SELECT JC_CONCERNS FROM WORK_JOB_MCC WHERE JC_JOB_NO = REQS.JR_JOB_NO and to_number(JC_CC_ID) = to_number(REQS.JR_CC_ID)) JR_CC_DESC,
+(  SELECT distinct QT_PART
+FROM QUOTEESTIMATIONVEW QUOTES
+WHERE QT_JOBNUMBER= JR_JOB_NO
+and QT_CONCERNCODE=REQS.JR_CC_ID 
+and QT_REQSITIONCODE=REQS.JR_REQ_ID 
+and QT_REQSITIONSLNO=REQS.JR_SNO) Part_No,
+(select nvl(sum(WM_QUANTITY),0) from work_job_parts where WM_CC_ID = REQS.JR_CC_ID and wm_req_id = REQS.JR_REQ_ID and WM_JOB_NO = REQS.JR_JOB_NO and WM_REQSITIONSLNO = reqs.JR_SNO) Issued_Qty,
+(select nvl(sum(WM_QUANTITY),0) from WORK_PICKINGSLIPS where WM_CC_ID = REQS.JR_CC_ID and wm_req_id = REQS.JR_REQ_ID and WM_JOB_NO = REQS.JR_JOB_NO and WM_REQSITIONSLNO  = reqs.JR_SNO)  PICKING_QTY 
+from work_job_reqs reqs
+</SUBQUERY>
+</VIEW>]]></n0:source>
+		</n0:createSxmlObject>
+	</changeSet>
+</databaseChangeLog>

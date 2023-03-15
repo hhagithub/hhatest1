@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="9526fa35107a3d02fa1747a84439b698187ec61a" author="(HHA_PROD)-Generated"     >
+		<n0:createOraclePackageBody objectName="EBA_SB_EMAIL_API" objectType="PACKAGE_BODY" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE PACKAGE BODY "HHA_PROD"."EBA_SB_EMAIL_API" as
+    c_CRLF constant varchar2(2) := unistr('\000d\000a');
+    procedure do_substitutions ( p_dest in out nocopy clob,
+                                 p_text in clob,
+                                 p_subs in temp_subs_t default cast(null as temp_subs_t)
+    )
+    is
+        c_len      constant number := nvl( sys.dbms_lob.getlength( p_text ), 0 );
+        l_tmp      clob;
+        l_template varchar2(4000);
+        l_subs temp_subs_t := p_subs;
+    begin
+        if c_len = 0 then
+            return;
+        end if;
+        -- Ensure some hard-coded "universal" substitutions.
+        l_subs('#APP_NAME#') := nvl(v('APPLICATION_TITLE'),v('APP_NAME'));
+        l_subs('#APP_ID#')   := v('APP_ID');
+        l_subs('#EMAIL_FROM#') := eba_sb_fw.get_preference_value('EMAIL_FROM');
+        l_subs('#EMAIL_REPLY_TO#') := eba_sb_fw.get_preference_value('EMAIL_REPLY_TO');
+        sys.dbms_lob.createtemporary( l_tmp, false );
+        sys.dbms_lob.copy( l_tmp, p_text, c_len );
+        l_template := l_subs.first;
+        loop
+            exit when l_template is null;
+            l_tmp := replace( l_tmp, l_template, l_subs(l_template) );
+            l_template := l_subs.next(l_template);
+        end loop;
+        sys.dbms_lob.writeappend( p_dest, sys.dbms_lob.getlength( l_tmp ), l_tmp );
+        sys.dbms_lob.writeappend( p_dest, length( c_CRLF ), c_CRLF );
+        sys.dbms_lob.freetemporary( l_tmp );
+    exception
+        when others then
+            if l_tmp is not null then
+                sys.dbms_lob.freetemporary( l_tmp );
+            end if;
+            raise;
+    end do_substitutions;
+    procedure do_substitutions ( p_template_id in number,
+                                 p_subs        in temp_subs_t default cast(null as temp_subs_t),
+                                 p_subject     out varchar2,
+                                 p_body        out clob )
+    is
+        l_found boolean := false;
+        l_subs temp_subs_t := p_subs;
+    begin
+        apex_debug.enter( 'do_substitutions',
+                          'p_template_id', p_template_id );
+        for c1 in ( select et.default_email_subject,
+                           ets.template_header,
+                           et.template_body,
+                           ets.template_footer
+                      from eba_sb_email_templates et,
+                           eba_sb_email_styles ets
+                     where et.id = p_template_id
+                       and ets.id = et.style_id )
+        loop
+            l_found := true;
+            p_subject := do_substitutions( c1.default_email_subject, l_subs );
+            -- In case the email subject is re-used in the email.   
+            l_subs('#EMAIL_SUBJECT#') := p_subject;
+            -- Replace tokens in plain text body
+            sys.dbms_lob.createtemporary( p_body, false );
+            do_substitutions( p_body, c1.template_header, l_subs );
+            do_substitutions( p_body, c1.template_body, l_subs );
+            do_substitutions( p_body, c1.template_footer, l_subs );
+        end loop;
+        if not l_found then
+            raise_application_error(-20900, 'Email template not found (id=' || p_template_id || ').' );
+        end if;
+    end do_substitutions;
+    -- Function-based entry point to the substitution process.
+    function do_substitutions ( p_text in clob,
+                                p_subs in temp_subs_t default cast(null as temp_subs_t) ) return clob
+    is
+        l_return   clob;
+        l_template varchar2(4000);
+    begin
+        sys.dbms_lob.createtemporary( l_return, false );
+        do_substitutions( p_dest => l_return, p_text => p_text, p_subs => p_subs );
+        return l_return;
+    end do_substitutions;
+    procedure show_template (
+        p_template_id in number, p_subs in temp_subs_t
+    ) is
+        l_email_subject varchar2(4000) := null;
+        l_body          clob;
+        l_email         varchar2(255) := null;
+        l_email_from    varchar2(255) := null;
+        c_chunk         constant number := 8191;
+        l_len           number;
+        l_offset        number;
+    begin
+        apex_debug.enter( 'show_template',
+                          'p_template_id', p_template_id,
+                          'p_subs.count', p_subs.count );
+        do_substitutions( p_template_id, p_subs, l_email_subject, l_body );
+        if l_email_subject is null then
+            l_email_subject := 'Notification';
+        end if;
+        l_email_from := eba_sb_fw.get_preference_value( 'NOTIFICATION_EMAIL_FROM' );
+        if l_email_from = 'X' then
+            l_email_from := 'noreply@example.com';
+        end if;
+        l_len := nvl( sys.dbms_lob.getlength( l_body ), 0 );
+        if l_len = 0 then
+            return;
+        elsif l_len <= c_chunk then
+            sys.htp.p( sys.dbms_lob.substr( l_body ) );
+        else
+            l_offset := 1;
+            while l_offset + c_chunk - 1 <= l_len loop
+                sys.htp.prn( sys.dbms_lob.substr( l_body, c_chunk, l_offset ) );
+                l_offset := l_offset + c_chunk;
+            end loop;
+            if l_offset <= l_len then
+                sys.htp.prn( sys.dbms_lob.substr( l_body, c_chunk, l_offset ) );
+            end if;
+        end if;
+        sys.dbms_lob.freetemporary( l_body );
+    end show_template;
+    procedure send (
+        p_template_id   in number,
+        p_subs          in temp_subs_t default cast(null as temp_subs_t),
+        p_to            in varchar2,
+        p_from          in varchar2,
+        p_cc            in varchar2 default null,
+        p_bcc           in varchar2 default null,
+        p_replyto       in varchar2 default null,
+        p_log           in boolean default false,
+        p_survey_id     in number default null,
+        p_community_id  in number default null,
+        p_respondent_id in number default null
+    ) is
+        l_body      clob;
+        l_body_html clob;
+        l_subject   varchar2(4000);
+    begin
+        l_body := 'To view the content of this message, please use an HTML enabled mail client.'||c_CRLF;
+        do_substitutions( p_template_id => p_template_id,
+                          p_subs        => p_subs,
+                          p_subject     => l_subject,
+                          p_body        => l_body_html );
+        apex_mail.send(
+            p_to        => p_to,
+            p_from      => p_from,
+            p_replyto   => p_replyto,
+            p_cc        => p_cc,
+            p_bcc       => p_bcc,
+            p_subj      => l_subject,
+            p_body      => l_body,
+            p_body_html => l_body_html
+        );
+        apex_mail.push_queue;
+        if p_log then
+            -- Store a copy.
+            insert into eba_sb_email_hist
+                ( subject, sent_time, sent_by, sent_to, cc, bcc, message, survey_id, community_id, respondent_id )
+            values (
+                l_subject,
+                sysdate,
+                nvl(v('APP_USER'), USER),
+                p_to,
+                p_cc,
+                p_bcc,
+                l_body_html,
+                p_survey_id,
+                p_community_id,
+                p_respondent_id
+            );
+        end if;
+        commit;
+    end send;
+end eba_sb_email_api;
+/]]></n0:source>
+		</n0:createOraclePackageBody>
+	</changeSet>
+</databaseChangeLog>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="7351c8b3b48558891f40cf2ba390ef3311a1590c" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="R28_SOLD_CIG_MNT" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."R28_SOLD_CIG_MNT" (wj_emp_no_ VARCHAR2,starttime_ DATE,endtime_ DATE) return number is
+--8 SOLD_CIG
+
+temp number;--varchar2(80);
+begin
+	
+	
+       select
+        Round(sum(nvl(NEW_TIME,0)),2)
+         --lpad(nvl(floor(sum(nvl(ST_GRANTED_TIME,0))),0),2,0)||':'||
+      -- nvl(floor(sum(nvl(NEW_TIME,0))),0)||':'||
+        --                                   lpad(nvl(round((sum(nvl(NEW_TIME,0))-floor(sum(nvl(NEW_TIME,0))))*60),0),2,0) 
+          into temp
+          from new_sold_time
+         where st_emp_no = wj_emp_no_ 
+           and trunc(st_credit_date) between trunc(starttime_) and trunc(endtime_)
+           and ST_CREDIT_DATE is not null;
+           
+	/*
+       select  --lpad(nvl(floor(sum(nvl(ST_GRANTED_TIME,0))),0),2,0)||':'||
+       nvl(floor(sum(nvl(ST_GRANTED_TIME,0))),0)||':'||
+                                           lpad(nvl(round((sum(nvl(ST_GRANTED_TIME,0))-floor(sum(nvl(ST_GRANTED_TIME,0))))*60),0),2,0) 
+          into temp
+          from work_std_timings
+         where st_emp_no = wj_emp_no_ 
+           and trunc(ST_CREDIT_DATE) = trunc(starttime_)
+           and ST_CREDIT_DATE is not null;*/
+           
+   return(temp);
+   exception when others then return null;
+   end;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="f5e619c6dc76df95357e96103838c63f7fadecbd" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="BLOB2CLOBASE64_" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."BLOB2CLOBASE64_" (
+ p_blob in blob,
+
+ p_escape in char default 'N'
+) return number is PRAGMA AUTONOMOUS_TRANSACTION;
+ l_pos       pls_integer := 1;
+ l_buffer    VARCHAR2(32767); --CLOB;
+ l_res       clob;
+  l_clob  clob;
+ l_lob_len   integer := dbms_lob.getlength (p_blob);
+begin
+ dbms_lob.createtemporary (l_res, true);
+ dbms_lob.open (l_res, dbms_lob.lob_readwrite);
+
+
+
+  FOR i IN 1..CEIL(DBMS_LOB.GETLENGTH(p_blob) / 32767)
+  loop
+
+     l_buffer := utl_raw.cast_to_varchar2 (
+                   utl_encode.base64_encode (
+                       dbms_lob.substr (p_blob,32767,l_pos) --dbms_lob.substr (p_blob, 48, l_pos)
+                   )
+               );
+     if (p_escape = 'Y') then
+         l_buffer := replace(l_buffer,'+','%2B');
+         l_buffer := replace(l_buffer,'/','%2F');
+         l_buffer := replace(l_buffer,'=','%3D');
+     end if;
+  
+     if length (l_buffer) > 0 then
+         dbms_lob.writeappend (l_res, length (l_buffer), l_buffer);
+     end if;
+
+    l_pos :=l_pos + 32767; --l_pos + 48;
+
+     --exit when l_pos > l_lob_len;
+  
+ end loop;
+/*UPDATE SAMCO_GR_DTL
+SET CLOB_IMG=l_res
+where SER_NO=10;*/
+  insert into test_clob(id,CONTNT) values(1,l_res);
+  commit;
+--SELECT CONTNT into l_clob FROM test_clob where id=1;
+ return 1;
+/*EXCEPTION WHEN OTHERS
+THEN 
+RETURN 0;*/
+end blob2clobase64_;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="4d854a9feb90dc724ddf1400c4314bfc3f998b61" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="SAMCO_XML" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."SAMCO_XML" (P_VIN in VARCHAR2) return VARCHAR2
+is
+V_XML VARCHAR2(4000);
+begin
+
+select
+--rePLACE(LTRIM(RTRIM(
+(
+Select H||ClaimHeader||ClaimVersion||F XML from 
+(
+SELECT
+'<soapenv:Envelope xmlns:ns0="http://man.eu/ClaimsAndWarranty" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"> <soapenv:Header> <soapenv:Body>' AS H
+FROM DUAL
+),
+
+(
+Select 
+xmlagg(xmlelement( "ClaimHeader",              
+xmlforest('' as "DMSSystemID",VIN, DMSOrderNo as "DMSOrderNo", lpad(DMSJobNo,3,0) as "DMSJobNo"))).getClobVal() ClaimHeader  
+from Dual
+),
+
+(
+Select 
+xmlagg(xmlelement( "ClaimVersion",              
+xmlforest(to_char(FirstRegDate,'rrrrmmdd') as "FirstRegDate",
+to_char(RepairBegin,'rrrrmmdd') as "RepairBegin",
+WarrantyType as "WarrantyType" ,
+MeasReading as "MeasReading",
+(Select xmlforest(ObjectCode1 as "ObjectCode1")  from Dual) as "DefectCodeDetails",
+WarrantyCat as "WarrantyCat"
+))).getClobVal() ClaimVersion  
+from Dual--SOAP_MANDATORY
+--WHERE VIN = SM.VIN 
+--AND DMSOrderNo = SM.DMSOrderNo --'RS071WZZ9BD001367'
+
+),
+(SELECT '</soapenv:Body></soapenv:Header> </soapenv:Envelope>' AS F FROM DUAL)
+)
+
+--)),' ','$')
+--AS XMLS
+INTO V_XML
+from SOAP_MANDATORY SM
+WHERE VIN||'-'||DMSJOBNO = P_VIN ;
+RETURN V_XML;
+
+
+end;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="c331b3fceeaa69b00cc810bfc6e32968bee59f1f" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleProcedure objectName="EMAIL_SALESMAN_CREATION_" objectType="PROCEDURE" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "HHA_PROD"."EMAIL_SALESMAN_CREATION_" 
+   ( from_emp_ IN varchar,scode_ IN varchar
+     --item_ IN OUT datatype
+     )
+   IS
+
+-- ---------   ------  -------------------------------------------
+
+BEGIN
+
+
+ hha.send_email_html@to_appi.hha.local('fazalk@hha.com.sa','zeeshan@hha.com.sa','User in Xenapp',
+' Dear Zeeshan,
+'||'<br>'||
+'Please create below'||'<br>'||
+'Employee '||from_emp_ );
+
+
+ hha.send_email_html@to_appi.hha.local('fazalk@hha.com.sa','haroon@hha.com.sa','User in Xenapp',
+' Dear Zeeshan,
+'||'<br>'||
+'Please create below'||'<br>'||
+'Employee '||from_emp_ );
+
+
+ hha.send_email_html@to_appi.hha.local('fazalk@hha.com.sa','haroon@hha.com.sa','Salesman Code',
+
+'Salesman Code: '||scode_ );
+
+
+ hha.send_email_html@to_appi.hha.local('fazalk@hha.com.sa','fazalk@hha.com.sa','Salesman Code',
+
+'Salesman Code: '||scode_ );
+
+exception when no_data_found then null;
+END; -- Procedure
+/]]></n0:source>
+		</n0:createOracleProcedure>
+	</changeSet>
+</databaseChangeLog>

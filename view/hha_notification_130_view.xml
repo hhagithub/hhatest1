@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="e5efe483b8f99a3bd9e5b8693b08b94fe8785531" author="(HHA_PROD)-Generated"     >
+		<n0:createSxmlObject objectName="HHA_NOTIFICATION_130" objectType="VIEW" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  <VIEW xmlns="http://xmlns.oracle.com/ku" version="1.0">
+   <SCHEMA>HHA_PROD</SCHEMA>
+   <NAME>HHA_NOTIFICATION_130</NAME>
+   <COL_LIST>
+      <COL_LIST_ITEM>
+         <NAME>NOTE_ICON</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>NOTE_ICON_COLOR</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>NOTE_HEADER</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>NOTE_TEXT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>NOTE_LINK</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>NOTE_COLOR</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>NO_BROWSER_NOTIFICATION</NAME>
+      </COL_LIST_ITEM>
+   </COL_LIST>
+   <SUBQUERY>SELECT 'fa fa-bell' AS NOTE_ICON, 
+      'rgb(192,0,15)' AS NOTE_ICON_COLOR, 
+      'New Training Module ' AS NOTE_HEADER,
+      (SELECT REF_NO||'-'||MODUE_DESC_ENG FROM SAMCO_TRAINING_MODULE_MASTER WHERE REQ_ID=V.REQ_ID
+) NOTE_TEXT,
+      APEX_UTIL.PREPARE_URL(p_url => 'f?p=' || '130' || ':308:'|| V('APP_SESSION') 
+||'::NO::P308_MODULE_ID,P308_FLAG:'||(SELECT MODULE_ID FROM SAMCO_TRAINING_MODULE_MASTER WHERE REQ_ID=V.REQ_ID)||',Y', p_checksum_type => 'SESSION') NOTE_LINK,
+      '' AS NOTE_COLOR,
+      0 AS NO_BROWSER_NOTIFICATION
+ FROM  HCM_APPROVAL_VIEW V
+WHERE EMP_NO=v('APP_USER') 
+AND SERVICE_CODE='SM_TR_CR'
+AND APPROVAL_CODE='SMTR1'
+UNION ALL
+SELECT 'fa fa-bell' AS NOTE_ICON, 
+      'rgb(192,0,15)' AS NOTE_ICON_COLOR, 
+      'New Trainee Assigned ' AS NOTE_HEADER,
+     (SELECT (SELECT ST_ENAME FROM PASTATIC WHERE ST_EMPCD=STO.EMP_NO)||'-'||STM.REF_NO||'-'||STM.MODUE_DESC_ENG  FROM
+SAMCO_TRAINING_MODULE_MASTER STM , SAMCO_TRAINING_ONBOARD_MODULES STO
+WHERE STM.MODULE_ID = STO.MODULE_ID
+AND STO.REQ_ID=V.REQ_ID)
+  NOTE_TEXT,
+      APEX_UTIL.PREPARE_URL(p_url => 'f?p=' || '130' || ':307:'|| V('APP_SESSION') 
+||'::NO::P307_EMPLOYEE_ID,P307_FLAG:'||(SELECT EMP_NO FROM SAMCO_TRAINING_ONBOARD_MODULES WHERE REQ_ID = V.REQ_ID)||',Y', p_checksum_type => 'SESSION') NOTE_LINK,
+      '' AS NOTE_COLOR,
+      0 AS NO_BROWSER_NOTIFICATION
+ FROM  HCM_APPROVAL_VIEW V
+WHERE EMP_NO=v('APP_USER') 
+AND SERVICE_CODE='SM_TR_CR'
+AND APPROVAL_CODE='SMTR2'
+</SUBQUERY>
+</VIEW>]]></n0:source>
+		</n0:createSxmlObject>
+	</changeSet>
+</databaseChangeLog>

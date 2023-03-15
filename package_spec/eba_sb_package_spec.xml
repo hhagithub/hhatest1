@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="2c2b96b85dc533061f4347dfa80aa8a6e9e46512" author="(HHA_PROD)-Generated"     >
+		<n0:createOraclePackageSpec objectName="EBA_SB" objectType="PACKAGE_SPEC" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE PACKAGE "HHA_PROD"."EBA_SB" is
+    -------------------------------------------------------------------------
+    -- Generates a unique Identifier
+    -------------------------------------------------------------------------
+    function gen_id return number;
+    -------------------------------------------------------------------------
+    -- Gets the current user's authorization level. Can depend on the following:
+    --  * If access control is currently disabled, returns highest level of 3.
+    --  * If access control is enabled, but user is not in list, returns 0
+    --  * If access control is enabled and user is in list, returns their
+    --    access level.
+    -------------------------------------------------------------------------
+    function get_authorization_level (
+        p_username             varchar2)
+        return number;
+    -------------------------------------------------------------------------
+    -- Return true if p_input is a number and false otherwise
+    -------------------------------------------------------------------------
+    function is_number(p_input varchar2)
+        return boolean;
+    -------------------------------------------------------------------------
+    -- Adds p_count survey responses for survey given by p_survey_id.
+    -- If p_email_addresses is not null then it is a list of email addresses
+    -- one per line and each one is associated with a response. The number
+    -- of email addresses overrides p_count.
+    -------------------------------------------------------------------------
+    procedure add_responses (
+        p_survey_id            number,
+        p_count                pls_integer,
+        p_email_addresses      varchar2 default null);
+    -------------------------------------------------------------------------
+    -- Adds one response for survey given by p_survey_id and returns the 
+    -- added response id
+    -------------------------------------------------------------------------
+    function add_response (
+        p_survey_id            number)
+        return varchar2;
+    -------------------------------------------------------------------------
+    -- Makes a copy of a questionnaire along with all of its sections, questions, 
+    -- and answers. The copy gets a new title. The new questionnaire can optionally
+    -- be attached to a survey. A new description is optional.
+    -- Returns the id of the new questionnaire
+    -------------------------------------------------------------------------
+    function copy_questionnaire(
+        p_questionnaire_id     number,
+        p_new_title            varchar2,
+        p_new_description      varchar2 default null,
+        p_new_lang             varchar2 default null,
+        p_dst_survey_id        number   default null,
+        p_survey_row_key       varchar2 default null )
+        return number;
+    -------------------------------------------------------------------------
+    -- Copies the questions given by the ids in p_questions array into the
+    -- questionnaire given by p_questionnaire_id at the given section, p_section_id.
+    -------------------------------------------------------------------------
+    procedure copy_questions(
+                p_questions         apex_application_global.vc_arr2,
+                p_questionnaire_id  number,
+                p_section_id        number);
+    -------------------------------------------------------------------------
+    -- When a new language is created use this procedure
+    -- to initialize default strings for the given language.
+    -------------------------------------------------------------------------
+    procedure init_default_strings(
+        p_lang                 varchar2 default null);
+    -------------------------------------------------------------------------
+    -- When a new questionnaire is created use this procedure
+    -- to initialize all the strings for the given language.
+    -------------------------------------------------------------------------
+    procedure init_questionnaire_strings(
+        p_questionnaire_id     number,
+        p_lang                 varchar2 default null);
+    -------------------------------------------------------------------------
+    -- Assign question ids (question_number) to each question starting
+    -- at 1 and increasing by 1 according to the question_seq
+    -- exclude questons are numbered last.
+    -- The intent is to have the question id (question_number) match
+    -- the number that would be displayed when the questionnare is filled
+    -- out and formating options number_sections = N and number_questions = Y
+    -------------------------------------------------------------------------
+    procedure reorder_question_ids(
+        p_questionnaire_id     number);
+    
+    -------------------------------------------------------------------------
+    -- Generates HTML page for the survey questionnaire. This is the web page
+    -- that the survey participants (respondents) will fill out. It is a simple,
+    -- light weight, single page web app.
+    -------------------------------------------------------------------------
+    procedure render_questionnaire(
+        p_app_id               number,
+        p_questionnaire_id     number,
+        p_key                  varchar2);
+    -------------------------------------------------------------------------
+    -- Generates HTML for a readonly view of the questionnaire
+    -- optionally displaying results for a specific response
+    -------------------------------------------------------------------------
+    procedure show_questions_ro(
+        p_questionnaire_id          number, 
+        p_response_id               varchar2 default null,
+        p_include_question_numbers  boolean default false,
+        p_include_ids               boolean default false);
+    -------------------------------------------------------------------------
+    -- Generates HTML for an editiable view of the questionnaire
+    -------------------------------------------------------------------------
+    procedure show_questions(
+        p_questionnaire_id     number);
+    -------------------------------------------------------------------------
+    -- Used to format email messages
+    -- On input
+    --   p_message is the HTML email message
+    --   p_plain_message is not used
+    -- On output
+    --   p_message is wrapped with html, head and body tags if it doesn't 
+    --   already have a body tag
+    --   p_plain_message is a plain text copy of p_message with tags removed and break (br)
+    --   and closing paragraph tags replaced with new lines.
+    --   both have the #URL# token replaced with the survey URL p_url
+    -------------------------------------------------------------------------
+    procedure format_message_bodys(
+        p_message in out nocopy varchar2,
+        p_plain_message in out nocopy varchar2,
+        p_url in varchar2 default null);
+    -------------------------------------------------------------------------
+    -- Repeating scheduled procedure to manage survey state transitions
+    -- and email sending
+    -------------------------------------------------------------------------
+    procedure survey_job(
+        p_ws_id in number default null,
+        p_app_id in varchar2,
+        p_email_only in boolean default false);
+    function questionnaire_to_xml(p_id number)
+        return XMLType;
+    -------------------------------------------------------------------------
+    -- Export the survey given by p_survey_id as XML.
+    -- This sends a response so it should only be called from a page process.
+    -- The suggested name for the download file is given by p_file_name.
+    -------------------------------------------------------------------------
+    procedure export_survey(
+        p_survey_id in number,
+        p_file_name in varchar2);
+    -------------------------------------------------------------------------
+    -- Export the template given by p_questionnaire_id as XML.
+    -- This sends a response so it should only be called from a page process.
+    -- The suggested name for the download file is given by p_file_name.
+    -------------------------------------------------------------------------
+    procedure export_template(
+        p_questionnaire_id in number,
+        p_file_name in varchar2);
+    -------------------------------------------------------------------------
+    -- Import a survey. The xml data is in p_xml_data blob.
+    -------------------------------------------------------------------------
+    procedure import_survey(
+        p_xml_data     in clob,
+        p_force_design in boolean,
+        p_new_name     in varchar2,
+        p_keep_row_key in boolean  default FALSE);
+    -------------------------------------------------------------------------
+    -- Import a template. The xml data is in p_xml_data blob.
+    -------------------------------------------------------------------------
+    procedure import_template(
+        p_xml_data     in clob,
+        p_keep_row_key in boolean  default FALSE);
+    -------------------------------------------------------------------------
+    -- Experimental
+    -- Convert text to a questionnaire
+    -- Returns the id of the new questionnaire
+    -------------------------------------------------------------------------
+    function text_to_questionnaire(
+        p_text in clob,
+        p_lang varchar2,
+        p_survey_id number default null )
+        return number;
+    -------------------------------------------------------------------------
+    -- Purge survey responses older than a set number of months
+    -------------------------------------------------------------------------
+    procedure purge_responses(
+        p_older_than_months in number default null );
+    -------------------------------------------------------------------------
+    -- Used with the app to display supplemental welcome text
+    -------------------------------------------------------------------------
+    procedure display_supp_welcome (
+       p_app_id             in   number,
+       p_page_id            in   number,
+       p_session_id         in   number,
+       p_replace_or_append  out  varchar2,
+       p_welcome_text       out  varchar2 );
+end eba_sb;
+/]]></n0:source>
+		</n0:createOraclePackageSpec>
+	</changeSet>
+</databaseChangeLog>

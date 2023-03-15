@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="8d22fc00ca4a9d1941d30bce0cc011f36c61aa5c" author="(HHA_PROD)-Generated"     >
+		<n0:createSxmlObject objectName="WSSR37" objectType="VIEW" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  <VIEW xmlns="http://xmlns.oracle.com/ku" version="1.0">
+   <SCHEMA>HHA_PROD</SCHEMA>
+   <NAME>WSSR37</NAME>
+   <COL_LIST>
+      <COL_LIST_ITEM>
+         <NAME>STARTTIME</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>WJ_EMP_NO</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>WJ_LOCATION</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>JOB_CLASS</NAME>
+      </COL_LIST_ITEM>
+   </COL_LIST>
+   <SUBQUERY>SELECT
+trunc(wj_start_time) starttime, 
+WJ_EMP_NO WJ_EMP_NO,
+to_number(wj_location) wj_location,
+(
+SELECT DISTINCT  WT_CLASS 
+FROM work_team_details w
+WHERE w.WT_EMP_NO = t.wj_emp_no
+AND ROWNUM=1
+) JOB_CLASS
+--to_number(wj_location) location
+FROM work_job_time t
+WHERE wj_end_time is not null
+and WJ_EMP_NO is not null
+--and wj_location between :P218_BRANCH1 and :P218_BRANCH2
+--and wj_emp_no =decode(:P218_USERS,null,wj_emp_no,:P218_USERS) 
+--AND TRUNC(WJ_START_TIME)  BETWEEN  TRUNC(to_date(:P218_DATE1,'dd/mm/yyyy'))  AND TRUNC(to_date(:P218_DATE2,'dd/mm/yyyy'))
+and WJ_OVER_TIME is not null
+group by trunc(wj_start_time),WJ_EMP_NO,to_number(wj_location)
+
+UNION
+select trunc(ST_CREDIT_DATE) starttime,
+ST_EMP_NO WJ_EMP_NO,
+to_number(JI_LOCATION) wj_location,
+--to_number(JI_LOCATION) location
+(
+ SELECT DISTINCT  WT_CLASS 
+FROM work_team_details w
+WHERE w.WT_EMP_NO = t.ST_EMP_NO
+AND ROWNUM=1
+) JOB_CLASS
+
+from new_sold_time t
+where ST_CREDIT_DATE is not null 
+and ST_EMP_NO is not null
+--and JI_LOCATION between :P218_BRANCH1 and :P218_BRANCH2
+--and ST_EMP_NO =decode(:P218_USERS,null,ST_EMP_NO,:P218_USERS)
+--AND TRUNC(ST_CREDIT_DATE) BETWEEN :P218_DATE1 AND :P218_DATE2
+
+group by trunc(ST_CREDIT_DATE),ST_EMP_NO,to_number(JI_LOCATION)
+
+UNION
+
+select distinct trunc(SD_DATE) starttime, 
+SD_EMP_NO  WJ_EMP_NO ,
+to_number(SD_LOCATION) wj_location, 
+--to_number(SD_LOCATION) location
+(
+ SELECT DISTINCT  WT_CLASS 
+FROM work_team_details w
+WHERE w.WT_EMP_NO = s.sd_emp_no
+AND ROWNUM=1
+) JOB_CLASS
+
+FROM work_sold_days s
+where SD_EMP_NO is not null
+--WHERE trunc(SD_DATE)  BETWEEN  trunc(:P218_DATE1) AND trunc(:P218_DATE2)
+--and to_number(sd_location)  between :P218_BRANCH1 and :P218_BRANCH2
+--and to_number(sd_emp_no) = to_number(decode(:P218_USERS,null,sd_emp_no,:P218_USERS))
+
+UNION
+ 
+SELECT distinct trunc(wt_start_time) starttime,
+wt_emp_no  WJ_EMP_NO ,
+to_number(WT_LOCATION) wj_location,
+--to_number(WT_LOCATION) location
+(
+ SELECT DISTINCT  WT_CLASS 
+FROM work_team_details w
+WHERE w.WT_EMP_NO = t.wt_emp_no
+AND ROWNUM=1
+) JOB_CLASS
+FROM WORK_WASTED_TIME t
+where wt_emp_no is not null
+--WHERE trunc(wt_start_time)  BETWEEN  trunc(:P218_DATE1) AND trunc(:P218_DATE2)
+--and to_number(WT_LOCATION)  between :P218_BRANCH1 and :P218_BRANCH2
+--and to_number(WT_EMP_NO) = to_number(decode(:P218_USERS,null,WT_EMP_NO,:P218_USERS))
+
+order by 1
+</SUBQUERY>
+</VIEW>]]></n0:source>
+		</n0:createSxmlObject>
+	</changeSet>
+</databaseChangeLog>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="85523254d3658f73a9f19a0590c115d663d81606" author="(HHA_PROD)-Generated"     >
+		<n0:createSxmlObject objectName="AV_P0600_NOT_USED_AUTH_SCHEMES_V" objectType="VIEW" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  <VIEW xmlns="http://xmlns.oracle.com/ku" version="1.0">
+   <SCHEMA>HHA_PROD</SCHEMA>
+   <NAME>AV_P0600_NOT_USED_AUTH_SCHEMES_V</NAME>
+   <COL_LIST>
+      <COL_LIST_ITEM>
+         <NAME>AUTHORIZATION_SCHEME_NAME</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>APPLICATION_ID</NAME>
+      </COL_LIST_ITEM>
+   </COL_LIST>
+   <SUBQUERY>with auth as
+ (select v1.visibility_id
+        ,v1.application_id
+  from av_visibility_v v1
+  where v1.visibility_category = 'AUTHORIZATION_SCHEME'
+  and v1.visibility_name is not null)
+select a.authorization_scheme_name
+      ,a.application_id
+from apex_application_authorization a
+where to_char(a.authorization_scheme_id) not in (select a1.visibility_id
+                                                 from auth a1
+                                                 where a1.application_id = a.application_id)
+and to_char('!' || a.authorization_scheme_id) not in (select a1.visibility_id
+                                                     from auth a1
+                                                     where a1.application_id = a.application_id)
+</SUBQUERY>
+</VIEW>]]></n0:source>
+		</n0:createSxmlObject>
+	</changeSet>
+</databaseChangeLog>

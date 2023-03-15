@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="344597e7036e6cd3d2f2f211130db6dec123b503" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleProcedure objectName="SAVEFILE" objectType="PROCEDURE" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "HHA_PROD"."SAVEFILE" (
+     FileContent IN OUT NOCOPY BLOB
+   , FolderName IN VARCHAR2
+   , FileName IN VARCHAR2)
+IS
+    BUFFER RAW(1024);
+    OFFSET PLS_INTEGER := 1;
+    FileLength PLS_INTEGER;
+    amount PLS_INTEGER := 1024;
+    fhandle UTL_FILE.FILE_TYPE;
+BEGIN
+    FileLength := DBMS_LOB.GETLENGTH(FileContent);
+    fhandle := UTL_FILE.FOPEN(FolderName, FileName, 'wb');         
+    LOOP
+        EXIT WHEN OFFSET > FileLength;
+        DBMS_LOB.READ(FileContent, amount, OFFSET, BUFFER);
+        UTL_FILE.PUT_RAW(fhandle, BUFFER, TRUE);
+        OFFSET := OFFSET + amount;
+    END LOOP;
+    UTL_FILE.FCLOSE (fhandle);
+EXCEPTION
+    WHEN OTHERS THEN
+        IF UTL_FILE.IS_OPEN(fhandle) THEN
+            UTL_FILE.FCLOSE(fhandle);
+        END IF;
+    RAISE;
+END SaveFile;
+/]]></n0:source>
+		</n0:createOracleProcedure>
+	</changeSet>
+</databaseChangeLog>

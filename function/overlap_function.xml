@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="9140e8cfb2b50a23c3574b61199e3272004cfe26" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="OVERLAP" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."OVERLAP" (p_START_DATE_1 DATE, p_END_DATE_1 DATE,p_START_DATE_2 DATE, p_END_DATE_2 DATE) RETURN VARCHAR2 AS
+lv_RESULT VARCHAR2(1);
+BEGIN
+ SELECT 'T' into lv_RESULT FROM dual WHERE (p_START_DATE_1, p_END_DATE_1) overlaps (p_START_DATE_2, p_END_DATE_2);
+ RETURN lv_RESULT;
+EXCEPTION WHEN NO_DATA_FOUND THEN
+ lv_RESULT := 'N';
+ RETURN lv_RESULT;
+END OVERLAP;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

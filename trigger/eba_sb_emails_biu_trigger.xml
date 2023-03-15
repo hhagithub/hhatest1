@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="d49d8cc0aa1346e215643342b10acfe6b79805f2" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleTrigger objectName="EBA_SB_EMAILS_BIU" objectType="TRIGGER" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE TRIGGER "HHA_PROD"."EBA_SB_EMAILS_BIU" 
+    before update or insert on eba_sb_emails
+    for each row
+begin
+    if inserting then
+        if :new.id is null then
+            :new.id := eba_sb.gen_id();
+        end if;
+        :new.created_by := nvl(v('APP_USER'),user);
+        :new.created := current_timestamp;
+        :new.row_version_number := 1;
+    elsif updating then
+        :new.row_version_number := nvl(:old.row_version_number,1) + 1;
+    end if;
+    :new.updated_by := nvl(v('APP_USER'),user);
+    :new.updated := current_timestamp;
+end;
+
+/
+/
+ALTER TRIGGER "HHA_PROD"."EBA_SB_EMAILS_BIU" ENABLE;]]></n0:source>
+		</n0:createOracleTrigger>
+	</changeSet>
+</databaseChangeLog>

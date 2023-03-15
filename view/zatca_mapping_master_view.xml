@@ -1,0 +1,604 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="40bef5fd114919f3b58ace157f8e0fe9888d0990" author="(HHA_PROD)-Generated"     >
+		<n0:createSxmlObject objectName="ZATCA_MAPPING_MASTER" objectType="VIEW" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  <VIEW xmlns="http://xmlns.oracle.com/ku" version="1.0">
+   <SCHEMA>HHA_PROD</SCHEMA>
+   <NAME>ZATCA_MAPPING_MASTER</NAME>
+   <COL_LIST>
+      <COL_LIST_ITEM>
+         <NAME>LINE_OF_BUSS</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>REP_TYPE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>INV_TYPE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>INVOICE_NUMBER</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>INVOICE_UUID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>INVOICE_ISS_DATE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>INVOICE_ISS_TIME</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>INVVOICE_TYPE_CODE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>INVOICE_TYPE_TRANS</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>INVOICE_NOTE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>INVOICE_CURR_CODE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>TAX_CURR_CODE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>PO_ID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>BILLING_REF_ID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>CONTRACT_ID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>INV_COUNTER_VAL</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>INV_PREV_HASH</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>INV_QR_CODE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>CRYPT_STAMP</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>CRNO</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>CRNOTYPE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ADDR_STREET</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ADDR_ADDL_STREET</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ADDR_ADDL_BUILDI</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ADDR_ADDL_NO</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ADDR_CITY</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ADDR_POSTAL_CODE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ADDR_PROVINCE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ADDR_DISTRICT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ADDR_COUNTRY_CODE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>VAT_REG_NO</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>CMPNY_DESC</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>CUST_ID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>CUST_IDTYPE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>CUST_STREET</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>CUST_ADDR_ADDL_ST</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>CUST_BUILDING</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>CUST_ADDL_NO</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>CUST_CITY</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>CUST_POSTAL</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>CUST_ADDR_COUNTRY</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>CUST_DISTRICT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>CUST_COUNTRY_CODE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>CUST_VAT_NO</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>CUST_NAME</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>SUPPLY_START_DATE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>SUPPLY_END_DATE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>PAY_MEANS_TYPE_CODE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>CREDIT_REASON</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>PAYMENT_TERMS</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>PAY_ACCT_IDENT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>DOC_LVL_ALW_IND</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>DOC_LVL_ALW_PERC</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>DOC_LVL_ALW_AMT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>DOC_LVL_ALW_CUR</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>DOC_LVL_ALW_BASE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>DOC_LVL_ALW_BASE_CUR</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>DOC_LVL_ALW_VAT_CAT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>DOC_LVL_ALW_VAT_RATE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>TAX_SCEME_ID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>SUM_INV_AMT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>CURR_SUM_INV_AMT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>SUM_ALW_DOC</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>CURR_SUM_ALW_DOC</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>INV_TOT_WO_VAT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>CURR_INV_TOT_WO_VAT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>INV_TOT_VAT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>CURR_INV_TOT_VAT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>INV_TOT_VAT_ACC</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>CURR_INV_TOT_VAT_ACC</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>INV_TOT_WITH_VAT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>CURR_INV_TOT_WITH_VAT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>PAID_AMOUNT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>CURR_PAID_AMOUNT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>AMT_DUE_FOR_PAYMENT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>CURR_AMT_DUE_FOR_PAYMENT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>VAT_TAXABLE_AMT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>CURR_VAT_TAXABLE_AMT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>VAT_CAT_TAX_AMT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>CURR_VAT_CAT_TAX_AMT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>VAT_CAT_CODE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>VAT_CAT_RATE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>TAX_EXEMPT_CODE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>TAX_EXEMPT_REASON</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>TAX_SCHEME_ID</NAME>
+      </COL_LIST_ITEM>
+   </COL_LIST>
+   <SUBQUERY>SELECT
+'VSS' LINE_OF_BUSS, --1
+'reporting:1.0' REP_TYPE,--4
+case
+  when substr(h.CUSTOMER_NUMBER,1,3) IN('342','343') then
+  'B2B'
+  else
+  'B2C'
+end as INV_TYPE, ---INVOICE TYPE AS B2B OR B2C
+to_char(h.INVOICE_NUMBER) INVOICE_NUMBER,--5
+H.INV_UUID INVOICE_UUID,--6
+TO_CHAR(H.INV_TIME,'RRRR-MM-DD') INVOICE_ISS_DATE,--7
+TO_CHAR(H.INV_TIME,'HH24:MI:SS') INVOICE_ISS_TIME,--8
+CASE nvl(h.IN_CN_REFERENCE,0) WHEN 0 THEN '388' ELSE '381' END INVVOICE_TYPE_CODE,--9
+decode(substr(h.CUSTOMER_NUMBER,1,3),'342','0100000','0200000') INVOICE_TYPE_TRANS,--10
+'' INVOICE_NOTE, --11
+'SAR' INVOICE_CURR_CODE, --12
+'SAR' TAX_CURR_CODE,--13
+'' PO_ID,--14
+CASE nvl(to_char(h.IN_CN_REFERENCE),0) WHEN '0' THEN '' ELSE to_char(h.IN_CN_REFERENCE) END BILLING_REF_ID,--15
+'' CONTRACT_ID, --16
+H.INV_COUNTER_VAL, --17
+H.INV_PREV_HASH,--18
+H.INV_QR_CODE,--19
+'' CRYPT_STAMP,--20
+c.crno,--21
+'CRN' crnotype,
+c.addr_street,--22
+c.addr_addl_street,--23
+c.addr_addl_buildi,--24
+c.addr_addl_no,--25
+c.addr_city,--26
+c.addr_postal_code,--27
+c.addr_province,--28
+c.addr_district,--29
+c.addr_country_code,--30
+c.vat_reg_no,--31
+c.ara_desc cmpny_desc,--32
+case
+  when substr(h.CUSTOMER_NUMBER,1,3) = '342' then
+  (select distinct r.company_cr_no from ra_customers r where r.CUSTOMER_NUMBER=h.CUSTOMER_NUMBER)
+  else
+  ''
+end as cust_id,--33
+'' cust_idtype,
+h.cust_street,--34
+'' CUST_ADDR_ADDL_ST,--35
+h.cust_building,--36
+'' CUST_ADDL_NO,--37
+h.cust_city,--38
+h.cust_postal,--39
+'' CUST_ADDR_COUNTRY,--40
+h.cust_district,--41
+h.cust_country_code,--42
+case
+  when substr(h.CUSTOMER_NUMBER,1,3) = '342' then
+  (select distinct to_char(r.tax_payer_id) from ra_customers r where r.CUSTOMER_NUMBER=h.CUSTOMER_NUMBER)
+  else
+  ''
+end as cust_vat_no,--43
+nvl(h.CUSTOMER_NAME_ARB,h.CUSTOMER_NAME) cust_name,--44
+TO_CHAR(H.MANUAL_REFERENCE_DATE,'dd/mm/rrrr') Supply_Start_Date,--45
+(select to_char(DELIVEY_AFTER,'dd/mm/rrrr') from VSS_VEHICLE_EXPECTED_DELIVERY d where d.INVOICE_NUMBER=h.invoice_number) Supply_End_Date,--46
+'' PAY_MEANS_TYPE_CODE, --47
+h.CREDIT_REASON, --48
+'' PAYMENT_TERMS, --49
+'' PAY_ACCT_IDENT, --50
+'' DOC_LVL_ALW_IND,--51
+'' DOC_LVL_ALW_PERC,--52
+'' DOC_LVL_ALW_AMT,--53
+'' DOC_LVL_ALW_CUR,--54
+'' DOC_LVL_ALW_BASE,--55
+'' DOC_LVL_ALW_BASE_CUR,--56
+'' DOC_LVL_ALW_VAT_CAT,--57
+'' DOC_LVL_ALW_VAT_RATE,--58
+'' TAX_SCEME_ID, --59
+-----nvl(h.total_amount,0) - nvl(h.total_amount_vat,0) Sum_Inv_Amt,--60
+(SELECT sum(nvl(D.LINE_NET,0))-sum(nvl(D.PLATE_REG_GOVT,0)) FROM INVOICE_DETAILS D WHERE D.invoice_number=H.INVOICE_NUMBER) - nvl(h.total_amount_vat,0) Sum_Inv_Amt,--60
+'SAR' Curr_Sum_Inv_Amt,--61
+'0' Sum_Alw_Doc, --62
+'SAR' Curr_Sum_Alw_Doc, --63
+---nvl(h.TOTAL_AMOUNT,0) - nvl(h.TOTAL_AMOUNT_VAT,0) Inv_Tot_WO_VAT,--64
+(SELECT sum(nvl(D.LINE_NET,0))-sum(nvl(D.PLATE_REG_GOVT,0)) FROM INVOICE_DETAILS D WHERE D.invoice_number=H.INVOICE_NUMBER) - nvl(h.TOTAL_AMOUNT_VAT,0) Inv_Tot_WO_VAT,--64
+'SAR' Curr_Inv_Tot_WO_VAT,--65
+h.TOTAL_AMOUNT_VAT Inv_Tot_VAT,--66
+'SAR' Curr_Inv_Tot_VAT,--67
+h.TOTAL_AMOUNT_VAT Inv_Tot_VAT_ACC,--68
+'SAR' Curr_Inv_Tot_VAT_ACC,--69
+--h.TOTAL_AMOUNT Inv_Tot_With_VAT,--70
+(SELECT sum(nvl(D.LINE_NET,0))-sum(nvl(D.PLATE_REG_GOVT,0)) FROM INVOICE_DETAILS D WHERE D.invoice_number=H.INVOICE_NUMBER) Inv_Tot_With_VAT,--70
+'SAR' Curr_Inv_Tot_With_VAT,--71
+'0' PAID_AMOUNT, --72
+'SAR' CURR_PAID_AMOUNT, --73
+nvl(h.total_amount,0) - nvl(h.DOWN_PAYMENT,0) Amt_Due_for_Payment,--74
+'SAR' Curr_Amt_Due_for_Payment,--75
+(select ((sum(nvl(d.gtp,0)) + sum(nvl(d.WARRANTY_CHARGES,0)) + sum(nvl(d.SERVICE_CHARGES,0))
++ sum(nvl(d.PROCESS_FEES,0)) + sum(NVL(d.INTEREST,0)) + sum(NVL(d.TRANSPORT,0)) +
+sum(NVL(d.TAMM,0)) + sum(NVL(d.ADDITIONAL_OPTIONS,0))))
+from  invoice_details d where h.invoice_number=d.invoice_number) VAT_Taxable_Amt, --76
+'SAR' Curr_VAT_Taxable_Amt,--77
+h.TOTAL_AMOUNT_VAT VAT_CAT_TAX_AMT,--78
+'SAR' curr_VAT_CAT_TAX_AMT,--79
+decode(nvl(h.TOTAL_AMOUNT_VAT,0),0,'O','S') vat_cat_code,--80
+case when nvl(h.TOTAL_AMOUNT_VAT,0) = 0
+     then 0
+else
+(select distinct d.vat_percent from invoice_details d where d.invoice_number=h.invoice_number)
+end as  vat_cat_rate,--81
+'' TAX_EXEMPT_CODE,--82
+'' TAX_EXEMPT_REASON,--83
+decode(nvl(h.TOTAL_AMOUNT_VAT,0),0,'','VAT')  TAX_scheme_ID --84
+
+FROM invoice_header@to_appidev.hha.local h, companies@to_appidev.hha.local c--, invoice_details d, companies c
+--where h.INVOICE_NUMBER = d.INVOICE_NUMBER
+where h.INVOICE_NUMBER in
+(
+55107302,
+62006434,
+48604960,
+21515436,
+54804730,
+54038555,
+54038556,
+21515439,
+49203940
+)
+
+--WHERE TRUNC(MANUAL_REFERANCE_DATE) >= TRUNC(SYSDATE)-10
+
+--------------------parts union
+union all
+
+
+SELECT
+'PARTS' line_of_buss, --1
+rep_type, --4
+inv_type,
+invoice_number,--5
+invoice_uuid,--6
+invoice_iss_date,--7
+invoice_iss_time,--8
+INVVOICE_TYPE_CODE,-- as "invoice_type_trans",--9
+invoice_type_trans,-- as "INVVOICE_TYPE_CODE",--10
+'' INVOICE_NOTE,--11
+invoice_curr_code,--12
+tax_curr_code,--13
+'' PO_ID,--14
+billing_ref_id,--15
+'' CONTRACT_ID,--16
+inv_counter_val,--17
+inv_prev_hash,--18
+inv_qr_code,--19
+'' CRYPT_STAMP,--20
+crno,--21
+crnotype,
+addr_street,--22
+addr_addl_street,--23
+addr_addl_buildi,--24
+addr_addl_no,--25
+addr_city,--26
+addr_postal_code,--27
+addr_province,--28
+addr_district,--29
+addr_country_code,--30
+vat_reg_no,--31
+cmpny_desc,--32
+cust_id,--33
+cust_idtype,
+cust_street,--34
+cust_province CUST_ADDR_ADDL_ST,--35
+cust_building,--36
+cust_addlno CUST_ADDL_NO,--37
+cust_city,--38
+cust_postal,--39
+'' CUST_ADDR_COUNTRY,--40
+cust_district,--41
+cust_country_code,--42
+cust_vat_no,--43
+cust_name,--44
+supply_start_date,--45
+supply_end_date,--46
+mopcode PAY_MEANS_TYPE_CODE, --47
+credit_reason, --48
+'' PAYMENT_TERMS, --49
+'' PAY_ACCT_IDENT, --50
+doc_lvl_alw_ind,--51
+doc_lvl_alw_perc,--52
+doc_lvl_alw_amt,--53
+doc_lvl_alw_cur,--54
+doc_lvl_alw_base,--55
+doc_lvl_alw_vat_cur,--56
+doc_lvl_alw_vat_cat,--57
+doc_lvl_alw_vat_rate,--58
+tax_sceme_id,--59
+sum_inv_amt,--60
+curr_sum_inv_amt,--61
+sum_disc_doc Sum_Alw_Doc,--62
+sum_disc_doc_cur Curr_Sum_Alw_Doc,--63
+inv_tot_wo_vat,--64
+curr_inv_tot_wo_vat,--65
+inv_tot_vat,--66
+curr_inv_tot_vat,--67
+inv_tot_vat_acc,--68
+curr_inv_tot_vat_acc,--69
+inv_tot_with_vat, --70
+curr_inv_tot_with_vat,--71
+'0' PAID_AMOUNT, --72
+'SAR' CURR_PAID_AMOUNT, --73
+amt_due_for_payment,--74
+curr_amt_due_for_payment,--75
+vat_taxable_amt,--76
+curr_vat_taxable_amt,--77
+vat_cat_tax_amt,--78
+curr_vat_cat_tax_amt,--79
+vat_cat_code,--80
+vat_cat_rate,--81
+tax_exempt_code,--82
+tax_exempt_reason,--83
+tax_scheme_id--84
+FROM P_ZATCA_MAPPING_MASTER--ZATCA_MAPPING_MASTER@TO_TRAINING.HHA.LOCAL
+
+/*
+UNION ALL
+
+SELECT
+'WSS' BU, --1
+'reporting:1.0' REP_TYPE, --4
+h.jm_job_no INVOICE_NUMBER, --5
+H.INV_UUID INVOICE_UUID, --6
+TO_CHAR(H.JM_INVOICE_DATE,'RRRR-MM-DD') INVOICE_ISS_DATE,--7
+TO_CHAR(H.JM_INVOICE_DATE,'HH24:MI:SS') INVOICE_ISS_TIME,--8
+--CASE nvl(h.IN_CN_REFERENCE,0) WHEN 0 THEN '388' ELSE '381' END INVVOICE_TYPE_CODE,
+--decode(substr(h.CUSTOMER_NUMBER,1,3),'342','010000','020000') INVOICE_TYPE_TRANS,
+'388'    INVVOICE_TYPE_CODE,--9
+'020000' INVOICE_TYPE_TRANS,--10
+'' INVOICE_NOTE, --11
+'SAR' INVOICE_CURR_CODE,--12
+'SAR' TAX_CURR_CODE,--13
+'' PO_ID,--14
+--CASE nvl(h.IN_CN_REFERENCE,0) WHEN 0 THEN null ELSE h.IN_CN_REFERENCE END BILLING_REF_ID,
+'' BILLING_REF_ID,--15
+'' CONTRACT_ID, --16
+h.INV_COUNTER_VAL,--17
+h.INV_PREV_HASH,--18
+h.INV_QR_CODE,--19
+'' CRYPT_STAMP,--20
+c.crno,--21
+c.addr_street,--22
+c.addr_addl_street,--23
+c.addr_addl_buildi,--24
+c.addr_addl_no,--25
+c.addr_city,--26
+c.addr_postal_code,--27
+c.addr_province,--28
+c.addr_district,--29
+c.addr_country_code,--30
+c.vat_reg_no,--31
+c.cmpny_desc,--32
+'' cust_id,--33
+'' cust_street,--34
+'' ADD_ADDL_ST,--35
+'' cust_building,--36
+'' CUST_ADDL_NO,--37
+'' cust_city,--38
+'' cust_postal,--39
+'' CUST_ADDR_COUNTRY,--40
+'' cust_district,--41
+'' cust_country_code,--42
+*/
+
+/*
+case
+when substr(h.CUSTOMER_NUMBER,1,3) = '342' then
+(select distinct to_char(r.tax_payer_id) from ra_customers r where r.CUSTOMER_NUMBER=h.CUSTOMER_NUMBER)
+else
+'' end as cust_vat_no,--43
+*/
+
+/*
+'' cust_vat_no,--43
+h.jm_customer_name cust_name,--44
+TO_CHAR(h.JM_INVOICE_DATE,'dd/mm/rrrr') Supply_Start_Date,--45
+TO_CHAR(h.JM_INVOICE_DATE,'dd/mm/rrrr') Supply_End_Date,--46
+'' PAY_MEANS_TYPE_CODE, --47
+'' CREDIT_REASON,--48
+'' PAYMENT_TERMS, --49
+'' PAY_ACCT_IDENT, --50
+'false' DOC_LVL_ALW_IND,--51
+Round(((NVL(h.Jm_Total_Amt,0)+(nvl(h.JM_DISCOUNT_MATERIAL,0)+nvl(JM_DISCOUNT_LABOUR,0)))*(nvl(h.JM_DISCOUNT_MATERIAL,0)+nvl(JM_DISCOUNT_LABOUR,0)))/100,2) DOC_LVL_ALW_PERC,--52
+nvl(h.JM_DISCOUNT_MATERIAL,0)+nvl(JM_DISCOUNT_LABOUR,0) DOC_LVL_ALW_AMT,--53
+cast( null as varchar2(20) ) DOC_LVL_ALW_CUR,--54
+cast( null as varchar2(20) ) DOC_LVL_ALW_BASE,--55
+cast( null as varchar2(20) ) DOC_LVL_ALW_VAT_CUR,--56
+cast( null as varchar2(20) ) DOC_LVL_ALW_VAT_CAT,--57
+cast( null as varchar2(20) ) DOC_LVL_ALW_VAT_RATE,--58
+cast( null as varchar2(20) ) TAX_SCEME_ID, --59
+-----nvl(h.total_amount,0) - nvl(h.total_amount_vat,
+h.jm_total_amt Sum_Inv_Amt, --60
+'SAR' Curr_Sum_Inv_Amt, --61
+0 Sum_Alw_Doc, --62
+'SAR' Curr_Sum_Alw_Doc, --63
+h.jm_invoice_amt - nvl(h.jm_parts_vat,0) - nvl(h.jm_labor_vat,0) - nvl(JM_SUND_VISUAL_VAT,0) - nvl(JM_SUND_NONVISUAL_VAT,0) Inv_Tot_WO_VAT, --64
+'SAR' Curr_Inv_Tot_WO_VAT, --65
+nvl(h.jm_parts_vat,0) + nvl(h.jm_labor_vat,0) + nvl(JM_SUND_VISUAL_VAT,0) + nvl(JM_SUND_NONVISUAL_VAT,0) Inv_Tot_VAT,--66
+'SAR' Curr_Inv_Tot_VAT,--67
+nvl(h.jm_parts_vat,0) + nvl(h.jm_labor_vat,0) + nvl(JM_SUND_VISUAL_VAT,0) + nvl(JM_SUND_NONVISUAL_VAT,0) Inv_Tot_VAT_ACC,--68
+'SAR' Curr_Inv_Tot_VAT_ACC,--69
+h.jm_total_amt Inv_Tot_With_VAT,--70
+'SAR' Curr_Inv_Tot_With_VAT,--71
+nvl(h.jm_down_payment,0) + nvl(h.jm_advance_amt,0) Paid_Amount,--72
+'SAR' Curr_Paid_Amount, --73
+nvl(h.jm_invoice_amt,0) - nvl(h.jm_down_payment,0) - nvl(h.jm_advance_amt,0) Amt_Due_for_Payment,--74
+'SAR' Curr_Amt_Due_for_Payment,--75
+NVL(JM_SPARE_PARTS_AMT,0) + NVL(JM_LABOUR_CHARGE,0) + NVL(JM_OIL_ETC_AMT,0) + NVL(JM_OTHER_CHARGES,0) + NVL(JM_LPO_REPAIR,0) + NVL(JM_LPO_PARTS,0) + NVL(JM_AC_GAS,0) + NVL(JM_PETROL,0) VAT_Taxable_Amt, --76
+'SAR' Curr_VAT_Taxable_Amt,--77
+nvl(h.jm_parts_vat,0) + nvl(h.jm_labor_vat,0) + nvl(JM_SUND_VISUAL_VAT,0) + nvl(JM_SUND_NONVISUAL_VAT,0) VAT_CAT_TAX_AMT,--78
+'SAR' curr_VAT_CAT_TAX_AMT,--79
+decode(nvl(h.jm_parts_vat,0) + nvl(h.jm_labor_vat,0) + nvl(JM_SUND_VISUAL_VAT,0) + nvl(JM_SUND_NONVISUAL_VAT,0),0,'O','S') vat_cat_code,--80
+h.jm_labor_vat_perc vat_cat_rate,--81
+'' TAX_EXEMPT_CODE, --82
+'' TAX_EXEMPT_REASON, --83
+'VAT' TAX_scheme_ID --84
+FROM work_job_master h, companies c--, invoice_details d, companies c
+--where h.INVOICE_NUMBER = d.INVOICE_NUMBER
+--and h.INVOICE_NUMBER = 48110895, 53002659
+where h.jm_job_no = '232454806'
+--WHERE TRUNC(MANUAL_REFERANCE_DATE) >= TRUNC(SYSDATE)-10
+;
+*/
+</SUBQUERY>
+</VIEW>]]></n0:source>
+		</n0:createSxmlObject>
+	</changeSet>
+</databaseChangeLog>

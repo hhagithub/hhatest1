@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="81d760947fab55907074e48368542228ef6299ea" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleProcedure objectName="IQ_PUSHAPPOINTMENTS" objectType="PROCEDURE" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "HHA_PROD"."IQ_PUSHAPPOINTMENTS" is
+token_string   varchar2(4000);
+l_reqBody      CLOB;
+l_response     CLOB;
+json_body      VARCHAR2(4000);
+l_Status       VARCHAR2(200);
+
+begin
+
+FOR C IN (SELECT * FROM work_appointment WHERE TRUNC(AP_APPOINT_DATE) >= TRUNC(SYSDATE)-1 AND nvl(IQ_DATA_FLAG,'N')='N' and ap_location in ('229','521','481'))
+LOOP 
+
+token_string := getIQtoken('https://hha'||c.ap_location||'.iq-motive.com:10004/api/Auth/login', c.ap_location);
+
+apex_web_service.g_request_headers.delete();
+apex_web_service.g_request_headers(1).name := 'Authorization';
+apex_web_service.g_request_headers(1).value := 'Bearer '||token_string;
+apex_web_service.g_request_headers(2).name := 'Content-Type';
+apex_web_service.g_request_headers(2).value := 'application/json; charset=utf-8';
+--apex_web_service.g_request_headers(3).name := 'Content-Length';
+--apex_web_service.g_request_headers(3).value := '';
+
+BEGIN
+
+declare temp number;
+begin  
+select distinct 1 into temp
+from work_appointment w, work_campaign_operations o
+where AP_APPOINT_NO = c.ap_appoint_no
+and o.wo_recall_no = 
+(
+select CAMPAIGN_ID
+from wss_appointment_comp_code
+where CAR_LINE = substr(w.AP_CHASSIS_NO,4,2) AND  KMS = w.APPOINT_REF AND ROWNUM = 1
+);
+------tasks found
+SELECT JOB INTO l_reqBody
+FROM
+(
+       SELECT JSON_OBJECT( 
+            'appointmentRef' is to_char(AP_APPOINT_NO),
+            'datetime'       is to_char(AP_APPOINT_DATE,'dd-mm-rrrr hh24:mi'),
+            'customerName'   is AP_CUSTOMER_NAME,
+            'customerPhone'  is AP_MOBILE_NO,
+            'licensePlate'   is (select distinct vm.vm_plate_no from work_vehicle_master vm where vm.vm_chassis_no = w.AP_CHASSIS_NO AND ROWNUM = 1),
+            'engineCode'     is (select distinct v.veh_type_desc from vehicle_stock v where chassis_no = w.AP_CHASSIS_NO and new_used_flag = 'N' AND ROWNUM = 1),
+            'carType'        is (select distinct m.fin_code from vehicle_stock v, models m where v.serial_no=m.mod_code and chassis_no = w.AP_CHASSIS_NO AND ROWNUM = 1),
+            'yearOfBuild'    is NVL((select NVL(v.vm_model_year,0) from work_vehicle_master v where v.vm_chassis_no = w.AP_CHASSIS_NO AND ROWNUM = 1),0),
+            'vehicleId'      is AP_CHASSIS_NO,
+            'tasks' VALUE (
+               SELECT JSON_ARRAYAGG(
+                      JSON_OBJECT(
+                         'duration' VALUE Round((floor(o.wo_std_time)*60)+(mod(o.wo_std_time,floor(o.wo_std_time))*60),0),
+                         'code'     VALUE o.wo_operation_id ,
+                         'name'     VALUE o.wo_operation_description))
+                         from work_appointment w, work_campaign_operations o
+                         where AP_APPOINT_NO = c.ap_appoint_no
+                         and o.wo_recall_no = (
+                         select CAMPAIGN_ID
+                         from wss_appointment_comp_code
+                         where CAR_LINE = substr(w.AP_CHASSIS_NO,4,2) AND  KMS = w.APPOINT_REF AND ROWNUM = 1)
+
+                               )ABSENT ON NULL) job
+
+       FROM work_appointment w
+       WHERE AP_APPOINT_NO = c.ap_appoint_no 
+       AND TRUNC(AP_APPOINT_DATE) >= TRUNC(SYSDATE)-1 AND nvl(IQ_DATA_FLAG,'N')='N' and ap_location in ('229','521','481')
+       and rownum=1
+
+);
+
+exception when no_data_found then
+---tasks not found
+SELECT JOB INTO l_reqBody 
+FROM 
+(
+    SELECT REPLACE(JOB,'"tasks":null','"tasks":[{"duration":60,"code":"HHADIG002","name":"Diagnose The Problem"}]') AS JOB --HHADIG002	Diagnose The Problem	1 Hr
+    FROM (
+          select JSON_OBJECT 
+          (
+          'appointmentRef' is to_char(AP_APPOINT_NO),
+          'datetime'       is to_char(AP_APPOINT_DATE,'dd-mm-rrrr hh24:mi'),
+          'customerName'   is AP_CUSTOMER_NAME,
+          'customerPhone'  is AP_MOBILE_NO,
+          'licensePlate'   is (select distinct vm.vm_plate_no from work_vehicle_master vm where vm.vm_chassis_no = w.AP_CHASSIS_NO AND ROWNUM = 1),
+          'engineCode'     is (select distinct v.veh_type_desc from vehicle_stock v where chassis_no = w.AP_CHASSIS_NO AND ROWNUM = 1),
+          'carType'        is (select distinct m.fin_code from vehicle_stock v, models m where v.serial_no=m.mod_code and chassis_no = w.AP_CHASSIS_NO AND ROWNUM = 1),
+          'yearOfBuild'    is NVL((select NVL(v.vm_model_year,0) from work_vehicle_master v where v.vm_chassis_no = w.AP_CHASSIS_NO AND ROWNUM = 1),0),
+          'vehicleId'      is AP_CHASSIS_NO,
+          'tasks'          is ''
+          ) AS JOB
+          from work_appointment w
+          where AP_APPOINT_NO = c.ap_appoint_no
+          AND TRUNC(AP_APPOINT_DATE) >= TRUNC(SYSDATE)-1 AND nvl(IQ_DATA_FLAG,'N')='N' and ap_location in ('229','521','481')
+          and rownum=1
+         ) 
+);
+
+end;                         
+
+json_body  := substr(l_reqBody, 1, 32767);
+
+l_response := apex_web_service.make_rest_request(p_url           => 'https://hha'||c.ap_location||'.iq-motive.com:10004/api/dms',
+                                                 p_http_method   => 'POST',
+                                                 p_body          => to_clob(json_body),
+                                                 p_wallet_path   => 'file:/u01/app/oracle/product/12.2.0/dbhome_1/wallet',
+                                                 p_wallet_pwd    => 'welcome1'
+                                             );
+
+l_Status := apex_web_service.g_status_code;
+
+IF l_Status = '200' THEN
+   begin
+     update work_appointment o
+     set o.IQ_DATA_FLAG = 'Y'
+     where AP_APPOINT_NO = c.ap_appoint_no;
+     commit;
+   end;
+END IF;   
+/*   
+   RETURN '200-Success';
+ELSIF l_Status = '400' THEN
+   RETURN '409-Bad Request';
+ELSIF l_Status = '409' THEN
+   RETURN '409-Conflict';
+ELSIF l_Status = '500' THEN
+   RETURN '500-Internal Server Error';      
+ELSE
+   RETURN 'Error: '||l_Status; 
+END IF;
+EXCEPTION
+  WHEN NO_DATA_FOUND THEN
+  RETURN SQLERRM;
+  WHEN OTHERS THEN
+  RETURN SQLERRM;
+*/  
+END;
+END LOOP;
+end;
+/]]></n0:source>
+		</n0:createOracleProcedure>
+	</changeSet>
+</databaseChangeLog>

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="14925eb9bd2a3643f12f44810c57369f50b7b6ce" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleTrigger objectName="SHIFT_UPLOAD_PROCESS" objectType="TRIGGER" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE TRIGGER "HHA_PROD"."SHIFT_UPLOAD_PROCESS" BEFORE INSERT ON SHIFT_UPLOAD REFERENCING NEW AS NEW OLD AS OLD FOR EACH ROW
+  
+DECLARE PATTERN_NAME_ VARCHAR2(20);
+        OPT VARCHAR2(20);
+        USR VARCHAR2(20);
+BEGIN
+
+SELECT OPT_TYPE, USERID INTO OPT, USR FROM SHIFT_OPT;
+
+----------
+
+IF OPT IS NOT NULL THEN
+BEGIN  
+SELECT DISTINCT PATTERN_NAME INTO PATTERN_NAME_
+FROM hcm_SHIFTS_assign
+WHERE emp_no = :NEW.EMPNO AND TO_DATE(:NEW.FROMDATE,'DD/MM/YYYY') BETWEEN TRUNC(START_DATE) AND TRUNC(END_DATE) AND ROWNUM=1;
+EXCEPTION WHEN NO_DATA_FOUND THEN
+  NULL;
+END;  
+END IF;
+
+-----------
+
+UPDATE hcm_SHIFTS_assign
+SET END_DATE = TO_DATE(:NEW.FROMDATE,'DD/MM/YYYY')-1, UPD_DATE = SYSDATE, UPD_BY = '9999'
+WHERE emp_no = :NEW.EMPNO 
+AND  TO_DATE(:NEW.FROMDATE,'DD/MM/YYYY') BETWEEN TRUNC(START_DATE) AND TRUNC(END_DATE)
+AND TRUNC(START_DATE) <= TO_DATE(:NEW.FROMDATE,'DD/MM/YYYY')-1
+;
+
+INSERT INTO hcm_SHIFTS_assign (emp_no,pattern_name,start_date,end_date,cre_date,cre_by)
+SELECT :NEW.EMPNO, :NEW.SHIFT, TO_DATE(:NEW.FROMDATE,'DD/MM/YYYY') , TO_DATE(:NEW.TODATE,'DD/MM/YYYY'), SYSDATE, USR
+FROM PASTATIC
+WHERE ST_EMPCD = :NEW.EMPNO AND st_status <= '15';
+
+------------
+
+IF OPT IS NOT NULL THEN
+  
+INSERT INTO hcm_SHIFTS_assign (emp_no,pattern_name,start_date,end_date,cre_date,cre_by)
+SELECT :NEW.EMPNO, NVL(PATTERN_NAME_,:NEW.SHIFT), TO_DATE(:NEW.TODATE,'DD/MM/YYYY')+1 , TO_DATE('31/12/2048','DD/MM/YYYY'), SYSDATE, USR
+FROM PASTATIC
+WHERE ST_EMPCD = :NEW.EMPNO AND st_status <= '15'
+AND TO_CHAR(TO_DATE(:NEW.TODATE,'DD/MM/YYYY')+1 ,'YYYY') < 2030
+;
+
+END IF;
+
+
+EXCEPTION 
+  WHEN NO_DATA_FOUND THEN
+  NULL;
+  WHEN OTHERS THEN 
+  NULL;
+END;
+
+
+/
+/
+ALTER TRIGGER "HHA_PROD"."SHIFT_UPLOAD_PROCESS" ENABLE;]]></n0:source>
+		</n0:createOracleTrigger>
+	</changeSet>
+</databaseChangeLog>

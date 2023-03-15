@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="cfa77508fe6faac8cfcecdb9aba794b41e04934a" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleProcedure objectName="JSON_TEST" objectType="PROCEDURE" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "HHA_PROD"."JSON_TEST" (payload clob) IS
+   l_object     json_object_t; 
+   l_key_obj    json_key_list;
+   v_clob       CLOB; 
+   tv           apex_json.t_values;
+   obj_in_obj   JSON_OBJECT_T;
+   l_key_list   json_key_list; 
+   l_array      json_array_t;
+   l_element    json_element_t;
+   l_eats       json_array_t;
+   output       json_array_t;
+   status       VARCHAR2(5000);
+
+BEGIN
+
+v_clob := payload; --' [{ "mobile_number":"966500000009", "vin": "JM7GW19S9X1101491", "car_ownership_doc": "https://secure.gravatar.com/avatar/91f79f268a8b23f0f6181aee3aac3349?size=512", "is_removed":"0" },{ "mobile_number":"966500000009", "vin": "JM7GL4S37L1422243", "car_ownership_doc": "https://secure.gravatar.com/avatar/91f79f268a8b23f0f6181aee3aac3349?size=512", "is_removed":"0" }, { "mobile_number":"966500000009", "vin": "JM7GL4S37L1422243", "car_ownership_doc": "https://secure.gravatar.com/avatar/91f79f268a8b23f0f6181aee3aac3349?size=512", "is_removed":"0" }]';  
+  -- l_eats := json_array_t ('["Stirfry", "Yogurt", "Mosquitos"]');
+l_eats := json_array_t(v_clob);
+
+   --DBMS_OUTPUT.put_line ('Number of elements in array: ' || l_eats.get_size);
+
+   /* Use standard PL/SQL loops to iterate through array elements */
+
+   FOR indx IN 0 .. l_eats.get_size - 1
+   LOOP
+        l_element := l_eats.get (indx);
+        --DBMS_OUTPUT.put_line (l_eats.get_string (indx));
+      CASE 
+      WHEN l_element.is_object
+         THEN
+            l_object := TREAT (l_element AS json_object_t);
+            --DBMS_OUTPUT.put_line (l_object.stringify);
+
+            --FOR indOBJ IN 1 .. l_object.get_size  loop
+             -- DBMS_OUTPUT.put_line (indOBJ);
+             
+              --  DBMS_OUTPUT.put_line ('mobile_number'|| ':'||l_object.get_string ('mobile_number'));
+              --  DBMS_OUTPUT.put_line ('vin'|| ':'||l_object.get_string ('vin'));
+              --  DBMS_OUTPUT.put_line ('car_ownership_doc'|| ':'||l_object.get_string ('car_ownership_doc'));
+              --  DBMS_OUTPUT.put_line ('is_removed'|| ':'||l_object.get_string ('is_removed'));
+
+             
+                DECLARE 
+
+                    TEMP varchar2(20);
+                    v_mobile_number varchar2(20);
+                    v_vin varchar2(20);
+                    v_car_ownership_doc varchar2(500);
+                    v_is_removed varchar2(20) ;
+
+                    
+
+
+                BEGIN
+                
+
+
+                    v_mobile_number     := l_object.get_string ('mobile_number');
+                    v_vin               := l_object.get_string ('vin');
+                    v_car_ownership_doc := l_object.get_string ('car_ownership_doc');
+                    v_is_removed        := l_object.get_string ('is_removed') ;
+
+                    
+                    SELECT DISTINCT APP_REGTRD_MOB INTO TEMP
+                    FROM work_vehicle_master
+                    WHERE VM_CHASSIS_NO = v_vin
+                    and vm_supl_code = '01' and rownum = 1;
+                
+                    UPDATE work_vehicle_master 
+                    SET 
+                    CAR_OWNER_DOC =  v_car_ownership_doc,
+                    APP_REGTRD_MOB = DECODE( v_is_removed,'1','9999999999',v_mobile_number)
+                    WHERE VM_CHASSIS_NO = v_vin;
+                    --commit;
+             
+                   -- :status := '200';
+                  --  :vin_no  := :vin;
+                   -- :mob_no := temp;
+                    STATUS := STATUS || '{200'||','||v_vin||','||temp||'}';
+
+
+                   -- status := json_object_t.parse ('{"status":"Elvis"}');
+                   
+                   -- status.put("status", "200");
+                   -- status.put("vin_no", v_vin);
+                   -- status.put("mob_no", temp);
+
+                    --JSONArray ja = new JSONArray();
+                   -- output.put(status);
+
+                    
+                exception 
+                    when no_data_found then
+                      STATUS := STATUS || '{204'||','||v_vin||','||temp||'}';
+                    --status.put("status", "204");
+                   -- :status := '204';
+                    when others then
+                    STATUS := STATUS || '{400'||','||v_vin||','||temp||'}';
+                    --status.put("status", "400");
+                    --:status := '400';
+                end;
+
+
+
+            
+                /*--NO DELETE
+                l_key_list := l_object.get_keys; 
+                FOR counter IN 1 .. l_key_list.COUNT LOOP         
+                   DBMS_OUTPUT.put_line ( l_key_list(counter) || ':'||l_object.get_string(l_key_list (counter)));               
+                END LOOP;
+                */
+
+      END CASE;
+   END LOOP;
+   DBMS_OUTPUT.put_line (STATUS);
+END;
+/]]></n0:source>
+		</n0:createOracleProcedure>
+	</changeSet>
+</databaseChangeLog>

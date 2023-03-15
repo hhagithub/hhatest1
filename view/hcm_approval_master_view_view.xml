@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="92bc72453d62942744acd2ecd8222214bea12644" author="(HHA_PROD)-Generated"     >
+		<n0:createSxmlObject objectName="HCM_APPROVAL_MASTER_VIEW" objectType="VIEW" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  <VIEW xmlns="http://xmlns.oracle.com/ku" version="1.0">
+   <SCHEMA>HHA_PROD</SCHEMA>
+   <NAME>HCM_APPROVAL_MASTER_VIEW</NAME>
+   <COL_LIST>
+      <COL_LIST_ITEM>
+         <NAME>USER_CODE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>EMP_EMAIL</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ST_ENAME</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>SERVICE_ID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>SERVICE_CODE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>APPROVAL_CODE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>LEVEL_ID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ROLE_TYPE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ACT_TYPE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ACTIVE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>FROM_DATE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>TO_DATE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ROLE_TYPE_DESC</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>REQ_ID</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>APPR_FLAG</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ACTION_BY</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ACTION_DATE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ACTION_REMARKS</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>REQ_BY</NAME>
+      </COL_LIST_ITEM>
+   </COL_LIST>
+   <SUBQUERY>SELECT U.USER_CODE, P.emp_email, P.st_ename,S."SERVICE_ID",S."SERVICE_CODE",S."APPROVAL_CODE",S."LEVEL_ID",S."ROLE_TYPE",S."ACT_TYPE",S."ACTIVE",S."FROM_DATE",S."TO_DATE",S."ROLE_TYPE_DESC",S."REQ_ID",S."APPR_FLAG",S."ACTION_BY",S."ACTION_DATE",S."ACTION_REMARKS",S."REQ_BY"
+FROM USER_ROLES U,HCM_APPROVAL_MASTER S,PASTATIC P
+WHERE ROLE_TYPE_DESC &#60;> 'USER'--'SAMTEST1'
+AND U.ROLE_CODE = S.ROLE_TYPE 
+AND P.ST_EMPCD = U.USER_CODE
+AND P.ST_STATUS &#60;= '15'
+AND P.emp_email IS NOT NULL    
+--and s.SERVICE_ID = 72
+
+UNION ALL
+
+SELECT S.ROLE_TYPE USER_CODE, P.emp_email, P.st_ename,S."SERVICE_ID",S."SERVICE_CODE",S."APPROVAL_CODE",S."LEVEL_ID",S."ROLE_TYPE",S."ACT_TYPE",S."ACTIVE",S."FROM_DATE",S."TO_DATE",S."ROLE_TYPE_DESC",S."REQ_ID",S."APPR_FLAG",S."ACTION_BY",S."ACTION_DATE",S."ACTION_REMARKS",S."REQ_BY"
+FROM HCM_APPROVAL_MASTER S,PASTATIC P
+WHERE ROLE_TYPE_DESC = 'USER'
+--AND U.ROLE_CODE = S.ROLE_TYPE
+AND P.ST_EMPCD = S.ROLE_TYPE
+AND P.ST_STATUS &#60;= '15'
+AND P.emp_email IS NOT NULL    
+--and s.SERVICE_ID = 72
+</SUBQUERY>
+</VIEW>]]></n0:source>
+		</n0:createSxmlObject>
+	</changeSet>
+</databaseChangeLog>

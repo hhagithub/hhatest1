@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="81e2f2cb3636e952348fe7e37a556e10b5ab7605" author="(HHA_PROD)-Generated"     >
+		<n0:createOraclePackageSpec objectName="AV_GENERAL_PKG" objectType="PACKAGE_SPEC" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE PACKAGE "HHA_PROD"."AV_GENERAL_PKG" is
+  function f_get_page_designer_url
+  (
+    pi_app_id      in number
+   ,pi_app_page_id in number
+  ) return varchar2;
+  function f_get_page_designer_link
+  (
+    pi_app_id           in number
+   ,pi_app_page_id      in number
+   ,pi_link_label       in varchar2 default 'edit'
+   ,pi_open_in_new_page in number default 1
+  ) return varchar2;
+  function f_get_page_id_from_target_link
+  (
+    pi_target_link                 in varchar2
+   ,pi_page_id_when_target_is_null in number default null
+  ) return number;
+end av_general_pkg;
+/]]></n0:source>
+		</n0:createOraclePackageSpec>
+	</changeSet>
+</databaseChangeLog>

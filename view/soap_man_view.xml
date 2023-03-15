@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="4869d50c5432f71a658ffee1be2cf0e9229cdde4" author="(HHA_PROD)-Generated"     >
+		<n0:createSxmlObject objectName="SOAP_MAN" objectType="VIEW" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  <VIEW xmlns="http://xmlns.oracle.com/ku" version="1.0">
+   <SCHEMA>HHA_PROD</SCHEMA>
+   <NAME>SOAP_MAN</NAME>
+   <COL_LIST>
+      <COL_LIST_ITEM>
+         <NAME>XML</NAME>
+      </COL_LIST_ITEM>
+   </COL_LIST>
+   <SUBQUERY>select H||ClaimHeader||ClaimVersion||F XML from 
+(
+SELECT
+'&#60;soapenv:Envelope xmlns:ns0="http://man.eu/ClaimsAndWarranty" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"> &#60;soapenv:Header> &#60;soapenv:Body>' AS H
+FROM DUAL
+),
+(
+Select 
+xmlagg(xmlelement( "ClaimHeader",              
+xmlforest(DMSSystemID, VIN, DMSOrderNo, DMSJobNo, DMSMisc, HeaderText, GoodwillType, AuthorisNo, PrimaryRepMat, ReasonMissingPDP))).getClobVal() ClaimHeader  
+from Soap_ClaimHeader
+),
+(
+Select 
+xmlagg(xmlelement( "ClaimVersion",              
+xmlforest(FirstRegDate,
+VehicleRegNo,
+RepairBegin,
+RepairEnd,
+WarrantyType,
+ComplaintDate,
+MeasReading,
+Additional_Text,
+  xmlagg(xmlelement("DefectCodeDetails",   --&#60;DefectCodeDetails>
+xmlforest(ObjectCode1,
+ObjectCode2,
+ObjectCode3))).getClobVal() DefectCodeDetails,
+Version,
+Location,
+Defect,
+   --&#60;/DefectCodeDetails>
+WarrantyCat,
+BreakDown,
+DiffMileage,
+WarrantyRefDate,
+TextComplain,
+TextDefectCause,
+TextRepairRemedy,
+TextAddInfoDefect,
+DMSOrderAmount,
+Advisor))).getClobVal() ClaimVersion  
+from Soap_ClaimVersion
+),
+(SELECT '&#60;/soapenv:Body>&#60;/soapenv:Header> &#60;/soapenv:Envelope>' AS F FROM DUAL)
+</SUBQUERY>
+</VIEW>]]></n0:source>
+		</n0:createSxmlObject>
+	</changeSet>
+</databaseChangeLog>

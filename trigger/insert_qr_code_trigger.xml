@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="e166dee1a708627ab665e6b01742c526b514acbc" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleTrigger objectName="INSERT_QR_CODE" objectType="TRIGGER" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE TRIGGER "HHA_PROD"."INSERT_QR_CODE" AFTER INSERT ON VW_INV_MST FOR EACH ROW
+DECLARE
+COMP_NAME varchar2(200);
+VAT_NO    varchar2(200); 
+qr_str    varchar2(2000);
+img_qr    blob;
+begin   
+select ARA_DESC, VAT_REG_NO INTO COMP_NAME, VAT_NO
+from companies
+where cmpny_code = 1;
+
+qr_str := QR_CODE_BLOB (COMP_NAME, VAT_NO, ISO8601(sysdate), :NEW.NET_TOT, :NEW.VAT_TOT);
+--img_qr := QR_CODE_BLOB_10g(qr_str);
+
+--img_qr := myrectype.id,utl_compress.lz_compress(QR_CODE_BLOB_10g(qr_str));
+img_qr := fixed_img(QR_CODE_BLOB_10g(qr_str),200,200);
+
+INSERT INTO INV_QR(INV_NO,INV_TYPE, IMG_QR) VALUES (:NEW.INV_TRANNO,'VW',img_qr);
+ 
+end;
+/
+/
+ALTER TRIGGER "HHA_PROD"."INSERT_QR_CODE" ENABLE;]]></n0:source>
+		</n0:createOracleTrigger>
+	</changeSet>
+</databaseChangeLog>

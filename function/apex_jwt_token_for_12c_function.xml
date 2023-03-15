@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="da3e38a8361e733245a66ec0faace145f6aff9f6" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="APEX_JWT_TOKEN_FOR_12C" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."APEX_JWT_TOKEN_FOR_12C" 
+  ( P9999_USERNAME IN varchar,
+  P9999_FLAG IN varchar, 
+  P9999_STOCK IN varchar, 
+  P9999_SMAN IN varchar, 
+  P9999_VIEW_IMG_FLAG IN varchar, 
+  P9999_VIEW_PAGE IN varchar)
+     
+     
+  RETURN  varchar IS
+  
+    l_jwt_value varchar2(32767);
+   -- Declare program variables as shown above
+ 
+begin
+
+    l_jwt_value := apex_jwt.encode (
+
+                       p_iss => P9999_USERNAME,
+
+                       p_sub => P9999_USERNAME,
+                       p_aud => 'www.oracle.com',
+
+                       p_exp_sec => 60*5,
+
+                       p_other_claims => '"Page_no": '||apex_json.stringify(P9999_VIEW_PAGE)||
+
+                                         ',"user_name": '||apex_json.stringify(P9999_USERNAME),
+
+                       p_signature_key => '12345' );
+
+    return l_jwt_value ;
+
+end;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

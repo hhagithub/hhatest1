@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="4ee48fbe83d67e9d7e0eff89e71db2f4b4b914e3" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="QR_CODE_TEST" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."QR_CODE_TEST" (dt varchar2, net varchar2, vat varchar2) return blob IS
+  COMP_NAME VARCHAR2(200);
+  VAT_NO    VARCHAR2(200);
+  qr_str varchar2(2000);
+  img_qr blob;
+
+BEGIN
+
+--select 'الحاج حسين علي رضا وشركاه المحدودة' ARA_DESC, '300210958810003' VAT_REG_NO INTO COMP_NAME, VAT_NO
+select 'تموينات فيصل علي محمد المازيني للمواد الغذائية' ARA_DESC, '310986753100003' VAT_REG_NO INTO COMP_NAME, VAT_NO
+from companies
+where cmpny_code = 1;
+
+qr_str := QR_CODE_BLOB(COMP_NAME, VAT_NO, ISO8601(to_date(dt, 'dd/mm/yyyy hh24:mi:ss')),nvl(net,0),  NVL(vat,0));
+--img_qr := QR_CODE_BLOB_10g(qr_str);
+
+--INSERT INTO VSS_QR(INV_NO, INV_TYPE, IMG_QR) VALUES (:INVOICE_HEADER.INVOICE_NUMBER, 'VSS', img_qr);
+
+return img_qr;
+
+exception
+  when others then
+  return null;
+end;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

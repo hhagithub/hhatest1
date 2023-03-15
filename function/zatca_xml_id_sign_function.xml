@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="f912b7160bb67774901be529373e9fe2d397334d" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="ZATCA_XML_ID_SIGN" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."ZATCA_XML_ID_SIGN" (ID_ Varchar2) RETURN CLOB IS
+  l_clob         CLOB;
+  r_clob         CLOB;
+BEGIN
+--3cf5ee18-ee25-44ea-a444-2c37ba7f28be  ----'||(SELECT Zatca_UUID FROM DUAL)||'
+--reporting:1.0 --'||ProfileID||'
+--   <cac:PaymentMeans>
+--       <cbc:PaymentMeansCode>'||PaymentMeansCode||'</cbc:PaymentMeansCode>
+--    </cac:PaymentMeans>
+--<cbc:LineCountNumeric>'||LineCountNumeric||'</cbc:LineCountNumeric>
+-- <cac:Delivery>
+--   <cbc:ActualDeliveryDate>'||to_char(To_date(ActualDeliveryDate,'rrrr-mm-dd'),'rrrr-mm-dd')||'</cbc:ActualDeliveryDate>
+-- </cac:Delivery>
+--   '||Zatca_AdditionalDocumentReference(Invoice_ID)||'
+--'||ZATCA_SupplierParty(Invoice_ID)||'
+--
+Select 
+'<?xml version="1.0" encoding="UTF-8"?>
+<Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2" xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2" xmlns:ext="urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2">'||(Select  Zatca_UBLExtensions(AP_INVOICE_HASH,AP_SIGNED_PROPERTIES_HASH,AP_DIGITAL_SIGNATURE,AP_SIGNINGTIME) From Zatca_mapping_master where  INVOICE_NUMBER = ID_)||'
+<cbc:ProfileID>'||ProfileID||'</cbc:ProfileID>
+<cbc:ID>'||ID||'</cbc:ID>
+<cbc:UUID>'||UUID||'</cbc:UUID>
+<cbc:IssueDate>'||to_char(To_date(IssueDate,'rrrr-mm-dd'),'rrrr-mm-dd')||'</cbc:IssueDate>
+<cbc:IssueTime>'||IssueTime||'</cbc:IssueTime>
+<cbc:InvoiceTypeCode name="'||InvoiceTypeName||'">'||InvoiceTypeCode||'</cbc:InvoiceTypeCode>
+<cbc:DocumentCurrencyCode>'||currencyID||'</cbc:DocumentCurrencyCode>
+<cbc:TaxCurrencyCode>'||TaxCurrencyCode||'</cbc:TaxCurrencyCode>
+<cac:AdditionalDocumentReference>
+<cbc:ID>ICV</cbc:ID>
+<cbc:UUID>'||ZATCA_ICV()||'</cbc:UUID>
+</cac:AdditionalDocumentReference>
+<cac:AdditionalDocumentReference>
+<cbc:ID>PIH</cbc:ID>
+<cac:Attachment>
+<cbc:EmbeddedDocumentBinaryObject mimeCode="text/plain">'||ZATCA_PIH()||'</cbc:EmbeddedDocumentBinaryObject>
+</cac:Attachment>
+</cac:AdditionalDocumentReference>' 
+||(select zatca_qr(AP_QR_CODE) From Zatca_mapping_master where  INVOICE_NUMBER = ID_)||'
+<cac:AccountingSupplierParty>
+<cac:Party>
+<cac:PartyIdentification>
+<cbc:ID schemeID="'||S_schemeID||'">'||S_ID||'</cbc:ID>
+</cac:PartyIdentification>
+<cac:PostalAddress>
+<cbc:StreetName>'||S_StreetName||'</cbc:StreetName>
+<cbc:BuildingNumber>'||Decode(S_BuildingNumber,'HHA','0000')||'</cbc:BuildingNumber>
+<cbc:PlotIdentification>'||'0000'||'</cbc:PlotIdentification>
+<cbc:CitySubdivisionName>'||S_CitySubdivisionName||'</cbc:CitySubdivisionName>
+<cbc:CityName>'||S_CityName||'</cbc:CityName>
+<cbc:PostalZone>'||S_PostalZone||'</cbc:PostalZone>
+<cac:Country>
+<cbc:IdentificationCode>'||S_IdentificationCode||'</cbc:IdentificationCode>
+</cac:Country>
+</cac:PostalAddress>
+<cac:PartyTaxScheme>
+<cbc:CompanyID>'||S_CompanyID||'</cbc:CompanyID>
+<cac:TaxScheme>
+<cbc:ID>'||S_ID_TAXSCHEME||'</cbc:ID>
+</cac:TaxScheme>
+</cac:PartyTaxScheme>
+<cac:PartyLegalEntity>
+<cbc:RegistrationName>'||S_RegistrationName||'</cbc:RegistrationName>
+</cac:PartyLegalEntity>
+</cac:Party>
+</cac:AccountingSupplierParty>
+<cac:AccountingCustomerParty>
+<cac:Party>
+<cac:PartyIdentification>
+<cbc:ID schemeID="'||B_schemeID||'">'||ID||'</cbc:ID> 
+</cac:PartyIdentification>
+<cac:PostalAddress>
+<cbc:StreetName>'||B_StreetName||'</cbc:StreetName>
+<cbc:BuildingNumber>'||B_BuildingNumber||'</cbc:BuildingNumber>
+<cbc:CitySubdivisionName>'||B_CitySubdivisionName||'</cbc:CitySubdivisionName>
+<cbc:CityName>'||B_CityName||'</cbc:CityName>
+<cbc:PostalZone>'||B_PostalZone||'</cbc:PostalZone>
+<cac:Country>
+<cbc:IdentificationCode>'||B_IdentificationCode||'</cbc:IdentificationCode>
+</cac:Country>
+</cac:PostalAddress>
+<cac:PartyTaxScheme>
+<cac:TaxScheme>
+<cbc:ID>'||B_ID_TAXSCHEME||'</cbc:ID>
+</cac:TaxScheme>
+</cac:PartyTaxScheme>
+<cac:PartyLegalEntity>
+<cbc:RegistrationName>'||B_RegistrationName||'</cbc:RegistrationName>
+</cac:PartyLegalEntity>
+</cac:Party>
+</cac:AccountingCustomerParty>
+   <cac:TaxTotal>
+      <cbc:TaxAmount currencyID="'||currencyID||'">'||trim(to_char(round(TaxAmount,2), 'FM99999999999990.00'))||'</cbc:TaxAmount>
+      <cac:TaxSubtotal>
+         <cbc:TaxableAmount currencyID="'||currencyID||'">'||trim(to_char(round(TaxableAmount,2), 'FM99999999999990.00'))||'</cbc:TaxableAmount>
+         <cbc:TaxAmount currencyID="'||currencyID||'">'||trim(to_char(round(TaxSubtotal_TaxAmount,2),'FM99999999999990.00'))||'</cbc:TaxAmount>
+         <cac:TaxCategory>
+            <cbc:ID>'||TaxCategoryID||'</cbc:ID>
+            <cbc:Percent>'||TaxPercent||'</cbc:Percent>
+            <cac:TaxScheme>
+               <cbc:ID>'||TaxSchemeID||'</cbc:ID>
+            </cac:TaxScheme>
+         </cac:TaxCategory>
+      </cac:TaxSubtotal>
+   </cac:TaxTotal>
+   <cac:TaxTotal>
+      <cbc:TaxAmount currencyID="'||currencyID||'">'||trim(to_char(round(TaxAmount68,2),'FM99999999999990.00'))||'</cbc:TaxAmount>
+   </cac:TaxTotal>
+   <cac:LegalMonetaryTotal>
+      <cbc:LineExtensionAmount currencyID="'||currencyID||'">'||trim(to_char(round(LineExtensionAmount,2),'FM99999999999990.00'))||'</cbc:LineExtensionAmount>
+      <cbc:TaxExclusiveAmount currencyID="'||currencyID||'">'||trim(to_char(round(TaxExclusiveAmount,2),'FM99999999999990.00'))||'</cbc:TaxExclusiveAmount>
+      <cbc:TaxInclusiveAmount currencyID="'||currencyID||'">'||trim(to_char(round(TaxInclusiveAmount,2),'FM99999999999990.00'))||'</cbc:TaxInclusiveAmount>     
+      <cbc:AllowanceTotalAmount currencyID="'||currencyID||'">'||trim(to_char(round(AllowanceTotalAmount,2),'FM99999999999990.00'))||'</cbc:AllowanceTotalAmount>
+      <cbc:PayableAmount currencyID="'||currencyID||'">'||trim(to_char(round(PayableAmount,2),'FM99999999999990.00'))||'</cbc:PayableAmount>
+   </cac:LegalMonetaryTotal>
+ ' into l_clob
+ From ZATCA_HHA_INVOICE
+ where INVOICE_ID = ID_;
+
+
+for i in (select * From ZATCA_hha_invoiceline where INVOICE_ID = ID_) loop
+r_clob := ' <cac:InvoiceLine>
+      <cbc:ID>'|| i.ID ||'</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="'||i.unitCode||'">'||i.InvoicedQuantity ||'</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="'||i.currencyID||'">'||trim(to_char(round(i.LineExtensionAmount,2),'FM99999999999990.00'))||'</cbc:LineExtensionAmount>
+      <cac:TaxTotal>
+         <cbc:TaxAmount currencyID="'||i.currencyID||'">'||trim(to_char(round(i.TaxAmount,2),'FM99999999999990.00'))||'</cbc:TaxAmount>
+         <cbc:RoundingAmount currencyID="'||i.currencyID||'">'||trim(to_char(round(i.RoundingAmount,2),'FM99999999999990.00'))||'</cbc:RoundingAmount>
+      </cac:TaxTotal>
+      <cac:Item>
+         <cbc:Name>'|| i.Name||'</cbc:Name>
+         <cac:ClassifiedTaxCategory>
+            <cbc:ID>'||i.ClassifiedTaxCategoryID||'</cbc:ID>
+            <cbc:Percent>'||i.TaxPercent||'</cbc:Percent>
+            <cac:TaxScheme>
+               <cbc:ID>'||i.TaxSchemeID||'</cbc:ID>
+            </cac:TaxScheme>
+         </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+         <cbc:PriceAmount currencyID="'||i.currencyID||'">'||trim(to_char(round(i.PriceAmount,2),'FM99999999999990.00'))||'</cbc:PriceAmount>
+      </cac:Price>
+   </cac:InvoiceLine>
+ ' ;
+l_clob := l_clob || ' ' ||r_clob;
+End loop;
+
+l_clob := l_clob ||'</Invoice>';
+
+Select xmlserialize( Document  xmltype(l_clob) as clob NO INDENT ) into l_clob from dual;
+l_clob := trim(regexp_replace(l_clob,'><', '> <'));
+
+l_clob := replace (l_clob,'> <ext:UBLExtensions>','><ext:UBLExtensions>');
+l_clob := replace (l_clob,'</cac:AdditionalDocumentReference> <cac:Signature>','</cac:AdditionalDocumentReference><cac:Signature>');
+l_clob := replace (l_clob,'</cac:Signature> <cac:AccountingSupplierParty>','</cac:Signature><cac:AccountingSupplierParty>');
+
+
+  RETURN l_clob;
+  Exception When No_Data_Found then
+  REturn Null;
+END;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

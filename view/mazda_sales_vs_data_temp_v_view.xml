@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="6175ee29890976960cbcafdadd05790835bfb826" author="(HHA_PROD)-Generated"     >
+		<n0:createSxmlObject objectName="MAZDA_SALES_VS_DATA_TEMP_V" objectType="VIEW" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  <VIEW xmlns="http://xmlns.oracle.com/ku" version="1.0">
+   <SCHEMA>HHA_PROD</SCHEMA>
+   <NAME>MAZDA_SALES_VS_DATA_TEMP_V</NAME>
+   <COL_LIST>
+      <COL_LIST_ITEM>
+         <NAME>REGION_CODE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>RCODE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>LOCATION_CODE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>BRANCH_DESC_ENG</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>REGION_NAME</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>LAST_DAY_SALE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>LAST_2RD_SALE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>LAST_3RD_SALE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>LAST_4TH_SALE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>LAST_5TH_SALE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>MTD_SALE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>MONTH_TARGET</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>VARY_TO_TARGET</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>YTD_SALE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>CURENT_YEAR_TARGET</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>YEAR_PROJECTION</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>PREVIOUS_YR_SALE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>VARY_TO_PREVIOUS_YEAR</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>MANAGER_NAME</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>MK_CODE</NAME>
+      </COL_LIST_ITEM>
+   </COL_LIST>
+   <SUBQUERY>select m.REGION_CODE,
+decode(to_number(m.Region_code),4,1,5,2,3,3) RCODE,
+location_code,
+decode(STG_SOURCE,2,'(FLT) ',1,'(W.Sl)') || initcap(b.branch_desc_eng) branch_desc_eng ,   
+region_name,
+last_day_sale, 
+last_2rd_sale, 
+last_3rd_sale,  
+last_4th_sale, 
+last_5th_sale, 
+mtd_sale, 
+month_target, 
+vary_to_target||'%' vary_to_target, 
+ytd_sale, 
+curent_year_target,
+year_projection,
+previous_yr_sale,  
+round(((year_projection-PREVIOUS_YR_SALE)/PREVIOUS_YR_SALE)*100)  ||'%' vary_to_previous_year ,   
+(CASE STG_SOURCE when '1' then
+   'Management' 
+else 
+(select   
+(Select substr(initcap(USER_NAME_E) ,1,30) from users  where USER_CODE=manager_code ) 
+ from branches b , BRANCHE_DEPARTMENTS bd,BRANCH_TYPE_MANAGER bm
+where b.branch_code=bd.branch_code
+and bd.department_code=21
+--and b.branch_code=285
+and bm.branch_code=b.branch_code
+and bm.position=1
+and bm.dept_code=bd.department_code
+and b.loc_status='A'
+and MANAGER_CODE in(select st_empcd from pastatic where st_status &#60;=15)
+and SALE_TYPE_CODE=STG_SOURCE and b.BRANCH_CODE=LOCATION_CODE
+and bm.mk_code=1) 
+ END)  Manager_Name,
+1 mk_code  
+from dailY_sale_mazda_apex  m, branches b 
+where  m.location_code=b.branch_code
+and m.location_code=213
+order by  rcode,LOCATION_CODE
+</SUBQUERY>
+</VIEW>]]></n0:source>
+		</n0:createSxmlObject>
+	</changeSet>
+</databaseChangeLog>

@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="d563d183ab5fc1321e27c1a41c911399fc7c5fc3" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleProcedure objectName="POST_OVERTIME_REQ" objectType="PROCEDURE" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "HHA_PROD"."POST_OVERTIME_REQ" (REQ_ID_ VARCHAR2) is
+l_respclob CLOB;
+l_reqbody  CLOB;
+l_xml      xmltype;
+l_json     apex_json.t_values;
+v_array    apex_application_global.vc_arr2;
+l_members  WWV_FLOW_T_VARCHAR2;
+json_body  VARCHAR2(4000);
+l_Status   VARCHAR2(200);
+begin
+
+BEGIN
+apex_web_service.g_request_headers(1).name := 'Content-Type';
+apex_web_service.g_request_headers(1).value:= 'application/vnd.oracle.adf.resourceitem+json';
+apex_web_service.g_request_headers(2).name := 'Effective-Of';
+apex_web_service.g_request_headers(2).value:= 'RangeStartDate='||TO_CHAR(SYSDATE,'YYYY-MM-DD');
+apex_json.initialize_clob_output;
+apex_json.open_object;
+
+--Effective-Of    RangeStartDate=2021-05-09
+DELETE FROM REQ_RES_CLOB where req_id = REQ_ID_;
+
+
+--into l_reqbody
+SELECT REPLACE(REPLACE(OVERTIME_REQ,'"elementEntryValues":null','"elementEntryValues":[]'),'null','""') into l_reqbody 
+FROM(
+    select JSON_OBJECT(         
+            'PersonId'  is person_id,   --PERSONID OR EMPID --
+            'ElementTypeId' is  '300000001681581' ,  --300000001681581
+            'AssignmentId' is ASSIGNMENT_ID ,  --300000002050407
+            'EntryType' is 'E',
+            'CreatorType' is 'F',
+            'elementEntryValues' VALUE(
+
+
+SELECT JSON_ARRAY (     
+    JSON_OBJECT(KEY 'InputValueId' IS '100000001359625', KEY 'ScreenEntryValue' IS    OV_ASSIGN_DETAILS), --TOT_ASSIGN_HOURS ||'H-' || TO_CHAR(TO_DATE(OV_START_DATE,'DD/MM/RRRR'),'DD/MM/RRRR')|| ' - '||TO_CHAR(TO_DATE(OV_END_DATE,'DD/MM/RRRR'),'DD/MM/RRRR') 
+    JSON_OBJECT(KEY 'InputValueId' IS '100000001359596', KEY 'ScreenEntryValue' IS    to_char(OV_START_DATE,'RRRR-MM-DD')  ),
+    JSON_OBJECT(KEY 'InputValueId' IS '100000001359601', KEY 'ScreenEntryValue' IS    to_char(OV_END_DATE,'RRRR-MM-DD')  ),
+    JSON_OBJECT(KEY 'InputValueId' IS '100000001359606', KEY 'ScreenEntryValue' IS    TOT_PAY_HOURS  ),
+    JSON_OBJECT(KEY 'InputValueId' IS '100000001359630', KEY 'ScreenEntryValue' IS    '1'  ),
+    JSON_OBJECT(KEY 'InputValueId' IS '100000001359591', KEY 'ScreenEntryValue' IS    req_id  )
+    ) 
+  FROM HCM_OVERTIME_PAYMENT WHERE REQ_ID =REQ_ID_
+            )
+
+              ABSENT ON NULL
+    ) OVERTIME_REQ
+
+FROM HCM_OVERTIME_PAYMENT s, pastatic p
+WHERE p.st_empcd = s.EMP_NO
+AND s.REQ_ID = REQ_ID_--'OVTP263420210812141653'
+AND NVL(SAAS_UPD_FLAG,'N') = 'N'
+AND SAAS_UPD_DATE IS NULL
+--AND NVL(REQUESTED_AMOUNT,0) <> 0
+--AND NVL(REQUEST_AMT1,0) <> 0
+AND APPR_FLAG = 'Y'
+);
+
+
+INSERT INTO REQ_RES_CLOB(REQ_ID,REQ_CLOB) VALUES (REQ_ID_, l_reqbody);
+
+apex_json.close_object;
+--dbms_output.put_line(apex_json.get_clob_output);
+--l_reqbody := apex_json.get_clob_output;
+apex_json.free_output;
+
+--production instance
+--https://ejfz-test.fa.em2.oraclecloud.com:443/hcmRestApi/resources/11.13.18.05/elementEntries
+
+l_respclob := apex_web_service.make_rest_request(p_url =>  'https://ejfz.fa.em2.oraclecloud.com:443/hcmRestApi/resources/11.13.18.05/elementEntries',
+                                                 p_http_method => 'POST',
+                                                 p_username => 'PAASUser',
+                                                 p_password => 'Paas@321',
+                                                 p_body => l_reqbody
+                                                 --p_wallet_path   => 'file:/u01/app/oracle/product/12.2.0/dbhome_1/wallet',
+                                                 --p_wallet_pwd    => 'welcome1'
+                                             );
+
+--apex_json.parse(l_json, l_respclob);
+l_Status := apex_web_service.g_status_code;
+
+IF l_Status = '200' THEN
+   l_Status := '200-Success';
+   UPDATE HCM_OVERTIME_PAYMENT
+   SET SAAS_UPD_FLAG = 'Y', SAAS_UPD_DATE = SYSDATE
+   WHERE REQ_ID = REQ_ID_
+   AND SAAS_UPD_FLAG IS NULL;
+   commit;
+ELSIF l_Status = '201' THEN
+   l_Status := '201-Created';
+   UPDATE HCM_OVERTIME_PAYMENT
+   SET SAAS_UPD_FLAG = 'Y', SAAS_UPD_DATE = SYSDATE
+   WHERE REQ_ID = REQ_ID_
+   AND SAAS_UPD_FLAG IS NULL;
+   commit;
+ELSIF l_Status = '400' THEN
+   l_Status := '409-Bad Request';
+ELSIF l_Status = '409' THEN
+   l_Status := '409-Conflict';
+ELSE
+   l_Status := 'Error: '||l_Status;
+END IF;
+
+UPDATE REQ_RES_CLOB SET RES_CLOB = l_respclob, EXP_CLOB = l_Status where req_id = REQ_ID_;
+commit;
+
+EXCEPTION
+  WHEN NO_DATA_FOUND THEN
+  UPDATE REQ_RES_CLOB SET EXP_CLOB = 'NO_DATA_FOUND' where req_id = REQ_ID_;
+  commit;
+  WHEN OTHERS THEN
+  UPDATE REQ_RES_CLOB SET EXP_CLOB = 'OTHER EXCEPTION' where req_id = REQ_ID_;
+  commit;
+END;
+
+
+
+exception
+  when others then
+  null;
+end;
+/]]></n0:source>
+		</n0:createOracleProcedure>
+	</changeSet>
+</databaseChangeLog>

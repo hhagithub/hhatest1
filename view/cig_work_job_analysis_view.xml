@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="8936163d4149bf3b08c2436bf6a1aeff3cf5ea8f" author="(HHA_PROD)-Generated"     >
+		<n0:createSxmlObject objectName="CIG_WORK_JOB_ANALYSIS" objectType="VIEW" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  <VIEW xmlns="http://xmlns.oracle.com/ku" version="1.0">
+   <SCHEMA>HHA_PROD</SCHEMA>
+   <NAME>CIG_WORK_JOB_ANALYSIS</NAME>
+   <COL_LIST>
+      <COL_LIST_ITEM>
+         <NAME>JM_JOB_NO</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>JM_MASTER_JOB_NO</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>CIG_C</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>CIG_W</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>CIG_TOT</NAME>
+      </COL_LIST_ITEM>
+   </COL_LIST>
+   <SUBQUERY>SELECT 
+JM_JOB_NO,JM_MASTER_JOB_NO,
+(
+select ((nvl(floor(nvl(sum(NEW_TIME),0)),0)*60)+
+                                    lpad(nvl(trunc((nvl(sum(NEW_TIME),0)-floor(nvl(sum(NEW_TIME),0)))*60),0),2,0)) 
+          from new_sold_time
+         where ji_job_no = W.JM_JOB_NO --:wj_emp_no 
+           --and trunc(st_credit_date) = trunc(:starttime)
+           and ST_CREDIT_DATE is not null
+           AND ST_JOB_TYPE  IN ( '01' ,  '02' ,'12', '91' ,  '92') 
+           
+ ) as cig_c,
+           
+ (
+ select ((nvl(floor(nvl(sum(NEW_TIME),0)),0)*60)+
+                                    lpad(nvl(trunc((nvl(sum(NEW_TIME),0)-floor(nvl(sum(NEW_TIME),0)))*60),0),2,0))     --cig_w
+          --into temp
+          from new_sold_time
+         where ji_job_no = W.JM_JOB_NO--:wj_emp_no 
+           --and trunc(st_credit_date) = trunc(:starttime)
+           and ST_CREDIT_DATE is not null
+           AND ST_JOB_TYPE  IN ( '03')
+         
+  ) as cig_w,
+     
+ (      
+ select ((nvl(floor(nvl(sum(NEW_TIME),0)),0)*60)+
+                                    lpad(nvl(trunc((nvl(sum(NEW_TIME),0)-floor(nvl(sum(NEW_TIME),0)))*60),0),2,0)) 
+ --sum(nvl(NEW_TIME,0))  --cig_tot
+      -- into temp
+      from new_sold_time
+     where  ji_job_no = W.JM_JOB_NO
+       --and trunc(st_credit_date) = trunc(:starttime)
+       and ST_CREDIT_DATE is not null
+  ) as cig_Tot
+      
+  
+  
+FROM work_job_master w
+WHERE JM_MASTER_JOB_NO is not null
+--and jm_status in (1,2,3)
+--and jm_job_type = '01'
+and jm_location != '211'
+--and JM_INVOICE_NO is not null
+group by /*jm_COMP_CODE,JM_DEPT_NO, Jm_LOCATION ,*/jM_MASTER_JOB_NO,JM_JOB_NO
+</SUBQUERY>
+</VIEW>]]></n0:source>
+		</n0:createSxmlObject>
+	</changeSet>
+</databaseChangeLog>

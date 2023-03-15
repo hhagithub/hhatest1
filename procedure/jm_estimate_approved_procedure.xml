@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="3d19395e8b9b817117844c07c5940aad1a808822" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleProcedure objectName="JM_ESTIMATE_APPROVED" objectType="PROCEDURE" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "HHA_PROD"."JM_ESTIMATE_APPROVED" (JM_JOB_NO_ varchar2,JM_ESTIMATE_APPROVED_ varchar2,USER_ varchar2) is
+	WORK_JOB_DETAILS_APPROVAL CHAR(1):='N';
+	WORK_JOB_REQS_APPROVAL    CHAR(1):='N';
+
+   V_JM_ESTIMATE_PARTS NUMBER;
+   V_JM_ESTIMATE_PARTS_VAT NUMBER;
+
+   V_JM_ESTIMATE_LABOUR NUMBER;
+   V_JM_ESTIMATE_LABOUR_VAT NUMBER;
+BEGIN
+
+
+	
+IF JM_ESTIMATE_APPROVED_ = 'Y' THEN
+	
+   -- :JM_EST_APPR_BY   := :GLOBAL.USER_CODE;
+   -- :JM_EST_APPR_DATE := SYSDATE;
+   
+        
+BEGIN	
+
+   BEGIN
+      SELECT DISTINCT 'Y' INTO  WORK_JOB_DETAILS_APPROVAL 
+      FROM work_job_details_est_18072022
+      WHERE JI_OPERATION_ID is not null 
+      AND EST_APPROVED = 'Y';
+      EXCEPTION WHEN NO_DATA_FOUND THEN
+      NULL;
+   END;
+
+
+
+   -- GO_BLOCK('WORK_JOB_DETAILS');
+   -- first_record;
+   -- while :WORK_JOB_DETAILS.JI_OPERATION_ID is not null 
+   -- loop  
+   -- IF :JI_EST_APPROVED = 'Y' THEN
+   --    WORK_JOB_DETAILS_APPROVAL := 'Y';
+   -- END IF;	
+   -- next_record;
+   -- end loop;
+   -- first_record;
+
+END;	
+
+--nat.display_alert('a1','4');
+
+BEGIN	
+
+   BEGIN
+      SELECT DISTINCT 'Y' INTO WORK_JOB_REQS_APPROVAL
+      FROM WORK_JOB_REQS_18072022
+      WHERE JR_REQ_PART is not null 
+      AND EST_APPROVED = 'Y';
+      EXCEPTION WHEN NO_DATA_FOUND THEN
+      NULL;
+   END;
+
+-- GO_BLOCK('WORK_JOB_REQS');
+-- first_record;
+-- while :WORK_JOB_REQS.JR_REQ_PART is not null 
+-- loop  
+-- IF :EST_APPROVED = 'Y' THEN
+--    WORK_JOB_REQS_APPROVAL := 'Y';
+-- END IF;	
+-- next_record;
+-- end loop;
+-- first_record;
+END;	
+
+
+--GO_BLOCK('WORK_JOB_MASTER');
+
+IF WORK_JOB_DETAILS_APPROVAL = 'Y' AND WORK_JOB_REQS_APPROVAL = 'Y' THEN
+
+
+---------------------naveed
+
+DECLARE vat_p number:=5;
+BEGIN	
+select distinct to_number(DESC_ENG) into vat_p
+from codes_descriptions
+where main_code= '146'
+and MAJOR_CODE = '1'
+and VALUE_1 = 'WSS'; 
+   	-----------------------PARTS TOTAL-----------
+		BEGIN
+		select SUM(((nvl(QT_QTY,0)*nvl(QT_PRICE,0))-(nvl(QT_QTY,0)*nvl(QT_DISC,0)))) into V_JM_ESTIMATE_PARTS  --:JM_ESTIMATE_PARTS
+		--,aa.*
+		from QUOTEESTIMATIONVEW aa
+		where 
+		(QT_JOBNUMBER,QT_CONCERNCODE,QT_REQSITIONCODE,QT_REQSITIONSLNO ) in (
+		select JR_JOB_NO,JR_CC_ID,JR_REQ_ID,JR_SNO
+		from WORK_JOB_REQS_18072022 
+		where JR_JOB_NO = JM_JOB_NO_
+		AND EST_APPROVED = 'A'
+		)
+		and QT_JOBNUMBER = JM_JOB_NO_;
+		
+
+      --UPDATE REQUIRED
+		--:JM_ESTIMATE_PARTS_VAT := (:JM_ESTIMATE_PARTS*vat_p)/100;
+      V_JM_ESTIMATE_PARTS_VAT := (V_JM_ESTIMATE_PARTS*vat_p)/100;
+		exception when no_data_found then
+			null;
+		END;   
+		
+		-----------------------PARTS TOTAL-----------
+		DECLARE LAB_RATE NUMBER;
+		BEGIN
+		
+		select  LR_LABOUR_RATE INTO LAB_RATE
+		from work_labour_rates
+		where lr_supl_code = (SELECT JM_SUPL_CODE FROM WORK_JOB_MASTER WHERE JM_JOB_NO = JM_JOB_NO_)
+		and lr_job_type = (SELECT JM_JOB_TYPE FROM WORK_JOB_MASTER WHERE JM_JOB_NO = JM_JOB_NO_);
+		
+		SELECT STD_TIME * LAB_RATE INTO V_JM_ESTIMATE_LABOUR--:JM_ESTIMATE_LABOUR
+		FROM (SELECT SUM(STD_TIME) STD_TIME FROM WORK_JOB_DETAILS_EST_18072022 WHERE JI_JOB_NO = JM_JOB_NO_ AND EST_APPROVED  ='A'
+		);
+		
+      --UPDATE REQUIRED
+		--:JM_ESTIMATE_LABOUR_VAT := (:JM_ESTIMATE_LABOUR*vat_p)/100;
+      V_JM_ESTIMATE_LABOUR_VAT := (v_JM_ESTIMATE_LABOUR*vat_p)/100;
+		
+		exception when no_data_found then
+			null;
+		END;
+		--------------------END PARTS-----------------
+
+      UPDATE WORK_JOB_MASTER_18072022
+      SET JM_ESTIMATE_PARTS = V_JM_ESTIMATE_PARTS,
+      JM_ESTIMATE_PARTS_VAT = V_JM_ESTIMATE_PARTS_VAT,
+      JM_ESTIMATE_LABOUR = V_JM_ESTIMATE_LABOUR ,
+      JM_ESTIMATE_LABOUR_VAT = V_JM_ESTIMATE_LABOUR_VAT,
+      JM_EST_APPR_BY   = USER_,
+      JM_EST_APPR_DATE = SYSDATE
+      WHERE JM_JOB_NO =  JM_JOB_NO_;
+
+
+---- END NAVEED
+
+			--- INSERT FIRST
+			
+			INSERT INTO work_job_details_est_18072022
+			SELECT * FROM WORK_JOB_DETAILS_18072022 
+			WHERE JI_JOB_NO = JM_JOB_NO_
+			 
+			;
+			
+			--- DELETE FROM
+			
+			DELETE FROM WORK_JOB_DETAILS_18072022
+			WHERE JI_JOB_NO =JM_JOB_NO_
+			AND NVL(JI_EST_APPROVED,'N') = 'N';
+			
+			
+			--DO_KEY('COMMIT_FORM');
+         COMMIT;
+			
+		 -- NEED TO CHECK
+       -- PRINT_ESTIMATE(:WORK_JOB_MASTER.JM_MAN_REFERENCE_NO);
+			
+			
+END;
+   
+ELSE
+
+    UPDATE WORK_JOB_MASTER_18072022
+      SET JM_ESTIMATE_APPROVED = 'N',
+      JM_EST_APPR_DATE ='',
+      JM_EST_APPR_BY   = ''
+      WHERE JM_JOB_NO =  JM_JOB_NO_;
+
+   NULL;
+	--  --NAT.DISPLAY_ALERT('A1','You must approve at least one Operation & Requistion');
+   -- --UPDATE REQUIRED
+   -- :JM_ESTIMATE_APPROVED := 'N';
+   -- :JM_EST_APPR_BY   := '';
+   -- :JM_EST_APPR_DATE := '';
+   
+   -- WORK_JOB_DETAILS_APPROVAL :='N';
+	--  WORK_JOB_REQS_APPROVAL    :='N';
+   -- raise form_trigger_failure;
+END IF;
+
+
+
+ELSE  
+  
+    UPDATE WORK_JOB_MASTER_18072022
+      SET 
+      JM_EST_APPR_DATE ='',
+      JM_EST_APPR_BY   = ''
+      WHERE JM_JOB_NO =  JM_JOB_NO_;
+
+  NULL;
+	--  :JM_EST_APPR_BY   := '';
+   -- :JM_EST_APPR_DATE := '';
+      
+   -- WORK_JOB_DETAILS_APPROVAL :='N';
+	--  WORK_JOB_REQS_APPROVAL    :='N';
+END IF;
+	
+	--nat.display_alert('a1','6');
+
+
+END;
+/]]></n0:source>
+		</n0:createOracleProcedure>
+	</changeSet>
+</databaseChangeLog>

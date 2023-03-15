@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="eab54232b8803eeec49f6188445eb792bc5a5ebe" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="R28_IN_OUT_ONLY_INV" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."R28_IN_OUT_ONLY_INV" (WJ_EMP_NO_ VARCHAR2,STARTTIME_ DATE,ENDTIME_ DATE) return number is
+--6 In/Out Inviced Hrs.
+temp number;--varchar2(80);
+begin
+  
+  
+        select round((NVL(SUM(TOT_MIN),0)/60),2)
+       --floor(NVL(SUM(TOT_MIN),0)/60)||':'||lpad(mod(NVL(SUM(TOT_MIN),0),60),2,0)
+          into temp
+          from NEW_IN_OUT_INVOICED
+         where WJ_EMP_NO = WJ_EMP_NO_
+         and trunc(jm_invoice_date) between trunc(to_Date(STARTTIME_,'dd/mm/rrrr')) and trunc(to_Date(ENDTIME_,'dd/mm/rrrr')); 
+         
+         --  and trunc(jm_invoice_date) between trunc(STARTTIME_) and trunc(ENDTIME_);
+           
+           
+
+           
+   return(temp);
+   exception when others then null;
+   end;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

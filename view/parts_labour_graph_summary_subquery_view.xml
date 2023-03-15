@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="b2b25a66bff720c7897720d33d91f26c9e8c13f3" author="(HHA_PROD)-Generated"     >
+		<n0:createSxmlObject objectName="PARTS_LABOUR_GRAPH_SUMMARY_SUBQUERY" objectType="VIEW" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  <VIEW xmlns="http://xmlns.oracle.com/ku" version="1.0">
+   <SCHEMA>HHA_PROD</SCHEMA>
+   <NAME>PARTS_LABOUR_GRAPH_SUMMARY_SUBQUERY</NAME>
+   <COL_LIST>
+      <COL_LIST_ITEM>
+         <NAME>FA_CT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>FA_AMOUNT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>PA_CT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>PA_AMOUNT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>PN_CT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>PN_AMOUNT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>NA_CT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>NA_AMOUNT</NAME>
+      </COL_LIST_ITEM>
+   </COL_LIST>
+   <SUBQUERY>SELECT FA.CT FA_CT,FA.Amount FA_AMOUNT,PA.CT PA_CT,PA.Amount PA_AMOUNT,PN.CT PN_CT,PN.Amount PN_AMOUNT, NA.CT NA_CT,NA.Amount NA_AMOUNT
+FROM 
+(
+Select 'FA' AS FLAG,count(*) CT,Round(sum(APPROVED_LABOUR)+sum(APPROVED_PARTS)+SUM(EST_OTH_APPROVED)) Amount 
+from PARTS_LABOUR_GRAPH
+where 
+(NOT_APPROVED_LABOUR = 0 and  NOT_APPROVED_PARTS = 0 AND EST_OTH_ESTIMATE = 0 )
+) FA,
+
+(
+Select 'PA' AS FLAG ,count(*) CT,Round(sum(APPROVED_LABOUR)+sum(APPROVED_PARTS)+SUM(EST_OTH_APPROVED)) Amount 
+from PARTS_LABOUR_GRAPH
+where 
+(NOT_APPROVED_LABOUR > 0 or  NOT_APPROVED_PARTS > 0  AND EST_OTH_ESTIMATE = 0)
+) PA,
+
+(
+Select 'PN' AS FLAG ,count(*) CT,Round(sum(Not_APPROVED_LABOUR)+sum(Not_APPROVED_PARTS)+sUM(EST_OTH_ESTIMATE)) Amount 
+from PARTS_LABOUR_GRAPH
+where 
+(NOT_APPROVED_LABOUR > 0 or  NOT_APPROVED_PARTS > 0 OR   EST_OTH_ESTIMATE > 0 )
+) PN,
+
+(
+Select 'NA' AS FLAG,count(*) CT,Round(sum(Not_APPROVED_LABOUR)+sum(Not_APPROVED_PARTS)+sUM(EST_OTH_ESTIMATE)) Amount 
+from PARTS_LABOUR_GRAPH
+where 
+(APPROVED_LABOUR = 0 and  APPROVED_PARTS = 0 AND EST_OTH_APPROVED=0) and (NOT_APPROVED_LABOUR > 0 or  NOT_APPROVED_PARTS > 0 OR EST_OTH_ESTIMATE >0 )
+) NA
+</SUBQUERY>
+</VIEW>]]></n0:source>
+		</n0:createSxmlObject>
+	</changeSet>
+</databaseChangeLog>

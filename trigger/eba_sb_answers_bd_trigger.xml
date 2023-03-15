@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="d2856c06bf460af1b8b83a34f2af3bc9c6c2967d" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleTrigger objectName="EBA_SB_ANSWERS_BD" objectType="TRIGGER" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE TRIGGER "HHA_PROD"."EBA_SB_ANSWERS_BD" 
+    before delete on eba_sb_answers
+    for each row
+begin
+    eba_sb_fw.tag_sync(
+        p_new_tags      => null,
+        p_old_tags      => :old.tags,
+        p_content_type  => 'ANSWERS',
+        p_content_id    => :old.id );
+end;
+
+/
+/
+ALTER TRIGGER "HHA_PROD"."EBA_SB_ANSWERS_BD" ENABLE;]]></n0:source>
+		</n0:createOracleTrigger>
+	</changeSet>
+</databaseChangeLog>

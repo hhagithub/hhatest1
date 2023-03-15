@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="e755358e9a665c324460a26e660f36811692053d" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="INCENTIVE_WORKING_DAYS_PER" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."INCENTIVE_WORKING_DAYS_PER" (wj_location1_ varchar2,P_PERIOD VARCHAR2,WJ_EMP_NO_ VARCHAR2) return number is
+--1 HOURS
+
+V_MONTH_DAYS Number;
+V_EMP_WORK_DAYS Number;
+V_Working_Day_Per number;
+
+V_NARRATION VARCHAR2(2000);
+BEGIN
+
+  --Working Days %
+       select MONTH_DAYS --,MONTH_BUDGET
+         into V_MONTH_DAYS --,V_MONTH_BUDGET
+      from BUDGET_FORMAT_VIEW
+      where PERIOD = P_PERIOD --'202301'
+      and location_code =  wj_location1_ --'280'
+      and FRANCHISE = '01'
+      and MONTH_BUDGET is not null;
+
+      --Total Number of Days Working By Empolyee
+      select COUNT(*) INTO V_EMP_WORK_DAYS  from hcm_timecardn
+      where EMP_NO = WJ_EMP_NO_ --'2554'
+      and (REMARKS = 'Business Travel' or TIME_IN is not null)
+      and to_char(START_TIME,'rrrrmm') = P_PERIOD ; --'202301'
+
+
+      V_Working_Day_Per := round ( (V_EMP_WORK_DAYS /V_MONTH_DAYS) ,2);
+
+    if V_Working_Day_Per < .65 then
+       V_Working_Day_Per := 0; 
+    end if; 
+
+   --  V_NARRATION := V_NARRATION || ' (MONTH_DAYS := '||V_MONTH_DAYS || ')';
+   -- V_NARRATION := V_NARRATION || ' (WORKED DAYS := '||V_EMP_WORK_DAYS || ')';
+   -- V_NARRATION := V_NARRATION || ' (Working Day % := '||V_Working_Day_Per || ')';
+
+   -- dbms_output.put_line(V_NARRATION);
+   
+
+ 
+      RETURN V_Working_Day_Per;
+
+
+END;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

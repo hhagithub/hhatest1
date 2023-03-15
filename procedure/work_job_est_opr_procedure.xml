@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="ce4f15f11b361d512260bc90f6f7c807c22a372e" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleProcedure objectName="WORK_JOB_EST_OPR" objectType="PROCEDURE" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "HHA_PROD"."WORK_JOB_EST_OPR" (JM_JOB_NO_ varchar2) is
+vat_p number:=5;
+v_JM_ESTIMATE_LABOUR number;
+v_JM_ESTIMATE_LABOUR_VAT number;
+v_JM_ESTIMATE_PARTS number;
+v_JM_ESTIMATE_PARTS_VAT number;
+BEGIN	
+	
+select distinct to_number(DESC_ENG) into vat_p
+from codes_descriptions
+where main_code= '146'
+and MAJOR_CODE = '1'
+and VALUE_1 = 'WSS'; 
+
+--:system.message_level := '20';
+--commit;
+
+		
+		
+		  delete from work_job_details  where JI_JOB_NO = JM_JOB_NO_;
+			-- INSERT INTO work_job_details  
+			-- SELECT * FROM work_job_details_est  --WORK_JOB_DETAILS_EST
+			-- WHERE JI_JOB_NO = JM_JOB_NO_
+			-- and NVL(EST_APPROVED,'P')  = 'A';
+         INSERT INTO work_job_details (JI_COMP_CODE,JI_DEPT_NO,JI_LOCATION,JI_JOB_NO,JI_JOB_TYPE,JI_SUPL_CODE,JI_SRL_NO,JI_SECTION,JI_OPERATION_ID,JI_OPERATION_DESCR,JI_MATERIAL_PRICE,JI_LABOUR_PRICE,JI_MODULE_NAME,JI_USER_NAME,JI_AUDIT_DATE,JI_SUGGESTED_SECTION,JI_COPY_MATERIAL,JI_CUSTOMER_MATERIAL,JI_COPY_LABOUR,JI_CUSTOMER_LABOUR,JI_PRINT_LINE,JI_INV_OPERATION_DESCR,JI_CAUSE,JI_CORRECTION,JI_CD,JI_STATUS,JI_STD_TIME,STD_TIME,JI_CC_ID,ARA_JI_OPERATION_DESCR,JI_JOB_TIME_ID,JI_DISC_PERC,JI_OPER_AMOUNT,JI_REPEAT_REPAIR,JI_EST_APPROVED,JI_EST_APPR_BY,JI_EST_APPR_DATE,INSP_BODY_ID,INSP_BODY_NAME)
+            SELECT JI_COMP_CODE,JI_DEPT_NO,JI_LOCATION,JI_JOB_NO,JI_JOB_TYPE,JI_SUPL_CODE,JI_SRL_NO,JI_SECTION,JI_OPERATION_ID,JI_OPERATION_DESCR,JI_MATERIAL_PRICE,JI_LABOUR_PRICE,JI_MODULE_NAME,JI_USER_NAME,JI_AUDIT_DATE,JI_SUGGESTED_SECTION,JI_COPY_MATERIAL,JI_CUSTOMER_MATERIAL,JI_COPY_LABOUR,JI_CUSTOMER_LABOUR,JI_PRINT_LINE,JI_INV_OPERATION_DESCR,JI_CAUSE,JI_CORRECTION,JI_CD,JI_STATUS,JI_STD_TIME,STD_TIME,JI_CC_ID,ARA_JI_OPERATION_DESCR,JI_JOB_TIME_ID,JI_DISC_PERC,JI_OPER_AMOUNT,JI_REPEAT_REPAIR,EST_APPROVED,EST_APPR_BY,EST_APPR_DATE,INSP_BODY_ID,INSP_BODY_NAME
+            FROM work_job_details_est  --WORK_JOB_DETAILS_EST
+			WHERE JI_JOB_NO = JM_JOB_NO_
+			and NVL(EST_APPROVED,'P')  = 'A';
+			commit;
+			--- DELETE FROM
+			/*
+			DELETE FROM WORK_JOB_DETAILS_est_ 
+			WHERE JI_JOB_NO = :WORK_JOB_MASTER.JM_JOB_NO
+			AND NVL(EST_APPROVED,'P') = 'P';
+			*/
+			
+-----------------------LABOUR TOTAL-----------
+		DECLARE LAB_RATE NUMBER;
+		BEGIN
+		
+		select  LR_LABOUR_RATE INTO LAB_RATE
+		from work_labour_rates
+		where lr_supl_code = (SELECT JM_SUPL_CODE FROM WORK_JOB_MASTER  WHERE JM_JOB_NO = JM_JOB_NO_)
+		and lr_job_type = (SELECT JM_JOB_TYPE FROM WORK_JOB_MASTER  WHERE JM_JOB_NO = JM_JOB_NO_);
+		
+		SELECT STD_TIME * LAB_RATE INTO v_JM_ESTIMATE_LABOUR
+		FROM (
+
+         SELECT SUM(   (NVL(STD_TIME,0))  - (  NVL (   NVL(STD_TIME ,0)*NVL(JI_DISC_PERC,0 )/100,0)   )    ) AS STD_TIME FROM WORK_JOB_DETAILS  
+         WHERE JI_JOB_NO = JM_JOB_NO_  AND JI_EST_APPROVED  ='A'
+
+         -- SELECT SUM(STD_TIME) STD_TIME FROM WORK_JOB_DETAILS  
+         -- WHERE JI_JOB_NO = JM_JOB_NO_ AND JI_EST_APPROVED  ='A'
+         
+      );
+		
+		v_JM_ESTIMATE_LABOUR_VAT := (v_JM_ESTIMATE_LABOUR*vat_p)/100;
+
+      update WORK_JOB_MASTER 
+      set JM_ESTIMATE_LABOUR = v_JM_ESTIMATE_LABOUR,
+      JM_ESTIMATE_LABOUR_VAT = v_JM_ESTIMATE_LABOUR_VAT
+      WHERE JM_JOB_NO = JM_JOB_NO_;
+		
+		exception when no_data_found then
+			null;
+		END;
+		
+		
+		
+		
+		------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------
+
+
+
+
+
+---------------------naveed
+
+DECLARE vat_p number:=5;
+BEGIN	
+select distinct to_number(DESC_ENG) into vat_p
+from codes_descriptions
+where main_code= '146'
+and MAJOR_CODE = '1'
+and VALUE_1 = 'WSS'; 
+   	-----------------------PARTS TOTAL-----------
+		BEGIN
+		select SUM(((nvl(QT_QTY,0)*nvl(QT_PRICE,0))-(nvl(QT_QTY,0)*nvl(QT_DISC,0)))) into v_JM_ESTIMATE_PARTS
+		--,aa.*
+		from QUOTEESTIMATIONVEW aa
+		where 
+		(QT_JOBNUMBER,QT_CONCERNCODE,QT_REQSITIONCODE,QT_REQSITIONSLNO ) in (
+		select JR_JOB_NO,JR_CC_ID,JR_REQ_ID,JR_SNO
+		from WORK_JOB_REQS 
+		where JR_JOB_NO = JM_JOB_NO_
+		AND EST_APPROVED = 'A'
+		)
+		and QT_JOBNUMBER = JM_JOB_NO_;
+		
+		v_JM_ESTIMATE_PARTS_VAT := (v_JM_ESTIMATE_PARTS*vat_p)/100;
+
+
+     update WORK_JOB_MASTER 
+      set JM_ESTIMATE_PARTS = v_JM_ESTIMATE_PARTS,
+      JM_ESTIMATE_PARTS_VAT = v_JM_ESTIMATE_PARTS_VAT
+      WHERE JM_JOB_NO = JM_JOB_NO_;
+
+		exception when no_data_found then
+			null;
+		END;   
+		
+		-----------------------PARTS TOTAL-----------
+		DECLARE LAB_RATE NUMBER;
+		BEGIN
+		
+		select  LR_LABOUR_RATE INTO LAB_RATE
+		from work_labour_rates
+		where lr_supl_code = (SELECT JM_SUPL_CODE FROM WORK_JOB_MASTER  WHERE JM_JOB_NO =JM_JOB_NO_)
+		and lr_job_type = (SELECT JM_JOB_TYPE FROM WORK_JOB_MASTER  WHERE JM_JOB_NO = JM_JOB_NO_);
+		
+    
+
+		 SELECT STD_TIME * LAB_RATE INTO v_JM_ESTIMATE_LABOUR
+		 FROM (
+     
+     --SELECT SUM(STD_TIME) STD_TIME FROM WORK_JOB_DETAILS_EST  WHERE JI_JOB_NO = JM_JOB_NO_ AND EST_APPROVED  ='A'
+     SELECT SUM(   (NVL(STD_TIME,0))  - (  NVL (   NVL(STD_TIME ,0)*NVL(JI_DISC_PERC,0 )/100,0)   )    ) AS STD_TIME 
+    FROM WORK_JOB_DETAILS WHERE JI_JOB_NO = JM_JOB_NO_  AND JI_EST_APPROVED  ='A'
+		);
+		
+		v_JM_ESTIMATE_LABOUR_VAT := (v_JM_ESTIMATE_LABOUR*vat_p)/100;
+
+      update WORK_JOB_MASTER 
+      set JM_ESTIMATE_LABOUR = v_JM_ESTIMATE_LABOUR,
+      JM_ESTIMATE_LABOUR_VAT = v_JM_ESTIMATE_LABOUR_VAT
+      WHERE JM_JOB_NO = JM_JOB_NO_;
+
+		
+		exception when no_data_found then
+			null;
+		END;
+		--------------------END PARTS-----------------
+END;
+---- END NAVEED
+
+COMMIT;
+
+--:system.message_level := '0';
+--GO_BLOCK('WORK_JOB_MCC'); 
+--HIDE_VIEW('CANVAS56'); 
+END;
+/]]></n0:source>
+		</n0:createOracleProcedure>
+	</changeSet>
+</databaseChangeLog>

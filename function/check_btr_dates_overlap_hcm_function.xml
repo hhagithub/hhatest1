@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="55e0415d1abf1e85cb908ca7f3cc554a0964ee9d" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="CHECK_BTR_DATES_OVERLAP_HCM" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."CHECK_BTR_DATES_OVERLAP_HCM" (emp_no number, start_date date, end_date date, V_BTR number default null) return varchar2 is
+temp number;
+TEMP1 NUMBER;
+
+PERSONID_ VARCHAR2(100);
+begin
+
+    SELECT PERSON_ID INTO PERSONID_
+    FROM PASTATIC
+    WHERE ST_EMPCD =EMP_NO;
+
+    select distinct 1 into temp
+    from HCM_BTR_OVERLAP t
+    where t.PERSONID = PERSONID_
+    and trunc(t.STARTDATE)	 <= end_date
+    and trunc(t.ENDDATE) >= start_date
+   -- AND ABSENCEDISPSTATUS IN ('COMPLETED', 'SCHEDULED');
+    AND ABSENCEDISPSTATUS NOT IN ('CANCELED', 'DENIED');
+    return 'T';
+    exception when no_data_found then
+    return 'F';
+/*
+exception when no_data_found then
+
+    begin
+
+       SELECT DISTINCT 1  into TEMP1
+        from HCM_BTR 
+        where BTR_EMP = EMP_NO
+        and TRUNC(BTR_START_DATE) <= TRUNC(end_date) --to_date(end_date,'DD-mon-yy') --TRUNC(to_date(end_date,'DD/MM/RRRR')) --to_date(end_date,'DD-mon-yy')
+        and TRUNC(BTR_END_DATE) >= TRUNC(start_date); --to_date(start_date,'DD-mon-yy') --TRUNC(to_date(start_date,'DD/MM/RRRR')) --14-JUL
+        --and nvl(appr_rej_flag,'P') IN ('P','A'); 
+
+         return 'T';  
+
+    exception when no_data_found then   
+       return 'F';
+    end;
+*/
+
+end;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

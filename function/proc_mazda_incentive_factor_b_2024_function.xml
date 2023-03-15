@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="b897c3b91bbdd481090b5997a2b6a8fd0e56cb29" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="PROC_MAZDA_INCENTIVE_FACTOR_B_2024" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."PROC_MAZDA_INCENTIVE_FACTOR_B_2024" (P_LOC VARCHAR2,P_PERIOD VARCHAR2,P_EMP_NO VARCHAR2)  return varchar2 --MAZDA MANAGER INCENTIVE
+IS
+
+
+
+ --FACTOR B--
+ V_Q1_SCORE NUMBER; --
+ V_Q14_SCORE NUMBER; --
+ V_FACTOR_B_Q1_VALUE_1 NUMBER; --
+ V_FACTOR_B_Q14_VALUE_1 NUMBER;--
+ V_FACTOR_B_Q1_VALUE_2 NUMBER;
+ V_FACTOR_B_Q14_VALUE_2 NUMBER;
+ V_FACTOR_B_Q1 NUMBER; --
+ V_FACTOR_B_Q14 NUMBER; --
+ V_FACTOR_B NUMBER;
+
+ V_NPS NUMBER;  --
+ V_FIRFT NUMBER;   --
+
+ V_NARRATION VARCHAR2(2000);
+
+BEGIN
+
+
+
+
+
+ FOR LOC IN (select Distinct LOC_No as WT_LOCATION from LOCATION_MANPOWER_23 where Period = P_Period AND LOC_NO = P_LOC) Loop
+-- FOR LOC IN (Select distinct WT_LOCATION/*,WT_EMP_NO*/ from work_team_details where  NVL(ASTON_MARTIN_FLAG,'M') <> 'Y') LOOP
+
+
+ --FACTOR B--
+ V_Q1_SCORE := 0; --
+ V_Q14_SCORE := 0; --
+ V_FACTOR_B_Q1_VALUE_1 := 0; --
+ V_FACTOR_B_Q14_VALUE_1 := 0;--
+ V_FACTOR_B_Q1_VALUE_2 := 0;
+ V_FACTOR_B_Q14_VALUE_2 := 0;
+ V_FACTOR_B_Q1 := 0; --
+ V_FACTOR_B_Q14 := 0; --
+ V_FACTOR_B := 0;
+
+ V_NPS := 0;  --
+ V_FIRFT := 0;  --
+
+
+V_NARRATION := NULL;
+
+
+--Factor-B
+
+        --Q1 score for the location
+        BEGIN
+--
+            /*SELECT
+            round(avg(INDEX_)) INTO  V_Q1_SCORE FROM (
+            select YEAR_, MONTH_, FRANCHISE, TO_NUMBER(QUESTION) QUESTION , REGION, BRANCH_CODE, LOCATION, ADVISOR,
+            INDEX_ from MV_Qlik_KPI_APEX_QUES
+            where QUESTION=1
+            and  to_char(to_date('01'||'-'||MONTH_||'-'||YEAR_,'dd-mm-rrrr'),'rrrrmm')=P_PERIOD
+            and FRANCHISE='MAZDA'
+            AND BRANCH_CODE = LOC.WT_LOCATION);*/
+
+
+
+            select NVL(round(avg(INDEX_)),95) INDEX_ INTO  V_Q1_SCORE 
+            from MV_Qlik_KPI_APEX_QUES_LOC
+            where QUESTION=1
+            and  to_char(to_date('01'||'-'||MONTH_||'-'||YEAR_,'dd-mm-rrrr'),'rrrrmm')=P_PERIOD
+            and FRANCHISE='MAZDA'
+            AND BRANCH_CODE = LOC.WT_LOCATION;
+
+         V_Q1_SCORE := 94;  --Discuss with Naveed Bhai
+        EXCEPTION WHEN NO_DATA_FOUND THEN
+                NULL;
+            WHEN TOO_MANY_ROWS THEN
+                NULL;
+        END;
+
+       /*lets say NPS score of the location for month is  84
+        ( (84  /  85 ) X 100 )   = 98  Take factor from table which is 0.82  then multiply this with 0.7
+        (0.82 X 0.7 ) = 0.574*/
+
+       --Lets say NPS score of the location for month is  84  then ( (84  /  85 ) X 100 )   = 98
+     
+     
+       V_FACTOR_B_Q1_VALUE_1 := Round((V_Q1_SCORE/85)*100);   --ROUND((V_Q1_SCORE / V_NPS) * 100);
+        --V_FACTOR_B_Q1_VALUE_1 := ROUND((V_Q1_SCORE / V_NPS) * 100);
+
+
+       ---Take factor from table
+
+       BEGIN
+        IF  ROUND(v_FACTOR_B_Q1_VALUE_1) <70 THEN
+            V_FACTOR_B_Q1_VALUE_2 := 0;
+        ELSIF  ROUND(v_FACTOR_B_Q1_VALUE_1) > 120 THEN
+            V_FACTOR_B_Q1_VALUE_2 := 1.2;
+        ELSE
+            Select  VALUE_2 INTO  V_FACTOR_B_Q1_VALUE_2  ---SOME VALUE NOT EXIST
+            from codes_descriptions where MAIN_CODE='430'  --192 
+            and MINOR_CODE!=0
+            AND VALUE_1 = ROUND(v_FACTOR_B_Q1_VALUE_1) ;
+        END IF;
+       EXCEPTION WHEN NO_DATA_FOUND THEN
+                NULL;
+            WHEN TOO_MANY_ROWS THEN
+                NULL;
+       END;
+
+       --then multiply this with 0.7
+       V_FACTOR_B_Q1 := V_FACTOR_B_Q1_VALUE_2 * 0.7 ;
+
+        /*Q14 score from haroon given report for the FIR Ach lets say it is 92 then
+        ( (92  /  95 ) X 100 )   = 96.84  take factor froom table which is 0.8 then multiply this with 0.3
+        (0.8 X 0.3 ) = 0.24 */
+
+        --QUESTION 14 SCORE
+        BEGIN
+        -----
+        /*
+            select  round(avg(INDEX_))   INTO V_Q14_SCORE
+            from V_KPI_APEX_QUES14  where to_char(to_date('01'||'-'||MONTH_||'-'||YEAR_,'dd-mm-rrrr'),'rrrrMM')= P_PERIOD
+            and FRANCHISE='MAZDA'
+            AND BRANCH_CODE = LOC.WT_LOCATION ;*/
+
+
+select NVL(round(avg(INDEX_)),95) INDEX_    INTO V_Q14_SCORE
+from V_KPI_APEX_QUES14_LOC
+where to_char(to_date('01'||'-'||MONTH_||'-'||YEAR_,'dd-mm-rrrr'),'rrrrMM')= P_PERIOD
+            and FRANCHISE='MAZDA'
+            AND BRANCH_CODE = LOC.WT_LOCATION ;
+
+
+        EXCEPTION WHEN NO_DATA_FOUND THEN
+                NULL;
+            WHEN TOO_MANY_ROWS THEN
+                NULL;
+        END;
+
+        V_FACTOR_B_Q14_VALUE_1 := ROUND((V_Q14_SCORE/95)*100);  --ROUND((V_Q14_SCORE / V_FIRFT) * 100);
+
+        BEGIN
+         ---Take factor from table
+        IF  ROUND(V_FACTOR_B_Q14_VALUE_1)  <70 THEN
+            V_FACTOR_B_Q14_VALUE_2 := 0;
+        ELSIF  ROUND(V_FACTOR_B_Q14_VALUE_1)  > 120 THEN
+            V_FACTOR_B_Q14_VALUE_2 := 1.2;
+        ELSE
+            Select  VALUE_2 INTO  V_FACTOR_B_Q14_VALUE_2  ---SOME VALUE NOT EXIST
+            from codes_descriptions where MAIN_CODE='430' --192
+            and MINOR_CODE!=0
+            AND VALUE_1 = ROUND(V_FACTOR_B_Q14_VALUE_1) ;
+        END IF;
+        EXCEPTION WHEN NO_DATA_FOUND THEN
+                NULL;
+            WHEN TOO_MANY_ROWS THEN
+                NULL;
+        END;
+
+         --then multiply this with 0.3
+         V_FACTOR_B_Q14 := V_FACTOR_B_Q14_VALUE_2 * 0.3 ;
+
+        --Factor-B = 0.574 + .24 = 0.814
+        V_FACTOR_B :=  NVL(V_FACTOR_B_Q1,0) + NVL(V_FACTOR_B_Q14,0);
+
+        V_NARRATION := V_NARRATION || ' Factor B Calculation : ' ;
+        --V_NARRATION := V_NARRATION || ' (LOC:= '||LOC.WT_LOCATION || ')';
+        --V_NARRATION := V_NARRATION || ' (EMP NO:= '||P_EMP_NO || ')';
+        V_NARRATION := V_NARRATION || ' (NPS:='|| NVL(V_Q1_SCORE,0)|| ')';
+        V_NARRATION := V_NARRATION || ' (NPS ACH%:='|| ROUND(V_FACTOR_B_Q1_VALUE_1)|| ')';
+        V_NARRATION := V_NARRATION || ' (NPS Factor:='|| V_FACTOR_B_Q1_VALUE_2|| ')';
+        V_NARRATION := V_NARRATION || ' (NPS Factor * 0.7:='|| V_FACTOR_B_Q1|| ')';
+
+        V_NARRATION := V_NARRATION || ' (FIR:='|| NVL(V_Q14_SCORE,0)|| ')';
+        V_NARRATION := V_NARRATION || ' (FIR ACH%:='|| ROUND(V_FACTOR_B_Q14_VALUE_1)|| ')';
+        V_NARRATION := V_NARRATION || ' (FIR Factor:='|| V_FACTOR_B_Q14_VALUE_2|| ')';
+        V_NARRATION := V_NARRATION || ' (FIR Factor * 0.3:='|| V_FACTOR_B_Q14|| ')';
+        V_NARRATION := V_NARRATION || ' (FACTOR_B:='|| V_FACTOR_B|| ')';
+
+    dbms_output.put_line(V_NARRATION);
+  END LOOP;
+
+Return V_FACTOR_B;
+       
+   
+EXCEPTION
+     WHEN others THEN
+  dbms_output.put_line(' SQL Error Msg='||SQLERRM);
+  Return Null;
+
+END;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

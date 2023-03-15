@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="02ca931d0ff8eff658513c0eca278aef697f9778" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleProcedure objectName="SEND_PROBATION_EMAIL_ROLE" objectType="PROCEDURE" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "HHA_PROD"."SEND_PROBATION_EMAIL_ROLE" (empno_ number, role_ varchar2, lang_ varchar2 default 'en') is
+PA_ROLE_   varchar2(200);
+email_addr  varchar2(200);
+email_subject varchar2(200);
+emp_name varchar2(200);
+emp_job  varchar2(200);
+emp_loc  varchar2(200);
+join_date date;
+msg varchar2(2000);
+LEGAL_EMPLOYER_ varchar2(200);
+
+begin
+
+  select ltrim(rtrim(st_ename)),st_gdoj, get_branch_codedesc(ST_brcd), job_name, LEGAL_EMPLOYER
+  into emp_name, join_date, emp_loc, emp_job, LEGAL_EMPLOYER_
+  from pastatic
+  where st_empcd = empNo_;
+
+
+    msg := 'Dear Associate,'||chr(10)||chr(13)||'This is to draw your kind attention that you''re kindly required to emphasize the action of probation Period Evaluation for the mentioned associate in the subject.'||chr(13)||
+           'https://hcm.hha.com.sa'||chr(10)||chr(13)||
+           'Human Resource Management'||CHR(10)||
+           'HCM';
+
+    email_subject:= '(No Reply) '||empNo_||'-'||emp_name||'/'||emp_job||'/'||emp_loc||'/'||join_date;
+
+SELECT PA_WHO_APPV_EMP_ROLE INTO PA_ROLE_
+FROM(
+select *
+from hcm_prob_approval
+where pa_emp_no = empno_
+and pa_app_req_by_desc = decode(role_,'LM1','LM2','LM2','HRR','HRR','HRGM')
+AND APPROVED_REJECTED IS NULL
+AND ROWNUM=1
+ORDER BY PROB_EVAL_NO DESC
+)
+WHERE ROWNUM=1;
+
+IF PA_ROLE_ IN ('HR_PROBATION_ROLE','HRR_PROBATION_ROLE') THEN
+
+FOR C IN
+    (
+    select emp_email
+    from pastatic
+    where st_empcd in
+    (
+    select EMPLOYEE_NUMBER
+    from hcm_users_roles
+    where ROLECOMMONNAME = PA_ROLE_
+    ))
+  LOOP
+  -------------------------send email
+  SEND_MAIL2(p_sender =>'hr@hha.com.sa' ,p_recipient => C.emp_email,p_subject => email_subject,p_message => msg);
+  SEND_MAIL2(p_sender =>'hr@hha.com.sa' ,p_recipient => 'naveed@hha.com.sa',p_subject => email_subject,p_message => msg);
+  SEND_MAIL2(p_sender =>'hr@hha.com.sa' ,p_recipient => 'BMulla@hha.com.sa',p_subject => email_subject,p_message => msg);
+END LOOP;
+
+ELSE
+
+    BEGIN
+    select emp_email
+    into email_addr
+    from pastatic
+    where st_empcd = PA_ROLE_;
+    SEND_MAIL2(p_sender =>'hr@hha.com.sa' ,p_recipient => email_addr,p_subject => email_subject,p_message => msg);
+    END;
+
+
+END IF;
+
+
+IF role_ = 'LM1' THEN
+--SEND EMAIL TO LEGAL EMPLOYER
+--HHA
+--SAMCO
+--NATCOM
+BEGIN
+IF LEGAL_EMPLOYER_ = 'HHA' THEN
+   SEND_MAIL2(p_sender =>'hr@hha.com.sa' ,p_recipient => 'BMulla@hha.com.sa',p_subject => email_subject,p_message => msg);
+ELSIF LEGAL_EMPLOYER_ = 'SAMCO' THEN
+   SEND_MAIL2(p_sender =>'hr@hha.com.sa' ,p_recipient => 'FBasham@samc.com.sa',p_subject => email_subject,p_message => msg);
+ELSIF LEGAL_EMPLOYER_ = 'NATCOM' THEN
+   SEND_MAIL2(p_sender =>'hr@hha.com.sa' ,p_recipient => 'n.alzahrani@natcom.com.sa',p_subject => email_subject,p_message => msg);
+ELSE
+NULL;
+END IF;
+END;
+
+END IF;
+
+
+exception when no_data_found then
+  null;
+end;
+/]]></n0:source>
+		</n0:createOracleProcedure>
+	</changeSet>
+</databaseChangeLog>

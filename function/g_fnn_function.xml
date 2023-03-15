@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="a6bebfc42457da187a5da3d3d334fc68490314cd" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="G_FNN" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."G_FNN" (p_arr_number in NUMBER,p_item_index in NUMBER)return VARCHAR2 is
+begin
+   return (CASE
+               WHEN p_arr_number = 1   THEN APEX_APPLICATION.G_F01(p_item_index)
+                WHEN p_arr_number = 2  THEN APEX_APPLICATION.G_F02(p_item_index)
+                WHEN p_arr_number = 3  THEN APEX_APPLICATION.G_F03(p_item_index)
+                WHEN p_arr_number = 4  THEN APEX_APPLICATION.G_F04(p_item_index)
+                WHEN p_arr_number = 5  THEN APEX_APPLICATION.G_F05(p_item_index)
+                WHEN p_arr_number = 6  THEN APEX_APPLICATION.G_F06(p_item_index)
+                WHEN p_arr_number = 7  THEN APEX_APPLICATION.G_F07(p_item_index)
+                WHEN p_arr_number = 8  THEN APEX_APPLICATION.G_F08(p_item_index)
+                WHEN p_arr_number = 9  THEN APEX_APPLICATION.G_F09(p_item_index)
+                WHEN p_arr_number = 10 THEN APEX_APPLICATION.G_F10(p_item_index)
+                WHEN p_arr_number = 11 THEN APEX_APPLICATION.G_F11(p_item_index)
+                WHEN p_arr_number = 12 THEN APEX_APPLICATION.G_F12(p_item_index)
+                WHEN p_arr_number = 13 THEN APEX_APPLICATION.G_F13(p_item_index)
+                WHEN p_arr_number = 14 THEN APEX_APPLICATION.G_F14(p_item_index)
+                WHEN p_arr_number = 15 THEN APEX_APPLICATION.G_F15(p_item_index)
+                WHEN p_arr_number = 16 THEN APEX_APPLICATION.G_F16(p_item_index)
+                WHEN p_arr_number = 17 THEN APEX_APPLICATION.G_F17(p_item_index)
+                WHEN p_arr_number = 18 THEN APEX_APPLICATION.G_F18(p_item_index)
+                WHEN p_arr_number = 19 THEN APEX_APPLICATION.G_F19(p_item_index)
+                WHEN p_arr_number = 20 THEN APEX_APPLICATION.G_F20(p_item_index)
+                WHEN p_arr_number = 21 THEN APEX_APPLICATION.G_F21(p_item_index)
+                WHEN p_arr_number = 22 THEN APEX_APPLICATION.G_F22(p_item_index)
+                WHEN p_arr_number = 23 THEN APEX_APPLICATION.G_F23(p_item_index)
+                WHEN p_arr_number = 24 THEN APEX_APPLICATION.G_F24(p_item_index)
+                WHEN p_arr_number = 25 THEN APEX_APPLICATION.G_F25(p_item_index)
+                WHEN p_arr_number = 26 THEN APEX_APPLICATION.G_F26(p_item_index)
+                WHEN p_arr_number = 27 THEN APEX_APPLICATION.G_F27(p_item_index)
+                WHEN p_arr_number = 28 THEN APEX_APPLICATION.G_F28(p_item_index)
+                WHEN p_arr_number = 29 THEN APEX_APPLICATION.G_F29(p_item_index)
+                WHEN p_arr_number = 30 THEN APEX_APPLICATION.G_F30(p_item_index)
+                WHEN p_arr_number = 31 THEN APEX_APPLICATION.G_F31(p_item_index)
+                WHEN p_arr_number = 32 THEN APEX_APPLICATION.G_F32(p_item_index)
+                WHEN p_arr_number = 33 THEN APEX_APPLICATION.G_F33(p_item_index)
+                WHEN p_arr_number = 34 THEN APEX_APPLICATION.G_F34(p_item_index)
+                WHEN p_arr_number = 35 THEN APEX_APPLICATION.G_F35(p_item_index)
+                WHEN p_arr_number = 36 THEN APEX_APPLICATION.G_F36(p_item_index)
+                WHEN p_arr_number = 37 THEN APEX_APPLICATION.G_F37(p_item_index)
+                WHEN p_arr_number = 38 THEN APEX_APPLICATION.G_F38(p_item_index)
+                WHEN p_arr_number = 39 THEN APEX_APPLICATION.G_F39(p_item_index)
+                WHEN p_arr_number = 40 THEN APEX_APPLICATION.G_F40(p_item_index)
+                WHEN p_arr_number = 41 THEN APEX_APPLICATION.G_F41(p_item_index)
+                WHEN p_arr_number = 42 THEN APEX_APPLICATION.G_F42(p_item_index)
+                WHEN p_arr_number = 43 THEN APEX_APPLICATION.G_F43(p_item_index)
+                WHEN p_arr_number = 44 THEN APEX_APPLICATION.G_F44(p_item_index)
+                WHEN p_arr_number = 45 THEN APEX_APPLICATION.G_F45(p_item_index)
+                WHEN p_arr_number = 46 THEN APEX_APPLICATION.G_F46(p_item_index)
+                WHEN p_arr_number = 47 THEN APEX_APPLICATION.G_F47(p_item_index)
+                WHEN p_arr_number = 48 THEN APEX_APPLICATION.G_F48(p_item_index)
+                WHEN p_arr_number = 49 THEN APEX_APPLICATION.G_F49(p_item_index)
+                WHEN p_arr_number = 50 THEN APEX_APPLICATION.G_F50(p_item_index) 
+             END);
+
+
+EXCEPTION -- exception handlers begin
+  WHEN OTHERS THEN -- handles all other errors
+  Return null;
+end;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>

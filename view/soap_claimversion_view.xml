@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="841f73f18a79fd8707a0918d365e73e0c7cec211" author="(HHA_PROD)-Generated"     >
+		<n0:createSxmlObject objectName="SOAP_CLAIMVERSION" objectType="VIEW" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  <VIEW xmlns="http://xmlns.oracle.com/ku" version="1.0">
+   <SCHEMA>HHA_PROD</SCHEMA>
+   <NAME>SOAP_CLAIMVERSION</NAME>
+   <COL_LIST>
+      <COL_LIST_ITEM>
+         <NAME>FIRSTREGDATE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>VEHICLEREGNO</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>REPAIRBEGIN</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>REPAIREND</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>WARRANTYTYPE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>COMPLAINTDATE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>MEASREADING</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ADDITIONAL_TEXT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>OBJECTCODE1</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>OBJECTCODE2</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>OBJECTCODE3</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>VERSION</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>LOCATION</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>DEFECT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>WARRANTYCAT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>BREAKDOWN</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>DIFFMILEAGE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>WARRANTYREFDATE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>TEXTCOMPLAIN</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>TEXTDEFECTCAUSE</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>TEXTREPAIRREMEDY</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>TEXTADDINFODEFECT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>DMSORDERAMOUNT</NAME>
+      </COL_LIST_ITEM>
+      <COL_LIST_ITEM>
+         <NAME>ADVISOR</NAME>
+      </COL_LIST_ITEM>
+   </COL_LIST>
+   <SUBQUERY>Select 
+--&#60;ClaimVersion>
+'20150101' FirstRegDate,
+'FTD98-FC' VehicleRegNo,
+'20150112' RepairBegin,
+'20150112' RepairEnd,
+'1'  WarrantyType,
+'' ComplaintDate,
+'605'   MeasReading,
+'Info to claim'  Additional_Text,
+  --&#60;DefectCodeDetails>
+      '260'   ObjectCode1,
+      'A'  ObjectCode2,
+      '010'   ObjectCode3,
+      '80' Version,
+      '00' Location,
+      'B1' Defect,
+   --&#60;/DefectCodeDetails>
+'0'  WarrantyCat,
+'N'  BreakDown,
+'100'   DiffMileage,
+'20150212' WarrantyRefDate,
+'Complain' TextComplain,
+'DefectCause' TextDefectCause,
+'RepairRemedy'   TextRepairRemedy,
+'AddInfoDefect'  TextAddInfoDefect,
+'1000'  DMSOrderAmount,
+'Advisor'  Advisor
+--&#60;/ClaimVersion>
+From Dual
+</SUBQUERY>
+</VIEW>]]></n0:source>
+		</n0:createSxmlObject>
+	</changeSet>
+</databaseChangeLog>

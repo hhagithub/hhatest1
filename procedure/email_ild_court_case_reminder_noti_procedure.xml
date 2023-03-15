@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="9b75f56bc694aec81725d76852d833a0b2d141ea" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleProcedure objectName="EMAIL_ILD_COURT_CASE_REMINDER_NOTI" objectType="PROCEDURE" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "HHA_PROD"."EMAIL_ILD_COURT_CASE_REMINDER_NOTI" IS
+
+        v_rows  varchar2(32767);
+        v_rows1  varchar2(32767);
+        v_rows2  varchar2(32767);
+        v_header varchar2(32767);
+        email1 varchar2(100);
+        followup_mobile varchar2(200);
+        mobile_admin  varchar2(200);
+        V_NOTI NUMBER;
+        V_EMP_EMAIL varchar2(200);
+
+begin
+  select DISTINCT 1 INTO V_NOTI from APEX_ILD_CASES_NOTIFICATION WHERE TRUNC(SYSDATE)-TRUNC(NOTIFICATION_DATE)=15;
+  select DISTINCT
+     (SELECT p.EMP_EMAIL FROM pastatic p WHERE p.st_empcd=AN.CRE_BY) INTO V_EMP_EMAIL
+   from APEX_ILD_CASES_NOTIFICATION AN WHERE TRUNC(SYSDATE)-TRUNC(NOTIFICATION_DATE)=15;
+/*
+<table border=1 width=310 BORDERCOLOR=onions><center>
+
+                                </center></table>
+ <tr style=''background:white''>Receive Below Vehicle
+                                </tr>*/
+
+        v_header := '<table border=1>
+              <tr style=''background:#01E4FD''>
+              <td width=100><p><b>رقم العميل</b></p></td>
+              <td width=100><p><b>اسم العميل</b></p></td>
+              <td width=100><p><b>رقم الطلب</b></p></td>
+              <td width=100><p><b>رقم الصفقة</b></p></td>
+              <td width=100><p><b>نوع المحكمة</b></p></td><center>
+              <td width=100><p><b>مبلغ الدعوى</b></p></td><center>
+              <td width=100><p><b>رقم الطلب</b></p></td><center>
+              <td width=100><p><b>تاريخ الطلب</b></p></td><center>
+
+              </tr>';
+
+----- to_location
+        send_email_html('it@hha.com.sa',V_EMP_EMAIL
+                   ,'ILD Court Case Followup reminder',''
+                            ||'<br></br>'||v_header ||v_rows1||v_rows||' </table> '
+                            ||'<p style="color:red;font-size:200%;"><b>'|| 'تاريخ المتابعة: '||'rec.NOTIFICATION_DATE'||'</p><br></br></b>' ||
+                            'Regards,'||'<p></p>'||'
+                             ILD Admin'
+                            );
+for rec1 in (
+  select   EMP_EMAIL ,'966'||trunc(MOBILE) mobile_admin from APEX_ILD_COURT_CASE_ADMIN a, pastatic p --,apex_ild_cases_followup cf
+  where p.st_empcd=a.emp_no and p.ST_STATUS <=15 --and cf.court_location=a.loc
+ -- and Case_status!='C' and (trunc(Next_hiring_date)-trunc(sysdate )=7 or trunc(Next_hiring_date)-trunc(sysdate )=1)
+  --and a.emp_no not in(2050,1691)-- jamal and ahmed
+   )
+
+loop
+
+for rec in (
+     select CLIENT_NO,CLIENT_NAME,CLIENT_GOVT_ID,GUARANTOR_ID,GUARANTOR_NAME,DEAL_ID,DEAL_NBR,NOTIFICATION_DATE,
+     (SELECT p.EMP_EMAIL FROM pastatic p WHERE p.st_empcd=AN.CRE_BY) EMP_EMAIL
+   from APEX_ILD_CASES_NOTIFICATION AN WHERE TRUNC(SYSDATE)-TRUNC(NOTIFICATION_DATE)=15
+        )
+
+
+ loop
+
+             v_rows  := v_rows ||
+            '<tr>
+            <td> <p>' || rec.Client_No   ||'</p></td>
+            <td> <p>' || rec.Client_name||'</p></td>
+            <td> <p>' || rec.Deal_ID||'</p></td>
+            <td> <p>' || rec.Deal_nbr||'</p></td>
+            <td> <p>' || rec.CLIENT_GOVT_ID||'</p></td>
+            <td> <p>' || rec.GUARANTOR_ID||'</p></td>
+            <td> <p>' || rec.GUARANTOR_NAME||'</p></td>
+            <td> <p>' || rec.NOTIFICATION_DATE||'</p></td>
+            </tr>';
+
+                  -- send_email_html('it@hha.com.sa','kijaz@hha.com.sa'--rec.EMP_EMAIL
+                  --  ,'ILD Court Case Followup reminder',''
+                  --           ||'<br></br>'||v_header ||v_rows1||v_rows||' </table> '
+                  --           ||'<p style="color:red;font-size:200%;"><b>'|| 'تاريخ المتابعة: '||rec.NOTIFICATION_DATE||'</p><br></br></b>' ||
+                  --           'Regards,'||'<p></p>'||'
+                  --            ILD Admin'
+                  --           );
+
+                         send_email_html('it@hha.com.sa',rec1.EMP_EMAIL ,'ILD Court Case Followup reminder',''
+                            ||'<br></br>'||v_header ||v_rows1||v_rows||' </table> '
+                           --  ||'<p style="color:red;font-size:200%;"><b>'|| 'Coming Hearing Date '||rec.Next_hiring_date||'</p><br></br></b>'
+                            ||
+                            'Regards,'||'<p></p>'||'
+                             ILD Admin'
+                            );
+
+                        --admin jamal
+                        --  send_email_html('it@hha.com.sa','jamal.metwale@hha.com.sa' ,'ILD Court Case Followup reminder',''
+                        --     ||'<br></br>'||v_header ||v_rows1||v_rows||' </table> '
+                        --     ||'<p style="color:red;font-size:200%;"><b>'|| 'Coming Hearing Date '||rec.Next_hiring_date||'</p><br></br></b>' ||
+                        --     'Regards,'||'<p></p>'||'
+                        --      ILD Admin'
+                        --     );
+
+                              --admin ahmed alhaj
+                        --  send_email_html('it@hha.com.sa','ahmed.al-hej@hha.com.sa' ,'ILD Court Case Followup reminder',''
+                        --     ||'<br></br>'||v_header ||v_rows1||v_rows||' </table> '
+                        --     ||'<p style="color:red;font-size:200%;"><b>'|| 'Coming Hearing Date '||rec.Next_hiring_date||'</p><br></br></b>' ||
+                        --     'Regards,'||'<p></p>'||'
+                        --      ILD Admin'
+                        --     );
+
+                           --        send_email_html('it@hha.com.sa','haroon@hha.com.sa' ,'ILD Court Case Followup reminder',''
+                           --  ||'<br></br>'||v_header ||v_rows1||v_rows||' </table> '
+                           --  ||'<p style="color:red;font-size:200%;"><b>'|| 'Coming Hearing Date '||rec.Next_hiring_date||'</p><br></br></b>' ||
+                           --  'Regards,'||'<p></p>'||'
+                           --   ILD Admin'
+                           --  );
+
+                            --- followup sms
+                           --  SEND_SMS_ILD_COURT(rec.followup_mobile,'تذكير لحالة القضية
+                           --  '||'رقم العميل: '||rec.Client_No||'
+                           --  رقم الطلب: '||rec.Deal_nbr||'
+                           --  رقم الفصية: '||rec.Case_no||'
+                           --  تاريخ الجلسة القادمة: '||rec.Next_hiring_date,'Cousr_Case','Court case reminder');
+
+                            --admin sms
+                           /* SEND_SMS_ILD_COURT(rec1.mobile_admin,'
+                            تذكير لحالة القضية
+                            '||'رقم العميل: '||rec.Client_No||'
+                            رقم الطلب: '||rec.Deal_nbr||'
+                            تاريخ الجلسة القادمة: '||rec.NOTIFICATION_DATE,'Cousr_Case','Court case reminder');*/
+
+
+                            --admin sms jamal
+                           --  SEND_SMS_ILD_COURT('966504624895','
+                           --  تذكير لحالة القضية
+                           --  '||'رقم العميل: '||rec.Client_No||'
+                           --  رقم الطلب: '||rec.Deal_nbr||'
+                           --  رقم الفصية: '||rec.Case_no||'
+                           --  تاريخ الجلسة القادمة: '||rec.Next_hiring_date,'Cousr_Case','Court case reminder');
+
+
+                           --  --admin sms ahmed alhaj
+                           --  SEND_SMS_ILD_COURT('966556654665','
+                           --  تذكير لحالة القضية
+                           --  '||'رقم العميل: '||rec.Client_No||'
+                           --  رقم الطلب: '||rec.Deal_nbr||'
+                           --  رقم الفصية: '||rec.Case_no||'
+                           --  تاريخ الجلسة القادمة: '||rec.Next_hiring_date,'Cousr_Case','Court case reminder');
+
+                           --   --haroon sms
+                           --  SEND_SMS_ILD_COURT('966501649184','
+                           --  تذكير لحالة القضية
+                           --  '||'رقم العميل: '||rec.Client_No||'
+                           --  رقم الطلب: '||rec.Deal_nbr||'
+                           --  رقم الفصية: '||rec.Case_no||'
+                           --  تاريخ الجلسة القادمة: '||rec.Next_hiring_date,'Cousr_Case','Court case reminder');
+
+
+
+ end loop;
+
+
+
+v_rows   := Null;
+v_rows1 := null;
+email1  := null;
+
+end loop;
+
+v_rows   := Null;
+v_rows1 := null;
+email1  := null;
+
+EXCEPTION WHEN OTHERS THEN
+
+null;
+
+
+end;
+/]]></n0:source>
+		</n0:createOracleProcedure>
+	</changeSet>
+</databaseChangeLog>

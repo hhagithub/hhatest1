@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="75bfce768f0a8dc628615e79eb6d1afe97d2ef01" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleProcedure objectName="DATE_CLASH" objectType="PROCEDURE" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "HHA_PROD"."DATE_CLASH" 
+(
+  p_start_date IN DATE,
+  p_end_date   IN DATE
+)
+AS
+  l_count NUMBER(1) := 0;
+BEGIN
+  SELECT COUNT(*)
+  INTO   l_count
+  FROM   dates_test
+  WHERE  start_date <= p_end_date
+  AND    end_date   >= p_start_date
+  AND    ROWNUM     = 1;
+
+  IF l_count > 0 THEN
+    RAISE_APPLICATION_ERROR(-20000, 'Dates range clashes with existing dates.');
+  END IF;
+END date_clash;
+
+--EXEC date_clash(TO_DATE('01-DEC-2011','DD-MON-YYYY'), TO_DATE('02-JAN-2012','DD-MON-YYYY')); overlaps
+--EXEC date_clash(TO_DATE('06-JAN-2012','DD-MON-YYYY'), TO_DATE('07-JAN-2012','DD-MON-YYYY')); no overlaps
+/]]></n0:source>
+		</n0:createOracleProcedure>
+	</changeSet>
+</databaseChangeLog>

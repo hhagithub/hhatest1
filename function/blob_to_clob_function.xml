@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog 
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:n0="http://www.oracle.com/xml/ns/dbchangelog-ext" 
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+	http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+	<changeSet id="2c44cfa2c9e6ec982cd82b07d84219129e2bcff5" author="(HHA_PROD)-Generated"     >
+		<n0:createOracleFunction objectName="BLOB_TO_CLOB" objectType="FUNCTION" ownerName="HHA_PROD"   >
+			<n0:source><![CDATA[
+  CREATE OR REPLACE EDITIONABLE FUNCTION "HHA_PROD"."BLOB_TO_CLOB" (blob_in IN BLOB)
+RETURN CLOB
+AS
+v_clob CLOB;
+v_varchar VARCHAR2(32767);
+v_start INTEGER := 1;
+v_buffer INTEGER := 32767;
+BEGIN
+--DBMS_LOB.CREATETEMPORARY(v_clob, TRUE);
+
+FOR i IN 1..CEIL(DBMS_LOB.GETLENGTH(blob_in) / v_buffer)
+LOOP
+
+   v_varchar := UTL_RAW.CAST_TO_VARCHAR2(DBMS_LOB.SUBSTR(blob_in, v_buffer, v_start));
+
+DBMS_LOB.WRITEAPPEND(v_clob, LENGTH(v_varchar), v_varchar);
+v_start := v_start + v_buffer;
+END LOOP;
+RETURN v_clob;
+END blob_to_clob;
+/]]></n0:source>
+		</n0:createOracleFunction>
+	</changeSet>
+</databaseChangeLog>
